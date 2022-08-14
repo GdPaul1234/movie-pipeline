@@ -32,5 +32,5 @@ def command(options):
         else:
             move_movie_in_directory_to_dest(filepath)
     except Exception as e:
-        logging.exception(e)
+        logger.exception(e)
 

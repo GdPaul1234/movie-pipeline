@@ -1,4 +1,5 @@
 import asyncio
+import itertools
 import logging
 from schema import Schema, Regex
 from pathlib import Path
@@ -37,13 +38,25 @@ class MovieFileProcessor:
     def segments(self) -> list[tuple[str, str]]:
         if not len(self._segments):
             raw_segments: str = self._movie_processed_data['segments']
-            self._segments = [tuple(map(position_in_seconds ,segment.split('-', 2)))
+            self._segments = [tuple(map(position_in_seconds, segment.split('-', 2)))
                               for segment in raw_segments.removesuffix(',').split(',')]
         return self._segments
 
+    def _ffmpeg_segments(self, in_file):
+        return itertools.chain.from_iterable(
+            [(in_file.video.filter_('trim', start=segment[0], end=segment[1]).filter_('setpts', 'PTS-STARTPTS'),
+              in_file.audio.filter_('atrim', start=segment[0], end=segment[1]).filter_('asetpts', 'PTS-STARTPTS'),)
+             for segment in self.segments])
+
     def process(self):
-        in_file = ffmpeg.input(
-            str(Path(self._processed_data_path).with_suffix('')))
+        in_file_path = Path(self._processed_data_path).with_suffix('')
+        in_file = ffmpeg.input(str(in_file_path))
+        probe = ffmpeg.probe(in_file_path)
+
+        # TODO transcode all audio streams
+        nb_audio_streams = len([stream for stream in probe['streams']
+                                if stream.get('codec_type', 'N/A') == 'audio'])
+        logger.debug(f'{nb_audio_streams=}')
 
         dest_filename = self._movie_processed_data['filename']
         dest_path = MoviePathDestinationFinder(
@@ -52,10 +65,7 @@ class MovieFileProcessor:
 
         command = (
             ffmpeg
-            .concat(
-                *[in_file.trim(start=segment[0], end=segment[1])
-                  for segment in self.segments]
-            )
+            .concat(*self._ffmpeg_segments(in_file),  v=1, a=1)
             .output(
                 str(dest_filepath),
                 vcodec='h264_nvenc',

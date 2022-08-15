@@ -44,8 +44,7 @@ def main():
 
     # Could get fancy here and load configuration from file or dictionary
     fh = logging.handlers.TimedRotatingFileHandler(
-        filename=config.get('Logger', 'file_path', fallback='log.txt'),
-        when='D')
+        filename=config.get('Logger', 'file_path', fallback='log.txt'))
 
     ch = logging.StreamHandler()
 

@@ -35,7 +35,7 @@ class MovieFileProcessor:
         self._segments = []
 
     @property
-    def segments(self) -> list[tuple[str, str]]:
+    def segments(self) -> list[tuple[float, float]]:
         if not len(self._segments):
             raw_segments: str = self._movie_processed_data['segments']
             self._segments = [tuple(map(position_in_seconds, segment.split('-', 2)))
@@ -77,7 +77,11 @@ class MovieFileProcessor:
         try:
             logger.debug(f'{self._segments=}')
             logger.info('Running: %s', command.compile())
-            command.run(capture_stderr=True)
+
+            out, err = command.run(capture_stdout=True, capture_stderr=True)
+
+            logger.debug(out.decode())
+            logger.debug(err.decode())
             logger.info('Processing "%s" done', dest_filepath)
         except ffmpeg.Error as e:
             logger.exception(e.stderr.decode())

@@ -42,10 +42,11 @@ class MovieFileProcessor:
                               for segment in raw_segments.removesuffix(',').split(',')]
         return self._segments
 
-    def _ffmpeg_segments(self, in_file):
+    def _ffmpeg_segments(self, in_file, audio_streams):
         return itertools.chain.from_iterable(
             [(in_file.video.filter_('trim', start=segment[0], end=segment[1]).filter_('setpts', 'PTS-STARTPTS'),
-              in_file.audio.filter_('atrim', start=segment[0], end=segment[1]).filter_('asetpts', 'PTS-STARTPTS'),)
+              *[in_file[str(audio['index'])].filter_('atrim', start=segment[0], end=segment[1]).filter_('asetpts', 'PTS-STARTPTS')
+                for audio in audio_streams],)
              for segment in self.segments])
 
     def process(self):
@@ -53,9 +54,9 @@ class MovieFileProcessor:
         in_file = ffmpeg.input(str(in_file_path))
         probe = ffmpeg.probe(in_file_path)
 
-        # TODO transcode all audio streams
-        nb_audio_streams = len([stream for stream in probe['streams']
-                                if stream.get('codec_type', 'N/A') == 'audio'])
+        audio_streams = [stream for stream in probe['streams']
+                         if stream.get('codec_type', 'N/A') == 'audio']
+        nb_audio_streams = len(audio_streams)
         logger.debug(f'{nb_audio_streams=}')
 
         dest_filename = self._movie_processed_data['filename']
@@ -65,7 +66,7 @@ class MovieFileProcessor:
 
         command = (
             ffmpeg
-            .concat(*self._ffmpeg_segments(in_file),  v=1, a=1)
+            .concat(*self._ffmpeg_segments(in_file, audio_streams), v=1, a=nb_audio_streams)
             .output(
                 str(dest_filepath),
                 vcodec='h264_nvenc',
@@ -78,7 +79,9 @@ class MovieFileProcessor:
             logger.debug(f'{self._segments=}')
             logger.info('Running: %s', command.compile())
 
-            out, err = command.run(capture_stdout=True, capture_stderr=True)
+            out, err = command.run(
+                cmd=['ffmpeg', '-hwaccel', 'cuda'],
+                capture_stdout=True, capture_stderr=True)
 
             logger.debug(out.decode())
             logger.debug(err.decode())

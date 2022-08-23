@@ -102,11 +102,11 @@ class MovieFileProcessorFolderRunner:
     async def process_directory(self, folder_path: Path):
         logger.info('Processing: "%s"', folder_path)
         tasks = [MovieFileProcessor(p).process_async(self)
-                 for p in self._folder_path.iterdir()
+                 for p in folder_path.iterdir()
                  if p.is_file() and p.suffix == '.yml']
 
         await asyncio.gather(*tasks)
-        logger.info('Process all movie file in "%s"', self._folder_path)
+        logger.info('Process all movie file in "%s"', folder_path)
 
 
 def command(options):

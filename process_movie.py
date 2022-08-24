@@ -1,4 +1,3 @@
-import asyncio
 import itertools
 import logging
 from schema import Schema, Regex
@@ -6,7 +5,6 @@ from pathlib import Path
 import yaml
 import ffmpeg
 
-from config_loader import ConfigLoader
 from movie_path_destination_finder import MoviePathDestinationFinder
 from movie_file import LegacyMovieFile
 from util import position_in_seconds
@@ -15,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 processed_data_schema = Schema({
     # valid filename of the output file with .mp4 suffix
-    "filename": Regex(r'^[\w,\s-]+\.mp4$'),
+    "filename": Regex(r"^[\wé',\s-]+\.mp4$"),
     # format: hh:mm:ss.ss-hh:mm:ss.ss,hh-mm:ss…
     "segments": Regex(r'(?:(?:\d{2}:\d{2}:\d{2}\.\d{2,3})-(?:\d{2}:\d{2}:\d{2}\.\d{2,3}),)+')
 })
@@ -89,24 +87,16 @@ class MovieFileProcessor:
         except ffmpeg.Error as e:
             logger.exception(e.stderr.decode())
 
-    async def process_async(self, folder_runner: 'MovieFileProcessorFolderRunner'):
-        async with folder_runner.sem_max_tasks:
-            self.process()
-
 
 class MovieFileProcessorFolderRunner:
-    def __init__(self, ) -> None:
-        max_tasks = ConfigLoader().config.getint('Processor', 'max_tasks', fallback=2)
-        self.sem_max_tasks = asyncio.Semaphore(max_tasks)
-
-    async def process_directory(self, folder_path: Path):
+    @staticmethod
+    def process_directory(folder_path: Path):
         logger.info('Processing: "%s"', folder_path)
-        tasks = [MovieFileProcessor(p).process_async(self)
-                 for p in folder_path.iterdir()
-                 if p.is_file() and p.suffix == '.yml']
+        for p in folder_path.iterdir():
+            if p.is_file() and p.suffix == '.yml':
+                MovieFileProcessor(p).process()
 
-        await asyncio.gather(*tasks)
-        logger.info('Process all movie file in "%s"', folder_path)
+        logger.info('Process all movie files in "%s"', folder_path)
 
 
 def command(options):
@@ -117,8 +107,7 @@ def command(options):
         if filepath.is_file() and filepath.suffix == '.yml':
             MovieFileProcessor(filepath).process()
         elif filepath.is_dir():
-            asyncio.run(MovieFileProcessorFolderRunner()
-                        .process_directory(filepath))
+            MovieFileProcessorFolderRunner.process_directory(filepath)
         else:
             raise ValueError('Unknown file type')
     except Exception as e:

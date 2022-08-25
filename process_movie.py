@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 processed_data_schema = Schema({
     # valid filename of the output file with .mp4 suffix
-    "filename": Regex(r"^[\wé',\s-]+\.mp4$"),
+    "filename": Regex(r"^[\w&àéèï',\s-]+\.mp4$"),
     # format: hh:mm:ss.ss-hh:mm:ss.ss,hh-mm:ss…
     "segments": Regex(r'(?:(?:\d{2}:\d{2}:\d{2}\.\d{2,3})-(?:\d{2}:\d{2}:\d{2}\.\d{2,3}),)+')
 })
@@ -28,7 +28,7 @@ class MovieFileProcessor:
         """
         self._processed_data_path = movie_processed_data_path
         self._movie_processed_data = yaml.safe_load(
-            movie_processed_data_path.read_text())
+            movie_processed_data_path.read_text(encoding='utf-8'))
         processed_data_schema.validate(self._movie_processed_data)
         self._segments = []
 

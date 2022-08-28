@@ -27,6 +27,7 @@ def main():
     move_cmd.add_argument('file', metavar='FILE',
                           help='File or folder to move')
 
+    # process command
     process_cmd = subparsers.add_parser(
         'process_movie', help='Cut and merge movies to keep only relevant parts')
     process_cmd.add_argument('file', metavar='FILE',

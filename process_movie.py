@@ -1,11 +1,13 @@
 import itertools
 import logging
+import shutil
 from schema import Schema, Regex
 from pathlib import Path
 import yaml
 import ffmpeg
 
 from movie_path_destination_finder import MoviePathDestinationFinder
+from config_loader import ConfigLoader
 from movie_file import LegacyMovieFile
 from util import position_in_seconds
 
@@ -47,8 +49,34 @@ class MovieFileProcessor:
                 for audio in audio_streams],)
              for segment in self.segments])
 
+    def archive_or_delete_if_serie_original_file(self, original_file_path: Path):
+        backup_folder = ConfigLoader().config.get(
+            'Paths', 'backup_folder', fallback=None)
+
+        if backup_folder is None:
+            # Inactivate processed_data movie file
+            logger.info(
+                'No backup folder found in config, inactivate processing file')
+            self._processed_data_path.rename(self._processed_data_path.with_suffix('.yml.done'))
+        else:
+            # Move original file to archive
+            backup_folder_path = Path(backup_folder)
+            original_movie = LegacyMovieFile(self._movie_processed_data['filename'])
+            
+            if original_movie.is_serie:
+                logger.info('%s is serie, deleting it', original_file_path)
+                original_file_path.unlink()
+                self._processed_data_path.unlink()
+            else:
+                dest_path = backup_folder_path.joinpath(original_movie.title)
+                dest_path.mkdir()
+
+                logger.info('Move "%s" to "%s"', original_file_path, dest_path)
+                shutil.move(original_file_path, dest_path)
+                shutil.move(self._processed_data_path, dest_path)
+
     def process(self):
-        in_file_path = Path(self._processed_data_path).with_suffix('')
+        in_file_path = self._processed_data_path.with_suffix('')
         in_file = ffmpeg.input(str(in_file_path))
         probe = ffmpeg.probe(in_file_path)
 
@@ -83,6 +111,8 @@ class MovieFileProcessor:
 
             logger.debug(out.decode())
             logger.debug(err.decode())
+
+            self.archive_or_delete_if_serie_original_file(in_file_path)
             logger.info('Processing "%s" done', dest_filepath)
         except ffmpeg.Error as e:
             logger.exception(e.stderr.decode())

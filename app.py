@@ -33,6 +33,12 @@ def main():
     process_cmd.add_argument('file', metavar='FILE',
                              help='File or folder to process')
 
+    # scaffold command
+    scaffold_cmd = subparsers.add_parser(
+        'scaffold_dir', help='Scaffold movie processed data files from movies')
+    scaffold_cmd.add_argument('dir', metavar='DIR',
+                              help='Movies to process directory')
+
     options = parser.parse_args()
     # the code to dispatch commands could all be in this file. For the purposes
     # of illustration only, we implement each command in a separate module.

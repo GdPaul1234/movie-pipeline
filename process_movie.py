@@ -1,7 +1,7 @@
 import itertools
 import logging
 import shutil
-from schema import Schema, Regex
+from schema import Schema, Optional, Regex
 from pathlib import Path
 import yaml
 import ffmpeg
@@ -17,7 +17,8 @@ processed_data_schema = Schema({
     # valid filename of the output file with .mp4 suffix
     "filename": Regex(r"^[\w&àéèï'!(), -]+\.mp4$"),
     # format: hh:mm:ss.ss-hh:mm:ss.ss,hh-mm:ss…
-    "segments": Regex(r'(?:(?:\d{2}:\d{2}:\d{2}\.\d{2,3})-(?:\d{2}:\d{2}:\d{2}\.\d{2,3}),)+')
+    "segments": Regex(r'(?:(?:\d{2}:\d{2}:\d{2}\.\d{2,3})-(?:\d{2}:\d{2}:\d{2}\.\d{2,3}),)+'),
+    Optional("skip_backup", default=False): bool
 })
 
 
@@ -50,19 +51,20 @@ class MovieFileProcessor:
              for segment in self.segments])
 
     def archive_or_delete_if_serie_original_file(self, original_file_path: Path):
-        backup_folder = ConfigLoader().config.get(
-            'Paths', 'backup_folder', fallback=None)
+        backup_folder = ConfigLoader().config.get('Paths', 'backup_folder', fallback=None)
+        skip_backup = self._movie_processed_data.get('skip_backup', False)
 
-        if backup_folder is None:
+        if skip_backup or backup_folder is None:
             # Inactivate processed_data movie file
             logger.info(
-                'No backup folder found in config, inactivate processing file')
+                'No backup folder found in config or backup disabled for this file'
+                ', inactivate processing file')
             self._processed_data_path.rename(self._processed_data_path.with_suffix('.yml.done'))
         else:
             # Move original file to archive
             backup_folder_path = Path(backup_folder)
             original_movie = LegacyMovieFile(self._movie_processed_data['filename'])
-            
+
             if original_movie.is_serie:
                 logger.info('%s is serie, deleting it', original_file_path)
                 original_file_path.unlink()

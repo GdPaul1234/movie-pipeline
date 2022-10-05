@@ -18,26 +18,25 @@ def main():
     levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
 
     parser.add_argument('--log-level', default='INFO', choices=levels)
-    subparsers = parser.add_subparsers(
-        dest='command', help='Available commands:')
+    subparsers = parser.add_subparsers(dest='command', help='Available commands:')
 
     # move command
     move_cmd = subparsers.add_parser(
         'legacy_move', help='Move converted movies or series to their folder')
-    move_cmd.add_argument('file', metavar='FILE',
-                          help='File or folder to move')
+    move_cmd.add_argument('file', metavar='FILE', help='File or folder to move')
 
     # process command
     process_cmd = subparsers.add_parser(
         'process_movie', help='Cut and merge movies to keep only relevant parts')
-    process_cmd.add_argument('file', metavar='FILE',
-                             help='File or folder to process')
+    process_cmd.add_argument('file', metavar='FILE', help='File or folder to process')
 
     # scaffold command
     scaffold_cmd = subparsers.add_parser(
         'scaffold_dir', help='Scaffold movie processed data files from movies')
-    scaffold_cmd.add_argument('dir', metavar='DIR',
-                              help='Movies to process directory')
+    scaffold_cmd.add_argument('dir', metavar='DIR',help='Movies to process directory')
+
+    # archive movies command
+    subparsers.add_parser('archive_movies', help='Archive movies regarding options in config file')
 
     options = parser.parse_args()
     # the code to dispatch commands could all be in this file. For the purposes

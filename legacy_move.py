@@ -11,8 +11,7 @@ def move_movie_file_to_dest(filepath: str):
     dest_path = MoviePathDestinationFinder(movie_file).resolve_destination()
 
     logger.info('Move "%s" to "%s"', movie_file.as_path(), dest_path)
-    movie_file.as_path().replace(
-        dest_path.joinpath(f"{movie_file.title}{movie_file.as_path().suffix}"))
+    movie_file.as_path().replace(dest_path.joinpath(f"{movie_file.title}{movie_file.as_path().suffix}"))
 
 
 def move_movie_in_directory_to_dest(folderpath: str):

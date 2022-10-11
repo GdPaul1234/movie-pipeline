@@ -6,7 +6,7 @@ from movie_path_destination_finder import MoviePathDestinationFinder
 
 logger = logging.getLogger(__name__)
 
-def move_movie_file_to_dest(filepath: str):
+def move_movie_file_to_dest(filepath: Path|str):
     movie_file = LegacyMovieFile(filepath)
     dest_path = MoviePathDestinationFinder(movie_file).resolve_destination()
 
@@ -15,10 +15,8 @@ def move_movie_file_to_dest(filepath: str):
 
 
 def move_movie_in_directory_to_dest(folderpath: str):
-    for file in Path(folderpath).iterdir():
-        if file.suffix != '.mp4':
-            continue
-        move_movie_file_to_dest(file.resolve)
+    for file in Path(folderpath).glob('*.mp4'):
+        move_movie_file_to_dest(file.resolve())
 
 
 def command(options):

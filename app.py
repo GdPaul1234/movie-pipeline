@@ -38,6 +38,11 @@ def main():
     # archive movies command
     subparsers.add_parser('archive_movies', help='Archive movies regarding options in config file')
 
+    # dump for kodi
+    dump_for_kodi_cmd = subparsers.add_parser(
+        'dump_for_kodi', help='Dump .vsmeta to .nfo if not exist')
+    dump_for_kodi_cmd.add_argument('file', metavar='FILE', help='File or folder to process')
+
     options = parser.parse_args()
     # the code to dispatch commands could all be in this file. For the purposes
     # of illustration only, we implement each command in a separate module.

@@ -1,4 +1,5 @@
 import base64
+from collections import ChainMap
 import json
 import logging
 import struct
@@ -13,19 +14,19 @@ logger = logging.getLogger(__name__)
 class ParserHelper:
     @staticmethod
     def read_md5(scanner: StreamReader, skip=False):
-        id = -1
+        oid = -1
         if skip:
-            id = scanner.read_uchar()
+            oid = scanner.read_uchar()
         md5 = scanner.read_str()
-        return (id, md5) if skip else md5
+        return (oid, md5) if skip else md5
 
     @staticmethod
     def read_image(scanner: StreamReader, skip=False):
-        id = -1
+        oid = -1
         if skip:
-            id = scanner.read_uchar()
+            oid = scanner.read_uchar()
         content = base64.b64decode(scanner.read_str())
-        return (id, content) if skip else content
+        return (oid, content) if skip else content
 
     @staticmethod
     def skip_padding(scanner: StreamReader):
@@ -71,7 +72,7 @@ class VsMetaParser:
             parsed_data = [{key: [p[1] for p in group]}
                            for key, group in parsed_data]
 
-            return parsed_data
+            return ChainMap(*parsed_data)
 
     def parse_backdrop(self, backdrop_stream: BytesIO):
         logger.debug('Parsing backdrop...')
@@ -112,7 +113,12 @@ class VsMetaParser:
         finally:
             tv_data_stream.close()
 
-        return parsed_data
+        return dict(parsed_data)
+
+    @property
+    def media_type(self):
+        media_type = ['?', 'movie', 'serie', 'other']
+        return media_type[self._version or 0]
 
     def parse(self):
         logger.info('Parsing "%s"...', self._filepath)
@@ -123,7 +129,7 @@ class VsMetaParser:
             scanner = StreamReader(f)
             fields = {
                 0x12: ('title', scanner.read_str),
-                0x1a: ('title', scanner.read_str),
+                0x1a: ('title2', scanner.read_str),
                 0x22: ('tag_line', scanner.read_str),
                 0x28: ('year', scanner.read_int),
                 0x32: ('release_date', scanner.read_str),
@@ -143,11 +149,11 @@ class VsMetaParser:
             if magic != 0x08:
                 raise IOError('Invalid VsMeta provided')
 
-            version = scanner.read_uchar()
-            logger.info('version: %d', version)
+            self._version = scanner.read_uchar()
+            logger.info('version: %d', self._version)
 
             parsed_data = self.do_parse(scanner, fields)
         finally:
             f.close()
 
-        return parsed_data
+        return dict(parsed_data)

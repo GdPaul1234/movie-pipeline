@@ -1,42 +1,37 @@
-<?xml version="1.0" encoding="UTF8" standalone="yes" ?>
-<movie>
-    <title>{{ title|e }}</title>
-    <sorttitle>{{ title2|e }}</sorttitle>
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<episodedetails>
+    <title>{{ tag_line|e }}</title>
+    <showtitle>{{ title|e }}</showtitle>
     <ratings>
-       {% for rating_name, rating_value in metadata['com.synology.TheMovieDb']['rating']|items %}
+        {% for rating_name, rating_value in metadata['com.synology.TheMovieDb.Tv']['rating']|items %}
         <rating name="{{ rating_name|e }}" max="10">
             <value>{{ rating_value|e }}</value>
         </rating>
         {% endfor %}
     </ratings>
     <userrating>0</userrating>
+    <season>{{ tv_data.season|e }}</season>     <!-- Required for multi-episode files only -->
+    <episode>{{ tv_data.episode|e }}</episode>  <!-- Required for multi-episode files only -->
     <plot>{{ summary|e }}</plot>
-    <tagline>{{ tag_line|e }}</tagline>
-    {% for poster in metadata['com.synology.TheMovieDb']['poster'] %}
-    <thumb spoof="" cache="" aspect="poster" preview="">{{ poster|e }}</thumb>
+    {% for poster in metadata['com.synology.TheMovieDb.Tv']['poster'] %}
+    <thumb spoof="" cache="" aspect="thumb" preview="">{{ poster|e }}</thumb>
     {% endfor %}
-    <fanart>
-        {% for backdrop in metadata['com.synology.TheMovieDb']['backdrop'] %}
-        <thumb colors="" preview="">{{ backdrop|e }}</thumb>
-        {% endfor %}
-    </fanart>
     <mpaa>{{ classification|e }}</mpaa>
-    {% for reference_type, reference_id in metadata['com.synology.TheMovieDb']['reference']|items %}
+    {% for reference_type, reference_id in metadata['com.synology.TheMovieDb.Tv']['reference']|items %}
     <uniqueid type="{{ reference_type|e }}">{{ reference_id|e }}</uniqueid>
     {% endfor %}
     {% for genre in credits.genre %}
     <genre>{{ genre|e }}</genre>
     {% endfor %}
-    <tag></tag>
-    <country></country>
     {% for credit in credits.writer %}
     <credits>{{ credit|e }}</credits>
     {% endfor %}
     {% for director in credits.director %}
     <director>{{ director|e }}</director>
     {% endfor %}
-    <premiered>{{ release_date|e }}</premiered> <! yyyymmdd >
+    <premiered>{{ tv_data.release_date }}</premiered> <!-- yyyy-mm-dd -->
     <year>{{ year }}</year>
+    <aired>{{ release_date }}</aired> <!-- yyyy-mm-dd -->
     {% for actor in credits.cast %}
     <actor>
         <name>{{ actor|e }}</name>
@@ -44,4 +39,4 @@
         <order>{{ loop.index }}</order>
     </actor>
     {% endfor %}
-</movie>
+</episodedetails>

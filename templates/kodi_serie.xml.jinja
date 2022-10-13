@@ -3,7 +3,7 @@
     <title>{{ tag_line|e }}</title>
     <showtitle>{{ title|e }}</showtitle>
     <ratings>
-        {% for rating_name, rating_value in metadata['com.synology.TheMovieDb.Tv']['rating']|items %}
+        {% for rating_name, rating_value in (metadata.get('com.synology.TheMovieDb.Tv') or metadata['com.synology.TheMovieDb'])['rating']|items %}
         <rating name="{{ rating_name|e }}" max="10">
             <value>{{ rating_value|e }}</value>
         </rating>
@@ -13,11 +13,11 @@
     <season>{{ tv_data.season|e }}</season>     <!-- Required for multi-episode files only -->
     <episode>{{ tv_data.episode|e }}</episode>  <!-- Required for multi-episode files only -->
     <plot>{{ summary|e }}</plot>
-    {% for poster in metadata['com.synology.TheMovieDb.Tv']['poster'] %}
+    {% for poster in (metadata.get('com.synology.TheMovieDb.Tv') or metadata['com.synology.TheMovieDb'])['poster'] %}
     <thumb spoof="" cache="" aspect="thumb" preview="">{{ poster|e }}</thumb>
     {% endfor %}
     <mpaa>{{ classification|e }}</mpaa>
-    {% for reference_type, reference_id in metadata['com.synology.TheMovieDb.Tv']['reference']|items %}
+    {% for reference_type, reference_id in (metadata.get('com.synology.TheMovieDb.Tv') or metadata['com.synology.TheMovieDb'])['reference']|items %}
     <uniqueid type="{{ reference_type|e }}">{{ reference_id|e }}</uniqueid>
     {% endfor %}
     {% for genre in credits.genre %}

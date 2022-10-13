@@ -2,7 +2,7 @@
 <tvshow>
     <title>{{ title|e }}</title>
     <ratings>
-        {% for rating_name, rating_value in metadata['com.synology.TheMovieDb.Tv']['rating']|items %}
+        {% for rating_name, rating_value in (metadata.get('com.synology.TheMovieDb.Tv') or metadata['com.synology.TheMovieDb'])['rating']|items %}
         <rating name="{{ rating_name|e }}" max="10">
             <value>{{ rating_value|e }}</value>
         </rating>
@@ -10,16 +10,16 @@
     </ratings>
     <userrating>0</userrating>
     <plot>{{ tv_data.summary|e }}</plot>
-    {% for poster in tv_data.metadata['com.synology.TheMovieDb.Tv']['poster'] %}
+    {% for poster in (tv_data.metadata.get('com.synology.TheMovieDb.Tv') or tv_data.metadata['com.synology.TheMovieDb'])['poster'] %}
     <thumb spoof="" cache="" aspect="poster" preview="">{{ poster|e }}</thumb>
     {% endfor %}
     <fanart>
-        {% for backdrop in tv_data.metadata['com.synology.TheMovieDb.Tv']['backdrop'] %}
+        {% for backdrop in (tv_data.metadata.get('com.synology.TheMovieDb.Tv') or tv_data.metadata['com.synology.TheMovieDb'])['backdrop'] %}
         <thumb colors="" preview="">{{ backdrop|e }}</thumb>
         {% endfor %}
     </fanart>
     <mpaa>{{ classification|e }}</mpaa>
-    {% for reference_type, reference_id in metadata['com.synology.TheMovieDb.Tv']['reference']|items %}
+    {% for reference_type, reference_id in (metadata.get('com.synology.TheMovieDb.Tv') or metadata['com.synology.TheMovieDb'])['reference']|items %}
     <uniqueid type="{{ reference_type|e }}">{{ reference_id|e }}</uniqueid>
     {% endfor %}
     {% for genre in credits.genre %}

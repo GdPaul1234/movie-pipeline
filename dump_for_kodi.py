@@ -17,6 +17,13 @@ class KodiDumper:
         self._filepath = filepath
         self._nfo_filepath = nfo_filepath  # should not exist
 
+    def _render_nfo(self, media_type: str, parsed_data, path: Path):
+        template = env.get_template(f'kodi_{media_type}.xml.jinja')
+        output = template.render(parsed_data)
+
+        path.write_text(output, encoding='utf-8')
+        logger.info('"%s" created',  path)
+
     def dump_to_nfo(self):
         logger.info('Dumping "%s" to .nfo', self._filepath)
 
@@ -27,11 +34,12 @@ class KodiDumper:
             logger.info('"%s" is type Other, skipping', self._filepath.name)
             return
 
-        template = env.get_template(f'kodi_{parser.media_type}.xml.jinja')
-        output = template.render(parsed_data)
+        self._render_nfo(parser.media_type, parsed_data, self._nfo_filepath)
 
-        self._nfo_filepath.write_text(output, encoding='utf-8')
-        logger.info('"%s" created',  self._nfo_filepath)
+        if parser.media_type == 'serie':
+            tvshow_nfo_path = self._nfo_filepath.parent.parent.joinpath('tvshow.nfo')
+            if not tvshow_nfo_path.exists():
+                self._render_nfo('tvshow', parsed_data, tvshow_nfo_path)
 
 
 def command(options):

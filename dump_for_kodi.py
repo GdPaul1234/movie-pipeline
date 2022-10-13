@@ -49,9 +49,13 @@ class KodiDumper:
                            parsed_data['poster_data'], parsed_data['poster_md5'], 
                            self._nfo_filepath, auto_path=True)
         if parser.media_type == 'movie':
-            self._render_image('fanart', parsed_data['backdrop']['image'][0],
-                               parsed_data['backdrop']['image_md5'][0], 
-                               self._nfo_filepath, auto_path=True)
+            try:
+                self._render_image('fanart', parsed_data['backdrop']['image'][0],
+                                parsed_data['backdrop']['image_md5'][0], 
+                                self._nfo_filepath, auto_path=True)
+            except KeyError:
+                logger.info('No fanart found in "%s"', self._filepath)
+
         else:
             tvshow_nfo_path = self._nfo_filepath.parent.parent.joinpath('tvshow.nfo')
             if not tvshow_nfo_path.exists():

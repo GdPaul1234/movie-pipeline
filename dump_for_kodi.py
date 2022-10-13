@@ -1,3 +1,4 @@
+import hashlib
 import logging
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
@@ -24,6 +25,15 @@ class KodiDumper:
         path.write_text(output, encoding='utf-8')
         logger.info('"%s" created',  path)
 
+    def _render_image(self, image_type: str, image: bytes, md5: str, path: Path, auto_path=False):
+        image_path = path.with_name(f'{path.stem}-{image_type}.jpg') if auto_path else path
+        if not image_path.exists():
+            image_md5 = hashlib.md5(image).hexdigest()
+            if image_md5 != md5:
+                raise IOError('"%s" would be corrupted, aborted', image_path)
+            image_path.write_bytes(image)
+            logger.info('"%s" written', image_path)
+
     def dump_to_nfo(self):
         logger.info('Dumping "%s" to .nfo', self._filepath)
 
@@ -35,11 +45,23 @@ class KodiDumper:
             return
 
         self._render_nfo(parser.media_type, parsed_data, self._nfo_filepath)
-
-        if parser.media_type == 'serie':
+        self._render_image('poster' if parser.media_type == 'movie' else 'thumb', 
+                           parsed_data['poster_data'], parsed_data['poster_md5'], 
+                           self._nfo_filepath, auto_path=True)
+        if parser.media_type == 'movie':
+            self._render_image('fanart', parsed_data['backdrop']['image'][0],
+                               parsed_data['backdrop']['image_md5'][0], 
+                               self._nfo_filepath, auto_path=True)
+        else:
             tvshow_nfo_path = self._nfo_filepath.parent.parent.joinpath('tvshow.nfo')
             if not tvshow_nfo_path.exists():
                 self._render_nfo('tvshow', parsed_data, tvshow_nfo_path)
+                self._render_image('poster', parsed_data['tv_data']['poster_data'],
+                               parsed_data['tv_data']['poster_md5'], 
+                               tvshow_nfo_path.with_name('poster.jpg'))
+                self._render_image('fanart', parsed_data['tv_data']['backdrop']['image'][0],
+                                parsed_data['tv_data']['backdrop']['image_md5'][0], 
+                                tvshow_nfo_path.with_name('fanart.jpg'))
 
 
 def command(options):

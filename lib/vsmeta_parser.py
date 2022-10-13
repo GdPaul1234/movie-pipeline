@@ -13,20 +13,18 @@ logger = logging.getLogger(__name__)
 
 class ParserHelper:
     @staticmethod
-    def read_md5(scanner: StreamReader, skip=False):
-        oid = -1
-        if skip:
-            oid = scanner.read_uchar()
+    def read_md5(scanner: StreamReader, has_padding=False):
+        if has_padding:
+            scanner.read_uchar()
         md5 = scanner.read_str()
-        return (oid, md5) if skip else md5
+        return md5
 
     @staticmethod
-    def read_image(scanner: StreamReader, skip=False):
-        oid = -1
-        if skip:
-            oid = scanner.read_uchar()
+    def read_image(scanner: StreamReader, has_padding=False):
+        if has_padding:
+            scanner.read_uchar()
         content = base64.b64decode(scanner.read_str())
-        return (oid, content) if skip else content
+        return content
 
     @staticmethod
     def skip_padding(scanner: StreamReader):
@@ -87,8 +85,11 @@ class VsMetaParser:
             }
 
             parsed_data = self.do_parse(scanner, fields)
+            parsed_data = groupby(parsed_data, key=lambda x: x[0])
+            parsed_data = [{key: [p[1] for p in group]}
+                           for key, group in parsed_data]
 
-        return parsed_data
+            return ChainMap(*parsed_data)
 
     def parse_tv_data(self, tv_data_stream: BytesIO):
         logger.debug('Parsing TV data...')
@@ -139,8 +140,8 @@ class VsMetaParser:
                 0x52: ('credits', lambda: self.parse_credits(scanner.read_bytes())),
                 0x5a: ('classification', scanner.read_str),
                 0x60: ('rating', lambda: scanner.read_uchar() / 10),
-                0x8a: ('poster_data', lambda: ParserHelper.read_image(scanner, skip=True)),
-                0x92: ('poster_md5', lambda: ParserHelper.read_md5(scanner, skip=True)),
+                0x8a: ('poster_data', lambda: ParserHelper.read_image(scanner, has_padding=True)),
+                0x92: ('poster_md5', lambda: ParserHelper.read_md5(scanner, has_padding=True)),
                 0x9a: ('tv_data', lambda: self.parse_tv_data(ParserHelper.skip_padding(scanner))),
                 0xaa: ('backdrop', lambda: self.parse_backdrop(ParserHelper.skip_padding(scanner)))
             }

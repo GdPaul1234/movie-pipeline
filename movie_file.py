@@ -4,7 +4,7 @@ import re
 
 
 class LegacyMovieFile:
-    def __init__(self, filepath: str) -> None:
+    def __init__(self, filepath: Path|str) -> None:
         self._filepath = Path(filepath)
         self._full_title = self._filepath.name
 

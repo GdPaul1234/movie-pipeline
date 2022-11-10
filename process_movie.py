@@ -55,10 +55,10 @@ class MovieFileProcessor:
         skip_backup = self._movie_processed_data.get('skip_backup', False)
 
         if skip_backup or backup_folder is None:
-            # Inactivate processed_data movie file
+            # Inactivate processing decision file
             logger.info(
-                'No backup folder found in config or backup disabled for this file'
-                ', inactivate processing file')
+                'No backup folder found in config or backup is disabled for this file'
+                ', inactivate processing decision file')
             self._processed_data_path.rename(self._processed_data_path.with_suffix('.yml.done'))
         else:
             # Move original file to archive
@@ -115,7 +115,7 @@ class MovieFileProcessor:
             logger.debug(err.decode())
 
             self.archive_or_delete_if_serie_original_file(in_file_path)
-            logger.info('Processing "%s" done', dest_filepath)
+            logger.info('"%s" processed sucessfully', dest_filepath)
         except ffmpeg.Error as e:
             logger.exception(e.stderr.decode())
 
@@ -128,7 +128,7 @@ class MovieFileProcessorFolderRunner:
             if p.is_file() and p.suffix == '.yml':
                 MovieFileProcessor(p).process()
 
-        logger.info('Process all movie files in "%s"', folder_path)
+        logger.info('All movie files in "%s" processed', folder_path)
 
 
 def command(options):

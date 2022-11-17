@@ -68,12 +68,12 @@ class KodiDumper:
                                 tvshow_nfo_path.with_name('fanart.jpg'))
 
 
-def command(options):
+def command(options, config):
     logger.debug('args: %s', vars(options))
     filepath = Path(options.file)
 
     def dump_to_nfo(filepath: Path):
-        nfo_filepath = filepath\
+        nfo_filepath = filepath \
             .with_name(filepath.stem.removesuffix(filepath.suffixes[0])) \
             .with_suffix('.nfo')
         if not nfo_filepath.exists():

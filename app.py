@@ -9,15 +9,13 @@ import sys
 
 from config_loader import ConfigLoader
 
-config = ConfigLoader().config
-
-
 def main():
     scriptname = os.path.basename(__file__)
     parser = argparse.ArgumentParser(scriptname)
     levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
 
     parser.add_argument('--log-level', default='INFO', choices=levels)
+    parser.add_argument('--config', default='config.ini', help='Config path')
     subparsers = parser.add_subparsers(dest='command', help='Available commands:')
 
     # move command
@@ -33,8 +31,8 @@ def main():
 
     # scaffold command
     scaffold_cmd = subparsers.add_parser(
-        'scaffold_dir', help='Scaffold movie processed data files from movies')
-    scaffold_cmd.add_argument('dir', metavar='DIR',help='Movies to process directory')
+        'scaffold_dir', help='Scaffold movie edit decision files')
+    scaffold_cmd.add_argument('dir', metavar='DIR',help='Movies to be processed directory')
 
     # archive movies command
     subparsers.add_parser('archive_movies', help='Archive movies regarding options in config file')
@@ -54,6 +52,8 @@ def main():
         print('Unable to find the code for command \'%s\'' % options.command)
         return 1
 
+    config = ConfigLoader(options).config
+
     # Could get fancy here and load configuration from file or dictionary
     fh = logging.handlers.TimedRotatingFileHandler(
         filename=config.get('Logger', 'file_path', fallback='log.txt'))
@@ -65,7 +65,7 @@ def main():
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=(fh, ch,))
 
-    cmd(options)
+    cmd(options, config)
 
 
 if __name__ == '__main__':

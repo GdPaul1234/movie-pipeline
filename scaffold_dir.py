@@ -23,7 +23,7 @@ class MovieProcessedFileGenerator:
             "segments: INSERT_SEGMENTS_HERE\n", encoding='utf-8')
 
 
-def command(options):
+def command(options, config):
     logger.debug('args: %s', vars(options))
     dir_path = Path(options.dir)
 

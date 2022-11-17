@@ -7,7 +7,6 @@ import yaml
 import ffmpeg
 
 from movie_path_destination_finder import MoviePathDestinationFinder
-from config_loader import ConfigLoader
 from movie_file import LegacyMovieFile
 from util import position_in_seconds
 
@@ -23,7 +22,7 @@ processed_data_schema = Schema({
 
 
 class MovieFileProcessor:
-    def __init__(self, movie_processed_data_path: Path) -> None:
+    def __init__(self, movie_processed_data_path: Path, config) -> None:
         """
         Args:
             movie_processed_data_path (Path): path to processed_data file path 
@@ -34,6 +33,7 @@ class MovieFileProcessor:
             movie_processed_data_path.read_text(encoding='utf-8'))
         processed_data_schema.validate(self._movie_processed_data)
         self._segments = []
+        self._config = config
 
     @property
     def segments(self) -> list[tuple[float, float]]:
@@ -51,7 +51,7 @@ class MovieFileProcessor:
              for segment in self.segments])
 
     def archive_or_delete_if_serie_original_file(self, original_file_path: Path):
-        backup_folder = ConfigLoader().config.get('Paths', 'backup_folder', fallback=None)
+        backup_folder = self._config.get('Paths', 'backup_folder', fallback=None)
         skip_backup = self._movie_processed_data.get('skip_backup', False)
 
         if skip_backup or backup_folder is None:
@@ -88,8 +88,7 @@ class MovieFileProcessor:
         logger.debug(f'{nb_audio_streams=}')
 
         dest_filename = self._movie_processed_data['filename']
-        dest_path = MoviePathDestinationFinder(
-            LegacyMovieFile(dest_filename)).resolve_destination()
+        dest_path = MoviePathDestinationFinder(LegacyMovieFile(dest_filename), self._config).resolve_destination()
         dest_filepath = dest_path.joinpath(dest_filename)
 
         command = (
@@ -122,16 +121,16 @@ class MovieFileProcessor:
 
 class MovieFileProcessorFolderRunner:
     @staticmethod
-    def process_directory(folder_path: Path, edl_ext: str):
+    def process_directory(folder_path: Path, edl_ext: str, config):
         logger.info('Processing: "%s"', folder_path)
         for p in folder_path.iterdir():
             if p.is_file() and p.suffix == edl_ext:
-                MovieFileProcessor(p).process()
+                MovieFileProcessor(p, config).process()
 
         logger.info('All movie files in "%s" processed', folder_path)
 
 
-def command(options):
+def command(options, config):
     logger.debug('args: %s', vars(options))
 
     filepath = Path(options.file)
@@ -139,9 +138,9 @@ def command(options):
 
     try:
         if filepath.is_file() and filepath.suffix == edl_ext:
-            MovieFileProcessor(filepath).process()
+            MovieFileProcessor(filepath, config).process()
         elif filepath.is_dir():
-            MovieFileProcessorFolderRunner.process_directory(filepath, edl_ext)
+            MovieFileProcessorFolderRunner.process_directory(filepath, edl_ext, config)
         else:
             raise ValueError('Unknown file type')
     except Exception as e:

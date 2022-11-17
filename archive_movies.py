@@ -4,14 +4,11 @@ from pathlib import Path
 import shutil
 import time
 
-from config_loader import ConfigLoader
-
 logger = logging.getLogger(__name__)
 
 
 class MoviesArchiver:
-    def __init__(self) -> None:
-        config = ConfigLoader().config
+    def __init__(self, config) -> None:
         self._movies_path = Path(config.get('Paths', 'movies_folder'))
         self._base_backup_path = Path(config.get('Paths', 'base_backup_path'))
         self._movies_archive_folder = Path( config.get('Paths', 'movies_archive_folder'))
@@ -60,6 +57,6 @@ class MoviesArchiver:
             logger.info('Operation aborted')
 
 
-def command(options):
+def command(options, config):
     logger.debug('args: %s', vars(options))
-    MoviesArchiver().archive()
+    MoviesArchiver(config).archive()

@@ -122,10 +122,10 @@ class MovieFileProcessor:
 
 class MovieFileProcessorFolderRunner:
     @staticmethod
-    def process_directory(folder_path: Path):
+    def process_directory(folder_path: Path, edl_ext: str):
         logger.info('Processing: "%s"', folder_path)
         for p in folder_path.iterdir():
-            if p.is_file() and p.suffix == '.yml':
+            if p.is_file() and p.suffix == edl_ext:
                 MovieFileProcessor(p).process()
 
         logger.info('All movie files in "%s" processed', folder_path)
@@ -133,13 +133,15 @@ class MovieFileProcessorFolderRunner:
 
 def command(options):
     logger.debug('args: %s', vars(options))
+
     filepath = Path(options.file)
+    edl_ext: str = options.custom_ext
 
     try:
-        if filepath.is_file() and filepath.suffix == '.yml':
+        if filepath.is_file() and filepath.suffix == edl_ext:
             MovieFileProcessor(filepath).process()
         elif filepath.is_dir():
-            MovieFileProcessorFolderRunner.process_directory(filepath)
+            MovieFileProcessorFolderRunner.process_directory(filepath, edl_ext)
         else:
             raise ValueError('Unknown file type')
     except Exception as e:

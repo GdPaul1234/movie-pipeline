@@ -15,7 +15,7 @@ def main():
     levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
 
     parser.add_argument('--log-level', default='INFO', choices=levels)
-    parser.add_argument('--config', default='config.ini', help='Config path')
+    parser.add_argument('--config-path', default='config.ini', help='Config path')
     subparsers = parser.add_subparsers(dest='command', help='Available commands:')
 
     # move command
@@ -27,7 +27,7 @@ def main():
     process_cmd = subparsers.add_parser(
         'process_movie', help='Cut and merge movies to keep only relevant parts')
     process_cmd.add_argument('file', metavar='FILE', help='File or folder to process')
-    process_cmd.add_argument('--custom_ext', help='Extension of processing decision file', default='.yml')
+    process_cmd.add_argument('--custom-ext', help='Extension of processing decision file', default='.yml')
 
     # scaffold command
     scaffold_cmd = subparsers.add_parser(

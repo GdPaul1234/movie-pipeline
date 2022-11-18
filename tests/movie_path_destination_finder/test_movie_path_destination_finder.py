@@ -8,13 +8,12 @@ from movie_path_destination_finder import MoviePathDestinationFinder
 from config_loader import ConfigLoader
 
 input_dir_path = Path(__file__).parent.joinpath('in')
-output_dir_path = Path(__file__).parent.joinpath('out')
-
-output_dir_movie_path = output_dir_path.joinpath('Films')
 video_path = input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')
-
-output_dir_serie_path = output_dir_path.joinpath('Séries')
 serie_path = input_dir_path.joinpath('channel 1_Serie Name S01E23_2022-11-1601-20.mp4')
+
+output_dir_path = Path(__file__).parent.joinpath('out')
+output_dir_movie_path = output_dir_path.joinpath('Films')
+output_dir_serie_path = output_dir_path.joinpath('Séries')
 
 config_path = Path(__file__).parent.joinpath('config.ini')
 options = Namespace()

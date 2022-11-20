@@ -16,7 +16,7 @@ output_dir_movie_path = output_dir_path.joinpath('Films')
 output_dir_serie_path = output_dir_path.joinpath('Séries')
 backup_dir_path = output_dir_path.joinpath('backup')
 
-config_path = Path(__file__).parent.joinpath('config.ini')
+config_path = Path(__file__).parent.joinpath('test_config.ini')
 options = Namespace()
 setattr(options, 'config_path', config_path)
 config = ConfigLoader(options).config

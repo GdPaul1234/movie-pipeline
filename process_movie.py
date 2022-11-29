@@ -147,7 +147,7 @@ class MovieFileProcessorFolderRunner:
             for edl in typing.cast(list[Path], group):
                 new_edl_name = edl.with_suffix(f'.pending_yml_{index}')
                 edl.rename(new_edl_name)
-                logger.info('  acknowledge %s', new_edl_name)
+                logger.info('  %s', new_edl_name)
 
 
     def _execute_processing(self, edl_ext: str):

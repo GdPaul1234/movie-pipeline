@@ -23,13 +23,20 @@ class MovieProcessedFileGenerator:
             "segments: INSERT_SEGMENTS_HERE\n", encoding='utf-8')
 
 
+def scaffold_dir(dir_path: Path):
+    if not dir_path.is_dir():
+        raise ValueError(f'dir_path must be a dir')
+
+    for file in dir_path.glob('*.ts'):
+        if not len(list(file.parent.glob(f'{file.name}.*'))):
+            MovieProcessedFileGenerator(file).generate()
+
+
 def command(options, config):
     logger.debug('args: %s', vars(options))
     dir_path = Path(options.dir)
 
     try:
-        for file in dir_path.iterdir():
-            if file.suffix == '.ts' and not file.with_suffix('.ts.yml').exists():
-                MovieProcessedFileGenerator(file).generate()
+        scaffold_dir(dir_path)
     except Exception as e:
         logger.exception(e)

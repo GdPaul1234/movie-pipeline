@@ -40,7 +40,7 @@ class TestProcessDir(unittest.TestCase):
             segments: 00:00:03.370-00:00:05.960,00:00:10.520-00:00:18.200,00:00:20.320-00:00:25.080,
         '''), encoding='utf-8')
 
-        MovieFileProcessorFolderRunner.process_directory(input_dir_path, '.custom_ext', config)
+        MovieFileProcessorFolderRunner(input_dir_path, '.custom_ext', config).process_directory()
 
         self.assertFalse(serie_path.exists())
         self.assertFalse(edl_serie_path.exists())
@@ -53,7 +53,7 @@ class TestProcessDir(unittest.TestCase):
             segments: 00:00:03.370-00:00:05.960,00:00:10.520-00:00:18.200,00:00:20.320-00:00:25.080,
         '''), encoding='utf-8')
 
-        MovieFileProcessorFolderRunner.process_directory(input_dir_path, '.custom_ext', config)
+        MovieFileProcessorFolderRunner(input_dir_path, '.custom_ext', config).process_directory()
 
         self.assertTrue(video_path.exists())
         self.assertTrue(edl_video_path.exists())

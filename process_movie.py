@@ -119,14 +119,18 @@ class MovieFileProcessor:
 
 
 class MovieFileProcessorFolderRunner:
-    @staticmethod
-    def process_directory(folder_path: Path, edl_ext: str, config):
-        logger.info('Processing: "%s"', folder_path)
-        for p in folder_path.iterdir():
-            if p.is_file() and p.suffix == edl_ext:
-                MovieFileProcessor(p, config).process()
+    def __init__(self, folder_path: Path, edl_ext: str, config) -> None:
+        self._folder_path = folder_path
+        self._edl_ext = edl_ext
+        self._config = config
 
-        logger.info('All movie files in "%s" processed', folder_path)
+    def process_directory(self):
+        logger.info('Processing: "%s"', self._folder_path)
+        for p in self._folder_path.iterdir():
+            if p.is_file() and p.suffix == self._edl_ext:
+                MovieFileProcessor(p, self._config).process()
+
+        logger.info('All movie files in "%s" processed', self._folder_path)
 
 
 def command(options, config):
@@ -139,7 +143,7 @@ def command(options, config):
         if filepath.is_file() and filepath.suffix == edl_ext:
             MovieFileProcessor(filepath, config).process()
         elif filepath.is_dir():
-            MovieFileProcessorFolderRunner.process_directory(filepath, edl_ext, config)
+            MovieFileProcessorFolderRunner(filepath, edl_ext, config).process_directory()
         else:
             raise ValueError('Unknown file type')
     except Exception as e:

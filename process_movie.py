@@ -1,3 +1,4 @@
+import binpacking
 import itertools
 import logging
 import shutil
@@ -123,6 +124,13 @@ class MovieFileProcessorFolderRunner:
         self._folder_path = folder_path
         self._edl_ext = edl_ext
         self._config = config
+
+    def _distribute_fairly_edl(self):
+        return binpacking.to_constant_bin_number(
+            list(self._folder_path.glob(f'*{self._edl_ext}')),
+            N_bin=self._config.getint('Processor', 'nb_process', fallback=1),
+            key=lambda f: f.with_suffix('').stat().st_size
+        )
 
     def process_directory(self):
         logger.info('Processing: "%s"', self._folder_path)

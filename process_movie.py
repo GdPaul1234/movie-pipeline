@@ -1,3 +1,5 @@
+import typing
+import concurrent.futures
 import binpacking
 import itertools
 import logging
@@ -125,18 +127,53 @@ class MovieFileProcessorFolderRunner:
         self._edl_ext = edl_ext
         self._config = config
 
+        self._nb_worker = self._config.getint('Processor', 'nb_worker', fallback=1)
+
     def _distribute_fairly_edl(self):
+        edls = list(self._folder_path.glob(f'*{self._edl_ext}'))
+
+        if len(edls) == 0:
+            return list(itertools.repeat([], times=self._nb_worker))
+
         return binpacking.to_constant_bin_number(
-            list(self._folder_path.glob(f'*{self._edl_ext}')),
-            N_bin=self._config.getint('Processor', 'nb_process', fallback=1),
+            edls,
+            N_bin=self._nb_worker,
             key=lambda f: f.with_suffix('').stat().st_size
         )
 
+    def _prepare_processing(self):
+        for index, group in enumerate(self._distribute_fairly_edl()):
+            # rename distributed edls
+            for edl in typing.cast(list[Path], group):
+                new_edl_name = edl.with_suffix(f'.pending_yml_{index}')
+                edl.rename(new_edl_name)
+                logger.info('  acknowledge %s', new_edl_name)
+
+
+    def _execute_processing(self, edl_ext: str):
+        for edl in self._folder_path.glob(f'*{edl_ext}'):
+            MovieFileProcessor(edl, self._config).process()
+
     def process_directory(self):
         logger.info('Processing: "%s"', self._folder_path)
-        for p in self._folder_path.iterdir():
-            if p.is_file() and p.suffix == self._edl_ext:
-                MovieFileProcessor(p, self._config).process()
+
+        self._prepare_processing()
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self._nb_worker) as executor:
+            future_tasks = {
+                executor.submit(self._execute_processing, edl_ext): edl_ext
+                for edl_ext in map(lambda index: f'.pending_yml_{index}', range(self._nb_worker))
+            }
+
+            for future in concurrent.futures.as_completed(future_tasks):
+                edl_ext = future_tasks[future]
+                try:
+                    future.result() # wait for completion
+                except Exception as e:
+                    logger.error('Exception when processing *%s files: %s', edl_ext, e)
+                    raise e
+                else:
+                    logger.info('Processed all %s edl files', edl_ext)
 
         logger.info('All movie files in "%s" processed', self._folder_path)
 

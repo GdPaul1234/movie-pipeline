@@ -1,13 +1,15 @@
-import typing
 import concurrent.futures
 import binpacking
 import itertools
 import logging
-import shutil
-from schema import Schema, Optional, Regex
 from pathlib import Path
+from rich.progress import track
+from schema import Schema, Optional, Regex
+from typing import cast
 import yaml
 import ffmpeg
+
+from lib.backup_policy_executor import BackupPolicyExecutor, EdlFile
 
 from movie_path_destination_finder import MoviePathDestinationFinder
 from movie_file import LegacyMovieFile
@@ -23,24 +25,26 @@ edl_content_schema = Schema({
     Optional("skip_backup", default=False): bool
 })
 
-
 class MovieFileProcessor:
-    def __init__(self, edl_path: Path, config) -> None:
+    def __init__(self, edl_path: Path, config, *, backup_policy_executor = BackupPolicyExecutor) -> None:
         """
         Args:
             edl_path (Path): path to edit decision list file
                 (naming: {movie file with suffix}.txt)
         """
-        self._edl_path = edl_path
-        self._edl_content = yaml.safe_load(edl_path.read_text(encoding='utf-8'))
-        edl_content_schema.validate(self._edl_content)
+        edl_content = yaml.safe_load(edl_path.read_text(encoding='utf-8'))
+        edl_content = edl_content_schema.validate(edl_content)
+        self._edl_file = EdlFile(edl_path, edl_content)
+
+        self._backup_policy_executor = backup_policy_executor(self._edl_file, config)
+
         self._segments = []
         self._config = config
 
     @property
     def segments(self) -> list[tuple[float, float]]:
         if not len(self._segments):
-            raw_segments: str = self._edl_content['segments']
+            raw_segments: str = self._edl_file.content['segments']
             self._segments = [tuple(map(position_in_seconds, segment.split('-', 2)))
                               for segment in raw_segments.removesuffix(',').split(',')]
         return self._segments
@@ -52,35 +56,8 @@ class MovieFileProcessor:
                 for audio in audio_streams],)
              for segment in self.segments])
 
-    def archive_or_delete_if_serie_original_file(self, original_file_path: Path):
-        backup_folder = self._config.get('Paths', 'backup_folder', fallback=None)
-        skip_backup = self._edl_content.get('skip_backup', False)
-
-        if skip_backup or backup_folder is None:
-            # Inactivate processing decision file
-            logger.info(
-                'No backup folder found in config or backup is disabled for this file'
-                ', inactivate processing decision file')
-            self._edl_path.rename(self._edl_path.with_suffix('.yml.done'))
-        else:
-            # Move original file to archive
-            backup_folder_path = Path(backup_folder)
-            original_movie = LegacyMovieFile(self._edl_content['filename'])
-
-            if original_movie.is_serie:
-                logger.info('%s is serie, deleting it', original_file_path)
-                original_file_path.unlink()
-                self._edl_path.unlink()
-            else:
-                dest_path = backup_folder_path.joinpath(original_movie.title)
-                dest_path.mkdir()
-
-                logger.info('Move "%s" to "%s"', original_file_path, dest_path)
-                shutil.move(original_file_path, dest_path)
-                shutil.move(self._edl_path, dest_path)
-
     def process(self):
-        in_file_path = self._edl_path.with_suffix('')
+        in_file_path = self._edl_file.path.with_suffix('')
         in_file = ffmpeg.input(str(in_file_path))
         probe = ffmpeg.probe(in_file_path)
 
@@ -89,7 +66,7 @@ class MovieFileProcessor:
         nb_audio_streams = len(audio_streams)
         logger.debug(f'{nb_audio_streams=}')
 
-        dest_filename = self._edl_content['filename']
+        dest_filename = self._edl_file.content['filename']
         dest_path = MoviePathDestinationFinder(LegacyMovieFile(dest_filename), self._config).resolve_destination()
         dest_filepath = dest_path.joinpath(dest_filename)
 
@@ -115,7 +92,8 @@ class MovieFileProcessor:
             logger.debug(out.decode())
             logger.debug(err.decode())
 
-            self.archive_or_delete_if_serie_original_file(in_file_path)
+            self._backup_policy_executor.execute(original_file_path=in_file_path)
+
             logger.info('"%s" processed sucessfully', dest_filepath)
         except ffmpeg.Error as e:
             logger.exception(e.stderr.decode())
@@ -144,11 +122,10 @@ class MovieFileProcessorFolderRunner:
     def _prepare_processing(self):
         for index, group in enumerate(self._distribute_fairly_edl()):
             # rename distributed edls
-            for edl in typing.cast(list[Path], group):
+            for edl in cast(list[Path], group):
                 new_edl_name = edl.with_suffix(f'.pending_yml_{index}')
                 edl.rename(new_edl_name)
                 logger.info('  %s', new_edl_name)
-
 
     def _execute_processing(self, edl_ext: str):
         for edl in self._folder_path.glob(f'*{edl_ext}'):
@@ -165,7 +142,7 @@ class MovieFileProcessorFolderRunner:
                 for edl_ext in map(lambda index: f'.pending_yml_{index}', range(self._nb_worker))
             }
 
-            for future in concurrent.futures.as_completed(future_tasks):
+            for future in track(concurrent.futures.as_completed(future_tasks)):
                 edl_ext = future_tasks[future]
                 try:
                     future.result() # wait for completion

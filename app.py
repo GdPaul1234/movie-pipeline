@@ -4,6 +4,7 @@ import argparse
 import importlib
 import logging
 import logging.handlers
+from rich.logging import RichHandler
 import os
 import sys
 
@@ -57,13 +58,12 @@ def main():
     # Could get fancy here and load configuration from file or dictionary
     fh = logging.handlers.TimedRotatingFileHandler(
         filename=config.get('Logger', 'file_path', fallback='log.txt'))
+    fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 
-    ch = logging.StreamHandler()
+    ch = RichHandler(rich_tracebacks=True)
+    ch.setFormatter(logging.Formatter('%(message)s'))
 
-    logging.basicConfig(
-        level=options.log_level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=(fh, ch,))
+    logging.basicConfig(level=options.log_level, handlers=(fh, ch,))
 
     cmd(options, config)
 

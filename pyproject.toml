@@ -13,6 +13,7 @@ ffmpeg-python = "^0.2.0"
 schema = "^0.7.5"
 binpacking = "^1.5.2"
 jinja2 = "^3.1.2"
+rich = "^12.6.0"
 
 
 [build-system]

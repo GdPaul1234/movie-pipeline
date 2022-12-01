@@ -9,6 +9,7 @@ import os
 import sys
 
 from config_loader import ConfigLoader
+from util import ConsoleLoggerFilter
 
 def main():
     scriptname = os.path.basename(__file__)
@@ -62,6 +63,7 @@ def main():
 
     ch = RichHandler(rich_tracebacks=True)
     ch.setFormatter(logging.Formatter('%(message)s'))
+    ch.addFilter(ConsoleLoggerFilter())
 
     logging.basicConfig(level=options.log_level, handlers=(fh, ch,))
 

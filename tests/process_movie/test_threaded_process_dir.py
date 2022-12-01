@@ -1,11 +1,12 @@
 from argparse import Namespace
 from pathlib import Path
+from rich.tree import Tree
 import shutil
 import textwrap
-import time
 import unittest
 
 from config_loader import ConfigLoader
+from lib.ui_factory import ProgressUIFactory
 from process_movie import MovieFileProcessorFolderRunner
 
 input_dir_path = Path(__file__).parent.joinpath('in')
@@ -43,7 +44,8 @@ class TestThreadedProcessDir(unittest.TestCase):
         config.set('Processor', 'nb_worker', '2')
 
     def test_distribute_fairly_edl(self):
-        folder_processor = MovieFileProcessorFolderRunner(input_dir_path, '.yml', config)
+        progress_listener = ProgressUIFactory.create_process_listener()
+        folder_processor = MovieFileProcessorFolderRunner(input_dir_path, '.yml', progress_listener, config)
 
         distributed_edls = folder_processor._distribute_fairly_edl()
         comparable_distributed_elds = [list(map(lambda edl: edl.name, group)) for group in distributed_edls]
@@ -60,9 +62,11 @@ class TestThreadedProcessDir(unittest.TestCase):
         )
 
     def test_prepare_processing(self):
-        folder_processor = MovieFileProcessorFolderRunner(input_dir_path, '.yml', config)
+        progress_listener = ProgressUIFactory.create_process_listener()
+        folder_processor = MovieFileProcessorFolderRunner(input_dir_path, '.yml', progress_listener, config)
 
-        folder_processor._prepare_processing()
+        tree = Tree("EDL to be processed")
+        folder_processor._prepare_processing(tree)
 
         self.assertEqual(
             list(map(lambda f: f.name, input_dir_path.glob('*.pending_yml_?'))),
@@ -74,7 +78,8 @@ class TestThreadedProcessDir(unittest.TestCase):
         )
 
     def test_execute_processing(self):
-        folder_processor = MovieFileProcessorFolderRunner(input_dir_path, '.yml', config)
+        progress_listener = ProgressUIFactory.create_process_listener()
+        folder_processor = MovieFileProcessorFolderRunner(input_dir_path, '.yml', progress_listener, config)
 
         folder_processor.process_directory()
 

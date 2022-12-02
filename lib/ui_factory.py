@@ -11,9 +11,9 @@ class ProgressListener:
     overall_task: TaskID
 
 @contextmanager
-def undeterminate_transient_progress(description: str, progress: Progress):
-    task_id = progress.add_task(description, total=None)
-    yield
+def transient_task_progress(progress: Progress, description: str, total: float | None = None):
+    task_id = progress.add_task(description, total=total)
+    yield task_id
     progress.stop_task(task_id)
     progress.update(task_id, visible=False)
 

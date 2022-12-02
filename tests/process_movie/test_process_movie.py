@@ -45,7 +45,19 @@ class TestProcessMovie(unittest.TestCase):
             movie_processor = MovieFileProcessor(edl_path, progress, config)
 
         expected_segments = [(3.37, 5.96), (10.52, 18.2), (20.32, 25.08)]
-        self.assertEqual(expected_segments, movie_processor.segments)
+        self.assertEqual(expected_segments, movie_processor._segments)
+
+    def test_segments_total_seconds(self):
+        edl_path = video_path.with_suffix('.mp4.yml')
+        edl_path.write_text(textwrap.dedent('''\
+            filename: Movie Name.mp4
+            segments: 00:00:03.370-00:00:05.960,00:00:10.520-00:00:18.200,00:00:20.320-00:00:25.080,
+        '''), encoding='utf-8')
+
+        with Progress() as progress:
+            movie_processor = MovieFileProcessor(edl_path, progress, config)
+
+            self.assertAlmostEqual(15.03, movie_processor._movie_segments.total_seconds)
 
     def test_movie_process(self):
         edl_path = video_path.with_suffix('.mp4.yml')

@@ -13,7 +13,9 @@ import yaml
 import ffmpeg
 
 from lib.backup_policy_executor import BackupPolicyExecutor, EdlFile
-from lib.ui_factory import ProgressUIFactory, ProgressListener, undeterminate_transient_progress
+from lib.ffmpeg_with_progress import ffmpeg_command_with_progress
+from lib.movie_segments import MovieSegments
+from lib.ui_factory import ProgressUIFactory, ProgressListener, transient_task_progress
 
 from movie_path_destination_finder import MoviePathDestinationFinder
 from movie_file import LegacyMovieFile
@@ -51,23 +53,9 @@ class MovieFileProcessor:
         self._progress = progress
         self._backup_policy_executor = backup_policy_executor(self._edl_file, config)
 
-        self._segments = []
+        self._movie_segments = MovieSegments(raw_segments=self._edl_file.content['segments'])
+        self._segments = self._movie_segments.segments
         self._config = config
-
-    @property
-    def segments(self) -> list[tuple[float, float]]:
-        if not len(self._segments):
-            raw_segments: str = self._edl_file.content['segments']
-            self._segments = [tuple(map(position_in_seconds, segment.split('-', 2)))
-                              for segment in raw_segments.removesuffix(',').split(',')]
-        return self._segments
-
-    def _ffmpeg_segments(self, in_file, audio_streams):
-        return itertools.chain.from_iterable(
-            [(in_file.video.filter_('trim', start=segment[0], end=segment[1]).filter_('setpts', 'PTS-STARTPTS'),
-              *[in_file[str(audio['index'])].filter_('atrim', start=segment[0], end=segment[1]).filter_('asetpts', 'PTS-STARTPTS')
-                for audio in audio_streams],)
-             for segment in self.segments])
 
     def process(self):
         in_file_path = self._edl_file.path.with_suffix('')
@@ -85,7 +73,10 @@ class MovieFileProcessor:
 
         command = (
             ffmpeg
-            .concat(*self._ffmpeg_segments(in_file, audio_streams), v=1, a=nb_audio_streams)
+            .concat(
+                *self._movie_segments.to_ffmpeg_concat_segments(in_file, audio_streams),
+                v=1, a=nb_audio_streams
+            )
             .output(
                 str(dest_filepath),
                 vcodec='h264_nvenc',
@@ -98,11 +89,12 @@ class MovieFileProcessor:
             logger.debug(f'{self._segments=}')
             logger.info('Running: %s', command.compile())
 
-            with undeterminate_transient_progress(dest_filename, self._progress):
-                out, err = command.run(cmd=['ffmpeg', '-hwaccel', 'cuda'], capture_stderr=True)
-                logger.debug(err.decode())
+            total_seconds = self._movie_segments.total_seconds
+            with transient_task_progress(self._progress, description=dest_filename, total=total_seconds) as task_id:
+                for item in ffmpeg_command_with_progress(command, cmd=['ffmpeg', '-hwaccel', 'cuda']):
+                    self._progress.update(task_id, completed=position_in_seconds(item['time']))
 
-            with undeterminate_transient_progress(f'Backuping {dest_filename}...', self._progress):
+            with transient_task_progress(self._progress, f'Backuping {dest_filename}...'):
                 self._backup_policy_executor.execute(original_file_path=in_file_path)
 
             logger.info('"%s" processed sucessfully', dest_filepath)
@@ -164,12 +156,12 @@ class MovieFileProcessorFolderRunner:
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=self._nb_worker) as executor:
                 future_tasks = {
-                    executor.submit(self._execute_processing, index, edl_ext): (index, edl_ext)
+                    executor.submit(self._execute_processing, index, edl_ext): edl_ext
                     for index, edl_ext in map(lambda index: (index, f'.pending_yml_{index}'), range(self._nb_worker))
                 }
 
                 for future in concurrent.futures.as_completed(future_tasks):
-                    index, edl_ext = future_tasks[future]
+                    edl_ext = future_tasks[future]
                     try:
                         future.result() # wait for completion
                     except Exception as e:
@@ -177,6 +169,7 @@ class MovieFileProcessorFolderRunner:
                         raise e
                     else:
                         self._progress.overall_progress.advance(self._progress.overall_task)
+                        logger.info('Processed all %s edl files', edl_ext)
 
         logger.info('All movie files in "%s" processed', self._folder_path)
 

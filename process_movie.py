@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 from rich.live import Live
 from rich.tree import Tree
+from rich.progress import Progress
 from rich import print
 from schema import Schema, Optional, Regex
 from typing import cast
@@ -12,7 +13,7 @@ import yaml
 import ffmpeg
 
 from lib.backup_policy_executor import BackupPolicyExecutor, EdlFile
-from lib.ui_factory import ProgressUIFactory, ProgressListener
+from lib.ui_factory import ProgressUIFactory, ProgressListener, undeterminate_transient_progress
 
 from movie_path_destination_finder import MoviePathDestinationFinder
 from movie_file import LegacyMovieFile
@@ -30,7 +31,14 @@ edl_content_schema = Schema({
 
 
 class MovieFileProcessor:
-    def __init__(self, edl_path: Path, config, *, backup_policy_executor = BackupPolicyExecutor) -> None:
+    def __init__(
+        self,
+        edl_path: Path,
+        progress: Progress,
+        config,
+        *,
+        backup_policy_executor=BackupPolicyExecutor
+    ) -> None:
         """
         Args:
             edl_path (Path): path to edit decision list file
@@ -40,6 +48,7 @@ class MovieFileProcessor:
         edl_content = edl_content_schema.validate(edl_content)
         self._edl_file = EdlFile(edl_path, edl_content)
 
+        self._progress = progress
         self._backup_policy_executor = backup_policy_executor(self._edl_file, config)
 
         self._segments = []
@@ -89,14 +98,12 @@ class MovieFileProcessor:
             logger.debug(f'{self._segments=}')
             logger.info('Running: %s', command.compile())
 
-            out, err = command.run(
-                cmd=['ffmpeg', '-hwaccel', 'cuda'],
-                capture_stdout=True, capture_stderr=True)
+            with undeterminate_transient_progress(dest_filename, self._progress):
+                out, err = command.run(cmd=['ffmpeg', '-hwaccel', 'cuda'], capture_stderr=True)
+                logger.debug(err.decode())
 
-            logger.debug(out.decode())
-            logger.debug(err.decode())
-
-            self._backup_policy_executor.execute(original_file_path=in_file_path)
+            with undeterminate_transient_progress(f'Backuping {dest_filename}...', self._progress):
+                self._backup_policy_executor.execute(original_file_path=in_file_path)
 
             logger.info('"%s" processed sucessfully', dest_filepath)
         except ffmpeg.Error as e:
@@ -141,7 +148,7 @@ class MovieFileProcessorFolderRunner:
         task_id = job_progress.add_task(f'{edl_ext}...', total=len(edls))
 
         for edl in edls:
-            MovieFileProcessor(edl, self._config).process()
+            MovieFileProcessor(edl, job_progress, self._config).process()
             job_progress.advance(task_id)
 
     def process_directory(self):
@@ -157,12 +164,12 @@ class MovieFileProcessorFolderRunner:
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=self._nb_worker) as executor:
                 future_tasks = {
-                    executor.submit(self._execute_processing, index, edl_ext): edl_ext
+                    executor.submit(self._execute_processing, index, edl_ext): (index, edl_ext)
                     for index, edl_ext in map(lambda index: (index, f'.pending_yml_{index}'), range(self._nb_worker))
                 }
 
                 for future in concurrent.futures.as_completed(future_tasks):
-                    edl_ext = future_tasks[future]
+                    index, edl_ext = future_tasks[future]
                     try:
                         future.result() # wait for completion
                     except Exception as e:
@@ -170,7 +177,6 @@ class MovieFileProcessorFolderRunner:
                         raise e
                     else:
                         self._progress.overall_progress.advance(self._progress.overall_task)
-                        logger.info('Processed all %s edl files', edl_ext)
 
         logger.info('All movie files in "%s" processed', self._folder_path)
 
@@ -182,12 +188,12 @@ def command(options, config):
     edl_ext: str = options.custom_ext
 
 
-    progress_listener = ProgressUIFactory.create_process_listener()
-
     try:
         if filepath.is_file() and filepath.suffix == edl_ext:
-            MovieFileProcessor(filepath, config).process()
+            progress = Progress()
+            MovieFileProcessor(filepath, progress, config).process()
         elif filepath.is_dir():
+            progress_listener = ProgressUIFactory.create_process_listener()
             MovieFileProcessorFolderRunner(filepath, edl_ext, progress_listener, config).process_directory()
         else:
             raise ValueError('Unknown file type')

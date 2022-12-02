@@ -1,5 +1,6 @@
 from argparse import Namespace
 from pathlib import Path
+from rich.progress import Progress
 import shutil
 import textwrap
 import unittest
@@ -28,7 +29,7 @@ class TestProcessMovie(unittest.TestCase):
         sample_video_path = Path(__file__).parent.parent.joinpath('ressources', 'counter-30s.mp4')
         shutil.copyfile(sample_video_path, video_path)
         shutil.copyfile(sample_video_path, serie_path)
-        
+
         output_dir_movie_path.mkdir(parents=True)
         output_dir_serie_path.mkdir(parents=True)
         backup_dir_path.mkdir()
@@ -39,8 +40,10 @@ class TestProcessMovie(unittest.TestCase):
             filename: Movie Name.mp4
             segments: 00:00:03.370-00:00:05.960,00:00:10.520-00:00:18.200,00:00:20.320-00:00:25.080,
         '''), encoding='utf-8')
-        movie_processor = MovieFileProcessor(edl_path, config)
-        
+
+        with Progress() as progress:
+            movie_processor = MovieFileProcessor(edl_path, progress, config)
+
         expected_segments = [(3.37, 5.96), (10.52, 18.2), (20.32, 25.08)]
         self.assertEqual(expected_segments, movie_processor.segments)
 
@@ -50,9 +53,10 @@ class TestProcessMovie(unittest.TestCase):
             filename: Movie Name.mp4
             segments: 00:00:03.370-00:00:05.960,00:00:10.520-00:00:18.200,00:00:20.320-00:00:25.080,
         '''), encoding='utf-8')
-        movie_processor = MovieFileProcessor(edl_path, config)
 
-        movie_processor.process()
+        with Progress() as progress:
+            movie_processor = MovieFileProcessor(edl_path, progress, config)
+            movie_processor.process()
 
         self.assertFalse(video_path.exists())
         self.assertTrue(output_dir_movie_path.joinpath('Movie Name', 'Movie Name.mp4').exists())
@@ -66,9 +70,10 @@ class TestProcessMovie(unittest.TestCase):
             segments: 00:00:03.370-00:00:05.960,00:00:10.520-00:00:18.200,00:00:20.320-00:00:25.080,
             skip_backup: yes
         '''), encoding='utf-8')
-        movie_processor = MovieFileProcessor(edl_path, config)
 
-        movie_processor.process()
+        with Progress() as progress:
+            movie_processor = MovieFileProcessor(edl_path, progress, config)
+            movie_processor.process()
 
         self.assertTrue(video_path.exists())
         self.assertTrue(edl_path.with_suffix('.yml.done').exists())
@@ -81,9 +86,10 @@ class TestProcessMovie(unittest.TestCase):
             filename: Serie Name S01E23.mp4
             segments: 00:00:03.370-00:00:05.960,00:00:10.520-00:00:18.200,00:00:20.320-00:00:25.080,
         '''), encoding='utf-8')
-        movie_processor = MovieFileProcessor(edl_path, config)
 
-        movie_processor.process()
+        with Progress() as progress:
+            movie_processor = MovieFileProcessor(edl_path, progress, config)
+            movie_processor.process()
 
         self.assertFalse(serie_path.exists())
         self.assertFalse(edl_path.exists())

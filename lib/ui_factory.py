@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from dataclasses import dataclass
 from rich.progress import Progress, TaskID, SpinnerColumn, BarColumn, TextColumn, TaskProgressColumn, TimeRemainingColumn
 from rich.panel import Panel
@@ -8,10 +9,18 @@ class ProgressListener:
     layout: Table
     overall_progress: Progress
     overall_task: TaskID
+
+@contextmanager
+def undeterminate_transient_progress(description: str, progress: Progress):
+    task_id = progress.add_task(description, total=None)
+    yield
+    progress.stop_task(task_id)
+    progress.update(task_id, visible=False)
+
 class ProgressUIFactory:
     @staticmethod
     def create_process_listener():
-        overall_progress = Progress(expand=True)
+        overall_progress = ProgressUIFactory.create_overall_progress()
         overall_task = overall_progress.add_task("All Jobs")
 
         progress_table = Table.grid(expand=True)
@@ -26,7 +35,8 @@ class ProgressUIFactory:
             BarColumn(bar_width=None),
             TaskProgressColumn(),
             TimeRemainingColumn(),
-            expand=True
+            expand=True,
+            transient=True
         )
 
     @staticmethod
@@ -34,9 +44,10 @@ class ProgressUIFactory:
         return Progress(
             "{task.description}",
             SpinnerColumn(),
-            BarColumn(),
+            BarColumn(bar_width=None),
             TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-            expand=True
+            expand=True,
+            transient=True
         )
 
     @staticmethod

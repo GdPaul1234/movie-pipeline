@@ -1,6 +1,6 @@
 import unittest
 
-from movie_file import LegacyMovieFile
+from models.movie_file import LegacyMovieFile
 
 class MovieFileTest(unittest.TestCase):
     def test_movie_isserie(self):

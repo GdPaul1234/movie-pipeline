@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-from movie_file import LegacyMovieFile
+from models.movie_file import LegacyMovieFile
 
 
 class MoviePathDestinationFinder:

@@ -7,7 +7,7 @@ import unittest
 
 from config_loader import ConfigLoader
 from lib.ui_factory import ProgressUIFactory
-from process_movie import MovieFileProcessorFolderRunner
+from commands.process_movie import MovieFileProcessorFolderRunner
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 

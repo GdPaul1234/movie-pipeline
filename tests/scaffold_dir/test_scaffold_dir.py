@@ -2,7 +2,7 @@ import shutil
 import unittest
 from pathlib import Path
 
-from scaffold_dir import MovieProcessedFileGenerator, scaffold_dir
+from commands.scaffold_dir import MovieProcessedFileGenerator, scaffold_dir
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 video_path = input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')

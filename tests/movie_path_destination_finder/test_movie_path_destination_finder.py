@@ -3,8 +3,8 @@ import shutil
 import unittest
 from pathlib import Path
 
-from movie_file import LegacyMovieFile
-from movie_path_destination_finder import MoviePathDestinationFinder
+from models.movie_file import LegacyMovieFile
+from lib.movie_path_destination_finder import MoviePathDestinationFinder
 from config_loader import ConfigLoader
 
 input_dir_path = Path(__file__).parent.joinpath('in')

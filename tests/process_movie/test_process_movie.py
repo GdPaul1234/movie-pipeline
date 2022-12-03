@@ -6,7 +6,7 @@ import textwrap
 import unittest
 
 from config_loader import ConfigLoader
-from process_movie import MovieFileProcessor
+from commands.process_movie import MovieFileProcessor
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 video_path = input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')

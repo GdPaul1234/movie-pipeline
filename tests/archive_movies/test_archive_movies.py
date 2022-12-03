@@ -7,7 +7,7 @@ import shutil
 import unittest
 from unittest.mock import patch
 
-from archive_movies import MoviesArchiver
+from commands.archive_movies import MoviesArchiver
 from config_loader import ConfigLoader
 
 output_dir_path = Path(__file__).parent.joinpath('out')
@@ -46,7 +46,7 @@ class ArchiveMoviesTest(unittest.TestCase):
         video_not_to_backup_archive_path = pvr_movie_backup_dir_path.joinpath('Movie Name')
         video_not_to_backup_archive_path.mkdir()
         shutil.copy2(video_not_to_backup_path, video_not_to_backup_archive_path)
-        
+
         video_to_backup_archive_path = pvr_movie_backup_dir_path.joinpath('Old Movie Name')
         video_to_backup_archive_path.mkdir()
         shutil.copy2(video_to_backup_path, video_to_backup_archive_path)
@@ -67,7 +67,7 @@ class ArchiveMoviesTest(unittest.TestCase):
 
         self.assertEqual([], list(archive_movie_dir_path.iterdir()))
 
-        
+
     def test_archive_confirm(self):
         movie_archiver = MoviesArchiver(config)
 

@@ -1,8 +1,8 @@
 import logging
 from pathlib import Path
 
-from movie_file import LegacyMovieFile
-from movie_path_destination_finder import MoviePathDestinationFinder
+from models.movie_file import LegacyMovieFile
+from lib.movie_path_destination_finder import MoviePathDestinationFinder
 
 logger = logging.getLogger(__name__)
 

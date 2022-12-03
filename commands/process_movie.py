@@ -14,11 +14,11 @@ import ffmpeg
 
 from lib.backup_policy_executor import BackupPolicyExecutor, EdlFile
 from lib.ffmpeg_with_progress import ffmpeg_command_with_progress
-from lib.movie_segments import MovieSegments
+from models.movie_segments import MovieSegments
 from lib.ui_factory import ProgressUIFactory, ProgressListener, transient_task_progress
 
-from movie_path_destination_finder import MoviePathDestinationFinder
-from movie_file import LegacyMovieFile
+from lib.movie_path_destination_finder import MoviePathDestinationFinder
+from models.movie_file import LegacyMovieFile
 from util import position_in_seconds
 
 logger = logging.getLogger(__name__)

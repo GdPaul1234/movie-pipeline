@@ -4,7 +4,7 @@ import logging
 import shutil
 from pathlib import Path
 
-from movie_file import LegacyMovieFile
+from models.movie_file import LegacyMovieFile
 
 logger = logging.getLogger(__name__)
 

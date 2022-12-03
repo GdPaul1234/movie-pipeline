@@ -142,6 +142,7 @@ class MovieFileProcessorFolderRunner:
         for edl in edls:
             MovieFileProcessor(edl, job_progress, self._config).process()
             job_progress.advance(task_id)
+            self._progress.overall_progress.advance(self._progress.overall_task, advance=1/self._nb_worker)
 
     def process_directory(self):
         logger.info('Processing: "%s"', self._folder_path)
@@ -150,11 +151,12 @@ class MovieFileProcessorFolderRunner:
         self._prepare_processing(tree_logger=tree)
         print(tree)
 
-        with Live(self._progress.layout):
+        with Live(self._progress.layout, refresh_per_second=10):
             self._progress.overall_progress.update(self._progress.overall_task, total=self._nb_worker)
             ProgressUIFactory.create_job_panel_row_from_job_progress(self._progress.layout, self._jobs_progresses)
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=self._nb_worker) as executor:
+                nb_completed_tasks = 0
                 future_tasks = {
                     executor.submit(self._execute_processing, index, edl_ext): edl_ext
                     for index, edl_ext in map(lambda index: (index, f'.pending_yml_{index}'), range(self._nb_worker))
@@ -168,7 +170,8 @@ class MovieFileProcessorFolderRunner:
                         logger.error('Exception when processing *%s files: %s', edl_ext, e)
                         raise e
                     else:
-                        self._progress.overall_progress.advance(self._progress.overall_task)
+                        nb_completed_tasks += 1
+                        self._progress.overall_progress.update(self._progress.overall_task, completed=nb_completed_tasks)
                         logger.info('Processed all %s edl files', edl_ext)
 
         logger.info('All movie files in "%s" processed', self._folder_path)

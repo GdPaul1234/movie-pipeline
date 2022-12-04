@@ -49,7 +49,13 @@ class DirScaffolder:
 
         for file in self._dir_path.glob('*.ts'):
             if not len(list(file.parent.glob(f'{file.name}.*'))):
-                channel = cast(re.Match[str], channel_pattern.search(file.stem)).group(1)
+                matches = channel_pattern.search(file.stem)
+
+                if not matches:
+                    logger.warning('Skipping "%s" because its filename does not match the required pattern', file)
+                    continue
+
+                channel = matches.group(1)
                 title_strategy_name = self._titles_strategies.get(channel) or 'NaiveTitleExtractor'
                 title_strategy = available_title_strategies[title_strategy_name]
 

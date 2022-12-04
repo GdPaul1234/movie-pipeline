@@ -14,5 +14,5 @@ def position_in_seconds(time: str) -> float:
 
 class ConsoleLoggerFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        return  record.name not in ['process_movie', 'lib.backup_policy_executor'] \
-            or (record.name == 'process_movie' and record.levelno > logging.INFO)
+        return  record.name not in ['commands.process_movie', 'lib.backup_policy_executor'] \
+            or record.levelno > logging.INFO

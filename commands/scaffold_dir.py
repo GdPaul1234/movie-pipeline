@@ -1,21 +1,25 @@
 import logging
 from pathlib import Path
 import re
+from typing import cast
+import yaml
+
+from lib.title_extractor import NaiveTitleExtractor
 
 logger = logging.getLogger(__name__)
 
 
 class MovieProcessedFileGenerator:
-    def __init__(self, movie_file: Path) -> None:
-        self._movie_file = movie_file
+    def __init__(self, movie_file_path: Path, title_extractor = NaiveTitleExtractor) -> None:
+        self._movie_file_path = movie_file_path
+        self._title_extractor = title_extractor
 
     def extract_title(self) -> str:
-        matches = re.search(r"_([\w&àéèï'!., ()-]+)_", self._movie_file.stem)
-        return matches.group(1)
+        return self._title_extractor.extract_title(self._movie_file_path)
 
     def generate(self):
-        movie_file_suffix = self._movie_file.suffix
-        processed_file = self._movie_file.with_suffix(f'{movie_file_suffix}.yml.txt')
+        movie_file_suffix = self._movie_file_path.suffix
+        processed_file = self._movie_file_path.with_suffix(f'{movie_file_suffix}.yml.txt')
 
         logger.info('Generate "%s"', processed_file)
         processed_file.write_text(
@@ -23,13 +27,33 @@ class MovieProcessedFileGenerator:
             "segments: INSERT_SEGMENTS_HERE\n", encoding='utf-8')
 
 
-def scaffold_dir(dir_path: Path):
-    if not dir_path.is_dir():
-        raise ValueError(f'dir_path must be a dir')
+channel_pattern = re.compile(r'^([^_]+)_')
+available_title_strategies = { 'NaiveTitleExtractor': NaiveTitleExtractor }
 
-    for file in dir_path.glob('*.ts'):
-        if not len(list(file.parent.glob(f'{file.name}.*'))):
-            MovieProcessedFileGenerator(file).generate()
+class DirScaffolder:
+    def __init__(self, dir_path: Path, config) -> None:
+        self._dir_path = dir_path
+        self._config = config
+
+        title_strategies_path = Path(config.get('Paths', 'title_strategies', fallback='invalid path'))
+
+        if title_strategies_path.exists():
+            self._titles_strategies = yaml.safe_load(title_strategies_path.read_text('utf-8'))
+            # TODO: validate title strategies schema
+        else:
+            self._titles_strategies = {}
+
+    def scaffold_dir(self):
+        if not self._dir_path.is_dir():
+            raise ValueError(f'dir_path must be a dir')
+
+        for file in self._dir_path.glob('*.ts'):
+            if not len(list(file.parent.glob(f'{file.name}.*'))):
+                channel = cast(re.Match[str], channel_pattern.search(file.stem)).group(1)
+                title_strategy_name = self._titles_strategies.get(channel) or 'NaiveTitleExtractor'
+                title_strategy = available_title_strategies[title_strategy_name]
+
+                MovieProcessedFileGenerator(file, title_strategy).generate()
 
 
 def command(options, config):
@@ -37,6 +61,6 @@ def command(options, config):
     dir_path = Path(options.dir)
 
     try:
-        scaffold_dir(dir_path)
+        DirScaffolder(dir_path, config).scaffold_dir()
     except Exception as e:
         logger.exception(e)

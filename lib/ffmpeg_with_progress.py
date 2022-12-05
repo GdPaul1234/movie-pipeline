@@ -1,9 +1,7 @@
 import logging
 import re
-from subprocess import Popen
 import subprocess
 from typing import IO, cast, TypedDict
-import ffmpeg
 
 logger = logging.getLogger(__name__)
 

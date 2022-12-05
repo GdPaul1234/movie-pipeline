@@ -1,7 +1,6 @@
 import logging
 from pathlib import Path
 import re
-from typing import cast
 import yaml
 
 from lib.title_extractor import NaiveTitleExtractor

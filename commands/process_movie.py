@@ -8,7 +8,7 @@ from rich.tree import Tree
 from rich.progress import Progress
 from rich import print
 from schema import Schema, Optional, Regex
-from typing import IO, cast
+from typing import cast
 import yaml
 import ffmpeg
 

@@ -8,7 +8,7 @@ from rich.tree import Tree
 from rich.progress import Progress
 from rich import print
 from schema import Schema, Optional, Regex
-from typing import cast
+from typing import IO, cast
 import yaml
 import ffmpeg
 
@@ -92,14 +92,15 @@ class MovieFileProcessor:
             total_seconds = self._movie_segments.total_seconds
             with transient_task_progress(self._progress, description=dest_filename, total=total_seconds) as task_id:
                 for item in ffmpeg_command_with_progress(command, cmd=['ffmpeg', '-hwaccel', 'cuda']):
-                    self._progress.update(task_id, completed=position_in_seconds(item['time']))
+                    if item.get('time'):
+                        self._progress.update(task_id, completed=position_in_seconds(item['time']))
 
             with transient_task_progress(self._progress, f'Backuping {dest_filename}...'):
                 self._backup_policy_executor.execute(original_file_path=in_file_path)
 
             logger.info('"%s" processed sucessfully', dest_filepath)
         except ffmpeg.Error as e:
-            logger.exception(e.stderr.decode())
+            logger.exception(e.stderr)
 
 
 class MovieFileProcessorFolderRunner:

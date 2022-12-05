@@ -1,7 +1,11 @@
+import logging
 import re
 from subprocess import Popen
+import subprocess
 from typing import IO, cast, TypedDict
+import ffmpeg
 
+logger = logging.getLogger(__name__)
 
 # reference: https://github.com/jonghwanhyeon/python-ffmpeg/blob/main/ffmpeg/utils.py#L12-L14
 progress_pattern = re.compile(
@@ -16,15 +20,17 @@ class ProgressItem(TypedDict):
     speed: str
 
 
-def ffmpeg_command_with_progress(command, **args):
-    with cast(Popen[bytes], command.run_async(**args, pipe_stderr=True)) as process:
+def ffmpeg_command_with_progress(command, cmd=['ffmpeg'], **args):
+    with subprocess.Popen(command.compile(cmd=cmd), **args, text= True, stderr=subprocess.PIPE) as process:
         while True:
-            line = cast(IO[bytes], process.stderr).readline()
+            line = cast(IO[str], process.stderr).readline().strip()
 
             if process.poll() is not None:
                 break
 
             if line:
+                logger.debug(line)
+
                 if items := {key: value
-                            for key, value in progress_pattern.findall(line.strip().decode()) if value != 'N/A'}:
+                            for key, value in progress_pattern.findall(line) if value != 'N/A'}:
                     yield cast(ProgressItem, items)

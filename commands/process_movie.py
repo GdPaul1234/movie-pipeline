@@ -7,6 +7,7 @@ from rich.live import Live
 from rich.tree import Tree
 from rich.progress import Progress
 from rich import print
+from collections import deque
 from schema import Schema, Optional, Regex
 from typing import cast
 import yaml
@@ -58,6 +59,9 @@ class MovieFileProcessor:
         self._config = config
 
     def process(self):
+        deque(self.process_with_progress(), maxlen=0)
+
+    def process_with_progress(self):
         in_file_path = self._edl_file.path.with_suffix('')
         in_file = ffmpeg.input(str(in_file_path))
         probe = ffmpeg.probe(in_file_path)
@@ -93,10 +97,14 @@ class MovieFileProcessor:
             with transient_task_progress(self._progress, description=dest_filename, total=total_seconds) as task_id:
                 for item in ffmpeg_command_with_progress(command, cmd=['ffmpeg', '-hwaccel', 'cuda']):
                     if item.get('time'):
-                        self._progress.update(task_id, completed=position_in_seconds(item['time']))
+                        processed_time = position_in_seconds(item['time'])
+                        self._progress.update(task_id, completed=processed_time)
+                        yield 0.8 * (processed_time / total_seconds)
 
             with transient_task_progress(self._progress, f'Backuping {dest_filename}...'):
                 self._backup_policy_executor.execute(original_file_path=in_file_path)
+
+            yield 1.0
 
             logger.info('"%s" processed sucessfully', dest_filepath)
         except ffmpeg.Error as e:
@@ -141,9 +149,9 @@ class MovieFileProcessorFolderRunner:
         task_id = job_progress.add_task(f'{edl_ext}...', total=len(edls))
 
         for edl in sorted(edls, key=lambda edl: edl.stat().st_size, reverse=True):
-            MovieFileProcessor(edl, job_progress, self._config).process()
-            job_progress.advance(task_id)
-            self._progress.overall_progress.advance(self._progress.overall_task, advance=1/self._nb_worker)
+            for progress in MovieFileProcessor(edl, job_progress, self._config).process_with_progress():
+                job_progress.advance(task_id, advance=progress/len(edls))
+                self._progress.overall_progress.advance(self._progress.overall_task, advance=progress/self._nb_worker)
 
     def process_directory(self):
         logger.info('Processing: "%s"', self._folder_path)
@@ -188,7 +196,7 @@ def command(options, config):
     try:
         if filepath.is_file() and filepath.suffix == edl_ext:
             progress = Progress()
-            MovieFileProcessor(filepath, progress, config).process()
+            MovieFileProcessor(filepath, progress, config).process_with_progress()
         elif filepath.is_dir():
             progress_listener = ProgressUIFactory.create_process_listener()
             MovieFileProcessorFolderRunner(filepath, edl_ext, progress_listener, config).process_directory()

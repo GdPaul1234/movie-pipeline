@@ -4,7 +4,7 @@ import json
 import unittest
 
 from config_loader import ConfigLoader
-from lib.title_extractor import NaiveTitleExtractor, SubtitleTitleExpanderExtractor
+from lib.title_extractor import NaiveTitleExtractor, SerieSubTitleAwareTitleExtractor, SubtitleTitleExpanderExtractor
 
 movie_metadata_path = Path(__file__).parent.joinpath('Channel 1_Movie Name_2022-12-05-2203-20.ts.metadata.json')
 serie_metadata_path = Path(__file__).parent.joinpath("Channel 1_Serie Name. 'Title..._2022-12-05-2203-20.ts.metadata.json")
@@ -56,4 +56,21 @@ class TestTitleExtractor(unittest.TestCase):
             self.assertEqual("Serie Name__Title overflow!", extracted_title)
         finally:
             serie_metadata_path.unlink()
+            serie_file_path.unlink()
+
+    def test_serie_description_aware_title_extractor(self):
+        test_serie_metadata_path = serie_metadata_path.with_name('Channel 1_Serie Name_2022-12-05-2203-20.ts.metadata.json')
+        test_serie_metadata_path.write_text(json.dumps({
+            "title": "Serie Name",
+            "sub_title": "Serie Name : Episode Name. Série policière. 2022. Saison 1. 16/26.",
+            "description": ""
+        }, indent=2))
+        serie_file_path = test_serie_metadata_path.with_name(test_serie_metadata_path.name.removesuffix('.metadata.json'))
+        serie_file_path.touch()
+
+        try:
+            extracted_title = SerieSubTitleAwareTitleExtractor.extract_title(serie_file_path)
+            self.assertEqual("Serie Name S01E16", extracted_title)
+        finally:
+            test_serie_metadata_path.unlink()
             serie_file_path.unlink()

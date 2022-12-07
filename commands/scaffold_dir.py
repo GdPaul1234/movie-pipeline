@@ -47,7 +47,7 @@ class DirScaffolder:
             raise ValueError(f'dir_path must be a dir')
 
         for file in self._dir_path.glob('*.ts'):
-            if not len(list(file.parent.glob(f'{file.name}.*'))):
+            if not len(list(file.parent.glob(f'{file.name}.*yml*'))):
                 matches = channel_pattern.search(file.stem)
 
                 if not matches:

@@ -148,9 +148,12 @@ class MovieFileProcessorFolderRunner:
         job_progress = self._jobs_progresses[worker_id]
         task_id = job_progress.add_task(f'{edl_ext}...', total=len(edls))
 
+        nb_completing_task = 0
+
         for edl in sorted(edls, key=lambda edl: edl.stat().st_size, reverse=True):
+            nb_completing_task += 1
             for progress in MovieFileProcessor(edl, job_progress, self._config).process_with_progress():
-                job_progress.advance(task_id, advance=progress/len(edls))
+                job_progress.update(task_id, completed=progress*nb_completing_task)
                 self._progress.overall_progress.advance(self._progress.overall_task, advance=progress/self._nb_worker)
 
     def process_directory(self):

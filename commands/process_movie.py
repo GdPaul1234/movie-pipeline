@@ -14,7 +14,7 @@ import yaml
 import ffmpeg
 
 from lib.backup_policy_executor import BackupPolicyExecutor, EdlFile
-from lib.ffmpeg_with_progress import ffmpeg_command_with_progress
+from lib.ffmpeg_with_progress import diff_tracking, ffmpeg_command_with_progress
 from models.movie_segments import MovieSegments
 from lib.ui_factory import ProgressUIFactory, ProgressListener, transient_task_progress
 
@@ -109,6 +109,7 @@ class MovieFileProcessor:
             logger.info('"%s" processed sucessfully', dest_filepath)
         except ffmpeg.Error as e:
             logger.exception(e.stderr)
+            raise e
 
 
 class MovieFileProcessorFolderRunner:
@@ -148,13 +149,13 @@ class MovieFileProcessorFolderRunner:
         job_progress = self._jobs_progresses[worker_id]
         task_id = job_progress.add_task(f'{edl_ext}...', total=len(edls))
 
-        nb_completing_task = 0
-
         for edl in sorted(edls, key=lambda edl: edl.stat().st_size, reverse=True):
-            nb_completing_task += 1
-            for progress in MovieFileProcessor(edl, job_progress, self._config).process_with_progress():
-                job_progress.update(task_id, completed=progress*nb_completing_task)
-                self._progress.overall_progress.advance(self._progress.overall_task, advance=progress/self._nb_worker)
+            prev_edl_progress = [0.] # mutable!
+
+            for edl_progress in MovieFileProcessor(edl, job_progress, self._config).process_with_progress():
+                with diff_tracking(prev_edl_progress, edl_progress) as diff_edl_progress:
+                    job_progress.advance(task_id, advance=diff_edl_progress)
+                    self._progress.overall_progress.advance(self._progress.overall_task, advance=diff_edl_progress/len(edls))
 
     def process_directory(self):
         logger.info('Processing: "%s"', self._folder_path)
@@ -180,7 +181,6 @@ class MovieFileProcessorFolderRunner:
                         future.result() # wait for completion
                     except Exception as e:
                         logger.error('Exception when processing *%s files: %s', edl_ext, e)
-                        raise e
                     else:
                         nb_completed_tasks += 1
                         self._progress.overall_progress.update(self._progress.overall_task, completed=nb_completed_tasks)

@@ -1,7 +1,10 @@
+from contextlib import contextmanager
+from dataclasses import dataclass
+from typing import IO, cast, TypedDict
 import logging
 import re
 import subprocess
-from typing import IO, cast, TypedDict
+import ffmpeg
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +26,9 @@ def ffmpeg_command_with_progress(command, cmd=['ffmpeg'], **args):
         while True:
             line = cast(IO[str], process.stderr).readline().strip()
 
-            if process.poll() is not None:
+            if (retcode := process.poll()) is not None:
+                if retcode != 0:
+                    raise ffmpeg.Error('ffmpeg', None, line)
                 break
 
             if line:
@@ -32,3 +37,11 @@ def ffmpeg_command_with_progress(command, cmd=['ffmpeg'], **args):
                 if items := {key: value
                             for key, value in progress_pattern.findall(line) if value != 'N/A'}:
                     yield cast(ProgressItem, items)
+
+
+@contextmanager
+def diff_tracking(mut_prev_value: list[float], current_value: float):
+    prev_value, = mut_prev_value
+    yield current_value - prev_value
+    mut_prev_value[0] = current_value
+

@@ -34,8 +34,8 @@ class BackupPolicyExecutor:
         dest_path.mkdir()
 
         logger.info('Move "%s" to "%s"', original_movie.file_path, dest_path)
-        shutil.move(original_movie.file_path, dest_path)
-        shutil.move(self._edl_file.path, dest_path)
+        for file in original_movie.file_path.parent.glob(f'{original_movie.file_path.name}*'):
+            shutil.move(file, dest_path)
 
     def _delete_original_serie(self, original_movie: OriginalMovie):
         """Delete original serie due to Backup Policy
@@ -44,8 +44,8 @@ class BackupPolicyExecutor:
             original_movie (OriginalMovie): original serie to delete
         """
         logger.info('%s is serie, deleting it', original_movie.file_path)
-        original_movie.file_path.unlink()
-        self._edl_file.path.unlink()
+        for file in original_movie.file_path.parent.glob(f'{original_movie.file_path.name}*'):
+            file.unlink()
 
     def _skip_archive(self):
         """ Inactivate processing decision file

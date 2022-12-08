@@ -76,7 +76,7 @@ class TestTitleExtractor(unittest.TestCase):
     def test_serie_title_aware_title_extractor(self):
         test_serie_metadata_path = serie_metadata_path.with_name('Channel 1_Serie Name_2022-12-05-2203-20.ts.metadata.json')
         content = json.dumps({
-            "title": "Serie Name (2/3)",
+            "title": "Serie Name (2-3)",
             "sub_title": "",
             "description": "Série documentaire (France, 2022, 52 min) Description",
         }, indent=2)

@@ -88,5 +88,5 @@ class SerieSubTitleAwareTitleExtractor:
 
 
 class SerieTitleAwareTitleExtractor(SerieSubTitleAwareTitleExtractor):
-    episode_extractor_params = ('title', re.compile(r'(\d+)/\d+'))
+    episode_extractor_params = ('title', re.compile(r'(\d+)-\d+'))
     season_extractor_params = ('description', re.compile(r'Saison (\d+)'))

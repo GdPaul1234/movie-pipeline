@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 import yaml
 
-from lib.title_extractor import NaiveTitleExtractor
+from lib.title_extractor import NaiveTitleExtractor, SerieSubTitleAwareTitleExtractor, SerieTitleAwareTitleExtractor, SubtitleTitleExpanderExtractor
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,12 @@ class MovieProcessedFileGenerator:
 
 
 channel_pattern = re.compile(r'^([^_]+)_')
-available_title_strategies = { 'NaiveTitleExtractor': NaiveTitleExtractor }
+available_title_strategies = {
+    'NaiveTitleExtractor': NaiveTitleExtractor,
+    'SubtitleTitleExpanderExtractor': SubtitleTitleExpanderExtractor,
+    'SerieSubTitleAwareTitleExtractor': SerieSubTitleAwareTitleExtractor,
+    'SerieTitleAwareTitleExtractor': SerieTitleAwareTitleExtractor
+}
 
 class DirScaffolder:
     def __init__(self, dir_path: Path, config) -> None:

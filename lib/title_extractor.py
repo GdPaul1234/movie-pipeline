@@ -73,16 +73,20 @@ class SerieSubTitleAwareTitleExtractor:
     episode_extractor_params = ('sub_title', re.compile(r'(\d+)/\d+'))
     season_extractor_params = ('sub_title', re.compile(r'Saison (\d+)'))
 
-    @staticmethod
-    def extract_title(movie_file_path: Path) -> str:
+    @classmethod
+    def extract_title(cls, movie_file_path: Path) -> str:
         metadata = load_metadata(movie_file_path)
         base_title = NaiveTitleExtractor.extract_title(movie_file_path) # TODO: use the cleaned version
 
         if not metadata or not is_serie_from_supplied_value(metadata):
             return base_title
 
-        episode = extract_serie_field(metadata, __class__.episode_extractor_params)
-        season = extract_serie_field(metadata, __class__.season_extractor_params)
+        episode = extract_serie_field(metadata, cls.episode_extractor_params)
+        season = extract_serie_field(metadata, cls.season_extractor_params)
         season = '01' if season == 'xx' else season
         return f'{base_title} S{season}E{episode}'
 
+
+class SerieTitleAwareTitleExtractor(SerieSubTitleAwareTitleExtractor):
+    episode_extractor_params = ('title', re.compile(r'(\d+)/\d+'))
+    season_extractor_params = ('description', re.compile(r'Saison (\d+)'))

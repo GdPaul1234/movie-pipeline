@@ -1,15 +1,23 @@
+import errno
 import logging
+import os
 from pathlib import Path
 import re
 import yaml
 
-from lib.title_extractor import NaiveTitleExtractor, SerieSubTitleAwareTitleExtractor, SerieTitleAwareTitleExtractor, SubtitleTitleExpanderExtractor
+from lib.title_cleaner import TitleCleaner
+from lib.title_extractor import (
+    NaiveTitleExtractor,
+    SerieSubTitleAwareTitleExtractor,
+    SerieTitleAwareTitleExtractor,
+    SubtitleTitleExpanderExtractor
+)
 
 logger = logging.getLogger(__name__)
 
 
 class MovieProcessedFileGenerator:
-    def __init__(self, movie_file_path: Path, title_extractor = NaiveTitleExtractor) -> None:
+    def __init__(self, movie_file_path: Path, title_extractor: NaiveTitleExtractor) -> None:
         self._movie_file_path = movie_file_path
         self._title_extractor = title_extractor
 
@@ -47,6 +55,12 @@ class DirScaffolder:
         else:
             self._titles_strategies = {}
 
+        if (blacklist_path := Path(config.get('Paths', 'title_re_blacklist'))).exists():
+            self._title_cleaner = TitleCleaner(blacklist_path)
+        else:
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(blacklist_path))
+
+
     def scaffold_dir(self):
         if not self._dir_path.is_dir():
             raise ValueError(f'dir_path must be a dir')
@@ -61,7 +75,7 @@ class DirScaffolder:
 
                 channel = matches.group(1)
                 title_strategy_name = self._titles_strategies.get(channel) or 'NaiveTitleExtractor'
-                title_strategy = available_title_strategies[title_strategy_name]
+                title_strategy = available_title_strategies[title_strategy_name](self._title_cleaner)
 
                 MovieProcessedFileGenerator(file, title_strategy).generate()
 

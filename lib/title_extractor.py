@@ -4,6 +4,8 @@ from typing import cast
 import json
 import re
 
+from lib.title_cleaner import TitleCleaner
+
 title_pattern = re.compile(r"_([\w&àéèï'!., ()-]+)_")
 forbidden_char_pattern = re.compile(r'[\/:*?<>|"]')
 
@@ -42,22 +44,25 @@ def extract_serie_field(metadata, extractor_params: ExtractorParams):
 
 
 class NaiveTitleExtractor:
-    @staticmethod
-    def extract_title(movie_file_path: Path) -> str:
-        matches = title_pattern.search(movie_file_path.stem)
-        return cast(re.Match[str], matches).group(1)
+    def __init__(self, title_cleaner: TitleCleaner) -> None:
+        self._cleaner = title_cleaner
+
+    def extract_title(self, movie_file_path: Path) -> str:
+        if matches := title_pattern.search(movie_file_path.stem):
+            return self._cleaner.clean_title(matches.group(1))
+        else:
+            raise ValueError('Inappropriate file path provided: not following movie name convention')
 
 
-class SubtitleTitleExpanderExtractor:
+class SubtitleTitleExpanderExtractor(NaiveTitleExtractor):
     title_pattern = re.compile(r"([^.]+)\.")
     episode_pattern = re.compile(r'. "([^"]+)"')
 
-    @staticmethod
-    def extract_title(movie_file_path: Path) -> str:
+    def extract_title(self, movie_file_path: Path) -> str:
         metadata = load_metadata(movie_file_path)
 
         if not metadata:
-            return NaiveTitleExtractor.extract_title(movie_file_path)
+            return super().extract_title(movie_file_path)
 
         title, sub_title = cast(tuple[str, str], itemgetter('title', 'sub_title')(metadata))
         sub_title = sub_title.removeprefix(f'{title} : ')
@@ -69,20 +74,19 @@ class SubtitleTitleExpanderExtractor:
 
         return re.sub(forbidden_char_pattern, '_', extracted_title)
 
-class SerieSubTitleAwareTitleExtractor:
+class SerieSubTitleAwareTitleExtractor(NaiveTitleExtractor):
     episode_extractor_params = ('sub_title', re.compile(r'(\d+)/\d+'))
     season_extractor_params = ('sub_title', re.compile(r'Saison (\d+)'))
 
-    @classmethod
-    def extract_title(cls, movie_file_path: Path) -> str:
+    def extract_title(self, movie_file_path: Path) -> str:
         metadata = load_metadata(movie_file_path)
-        base_title = NaiveTitleExtractor.extract_title(movie_file_path) # TODO: use the cleaned version
+        base_title = super().extract_title(movie_file_path) # TODO: use the cleaned version
 
         if not metadata or not is_serie_from_supplied_value(metadata):
             return base_title
 
-        episode = extract_serie_field(metadata, cls.episode_extractor_params)
-        season = extract_serie_field(metadata, cls.season_extractor_params)
+        episode = extract_serie_field(metadata, self.episode_extractor_params)
+        season = extract_serie_field(metadata, self.season_extractor_params)
         season = '01' if season == 'xx' else season
         return f'{base_title} S{season}E{episode}'
 

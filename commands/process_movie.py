@@ -98,13 +98,14 @@ class MovieFileProcessor:
                 for item in ffmpeg_command_with_progress(command, cmd=['ffmpeg', '-hwaccel', 'cuda']):
                     if item.get('time'):
                         processed_time = position_in_seconds(item['time'])
-                        self._progress.update(task_id, completed=processed_time)
                         yield 0.8 * (processed_time / total_seconds)
+                        self._progress.update(task_id, completed=processed_time)
 
             with transient_task_progress(self._progress, f'Backuping {dest_filename}...'):
                 self._backup_policy_executor.execute(original_file_path=in_file_path)
 
             yield 1.0
+            self._progress.update(task_id, completed=total_seconds)
 
             logger.info('"%s" processed sucessfully', dest_filepath)
         except ffmpeg.Error as e:

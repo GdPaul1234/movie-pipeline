@@ -6,10 +6,17 @@ from pathlib import Path
 from commands.scaffold_dir import DirScaffolder, MovieProcessedFileGenerator
 from config_loader import ConfigLoader
 
+from lib.title_cleaner import TitleCleaner
+from lib.title_extractor import NaiveTitleExtractor
+
 input_dir_path = Path(__file__).parent.joinpath('in')
 video_path = input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')
 
 sample_video_path = Path(__file__).parent.parent.joinpath('ressources', 'counter-30s.mp4')
+
+blacklist_path = Path(__file__).parent.parent.joinpath('ressources', 'test_title_re_blacklist.txt')
+default_title_cleaner = TitleCleaner(blacklist_path)
+default_title_extractor = NaiveTitleExtractor(default_title_cleaner)
 
 config_path = Path(__file__).parent.joinpath('test_config.ini')
 options = Namespace()
@@ -22,11 +29,11 @@ class TestScaffoldDir(unittest.TestCase):
         shutil.copyfile(sample_video_path, video_path)
 
     def test_extract_title(self):
-        edl_template = MovieProcessedFileGenerator(video_path)
+        edl_template = MovieProcessedFileGenerator(video_path, default_title_extractor)
         self.assertEqual('Movie Name', edl_template.extract_title())
 
     def test_generate_edl_file(self):
-        edl_template = MovieProcessedFileGenerator(video_path)
+        edl_template = MovieProcessedFileGenerator(video_path, default_title_extractor)
 
         edl_template.generate()
 

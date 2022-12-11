@@ -199,8 +199,8 @@ def command(options, config):
 
     try:
         if filepath.is_file() and filepath.suffix == edl_ext:
-            progress = Progress()
-            MovieFileProcessor(filepath, progress, config).process_with_progress()
+            with Progress() as progress:
+                MovieFileProcessor(filepath, progress, config).process()
         elif filepath.is_dir():
             progress_listener = ProgressUIFactory.create_process_listener()
             MovieFileProcessorFolderRunner(filepath, edl_ext, progress_listener, config).process_directory()

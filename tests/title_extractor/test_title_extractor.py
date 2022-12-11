@@ -61,7 +61,7 @@ class TestTitleExtractor(unittest.TestCase):
     def test_serie_subtitle_title_expander_title_extractor(self):
         content = json.dumps({
             "title": "Serie Name. \"Title...",
-            "sub_title": "Serie Name. \"Title overflow!\" Série (FR)"
+            "sub_title": "Serie Name. 'Title overflow!' Série (FR)"
         }, indent=2)
 
         with file_path_with_metadata_content(content, serie_metadata_path) as serie_file_path:

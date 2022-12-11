@@ -56,7 +56,7 @@ class NaiveTitleExtractor:
 
 class SubtitleTitleExpanderExtractor(NaiveTitleExtractor):
     title_pattern = re.compile(r"([^.]+)\.")
-    episode_pattern = re.compile(r'. "([^"]+)"')
+    episode_pattern = re.compile(r". '([^']+)'")
 
     def extract_title(self, movie_file_path: Path) -> str:
         metadata = load_metadata(movie_file_path)

@@ -7,8 +7,7 @@ import ffmpeg
 logger = logging.getLogger(__name__)
 
 # reference: https://github.com/jonghwanhyeon/python-ffmpeg/blob/main/ffmpeg/utils.py#L12-L14
-progress_pattern = re.compile(
-    r'(frame|fps|size|time|bitrate|speed)\s*\=\s*(\S+)')
+progress_pattern = re.compile(r'(frame|fps|size|time|bitrate|speed)\s*\=\s*(\S+)')
 
 
 class ProgressItem(TypedDict):
@@ -19,8 +18,10 @@ class ProgressItem(TypedDict):
     speed: str
 
 
-def ffmpeg_command_with_progress(command, cmd=['ffmpeg'], **args):
-    with subprocess.Popen(command.compile(cmd=cmd), **args, text= True, stderr=subprocess.PIPE) as process:
+def ffmpeg_command_with_progress(command, cmd=['ffmpeg'], keep_log=False, **args):
+    lines = []
+
+    with subprocess.Popen(command.compile(cmd=cmd), **args, text=True, stderr=subprocess.PIPE) as process:
         for line in cast(IO[str], process.stderr):
             if (retcode := process.poll()) is not None:
                 if retcode != 0:
@@ -29,6 +30,11 @@ def ffmpeg_command_with_progress(command, cmd=['ffmpeg'], **args):
 
             logger.debug(line)
 
+            if keep_log:
+                lines.append(line)
+
             if items := {key: value
                         for key, value in progress_pattern.findall(line) if value != 'N/A'}:
                 yield cast(ProgressItem, items)
+
+        return lines

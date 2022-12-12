@@ -1,6 +1,8 @@
 from contextlib import contextmanager
 from datetime import timedelta
+from pathlib import Path
 import logging
+import ffmpeg
 
 
 def position_in_seconds(time: str) -> float:
@@ -11,6 +13,16 @@ def position_in_seconds(time: str) -> float:
         minutes=int(mins),
         seconds=float(secs)
     ).total_seconds()
+
+
+def total_movie_duration(movie_file_path: Path|str) -> float:
+        probe = ffmpeg.probe(str(movie_file_path))
+
+        video_streams = [stream for stream in probe['streams']
+                         if stream.get('codec_type', 'N/A') == 'video']
+
+        return float(video_streams[0]['duration'])
+
 
 @contextmanager
 def diff_tracking(mut_prev_value: list[float], current_value: float):

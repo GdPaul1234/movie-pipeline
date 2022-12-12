@@ -44,6 +44,11 @@ def main():
         'dump_for_kodi', help='Dump .vsmeta to .nfo if not exist')
     dump_for_kodi_cmd.add_argument('file', metavar='FILE', help='File or folder to process')
 
+    # detect segments
+    detect_segments_cmd = subparsers.add_parser(
+        'detect_segments', help='Run best-effort segments detectors')
+    detect_segments_cmd.add_argument('file', metavar='FILE', help='Movie to be processed')
+
     options = parser.parse_args()
     # the code to dispatch commands could all be in this file. For the purposes
     # of illustration only, we implement each command in a separate module.

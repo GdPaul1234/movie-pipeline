@@ -2,6 +2,7 @@ import errno
 import logging
 import os
 from pathlib import Path
+from schema import Schema
 import re
 import yaml
 
@@ -42,6 +43,10 @@ available_title_strategies = {
     'SerieTitleAwareTitleExtractor': SerieTitleAwareTitleExtractor
 }
 
+title_strategies_schema = Schema({
+    str: lambda strategy: strategy in available_title_strategies.keys()
+})
+
 class DirScaffolder:
     def __init__(self, dir_path: Path, config) -> None:
         self._dir_path = dir_path
@@ -50,8 +55,8 @@ class DirScaffolder:
         title_strategies_path = Path(config.get('Paths', 'title_strategies', fallback='invalid path'))
 
         if title_strategies_path.exists():
-            self._titles_strategies = yaml.safe_load(title_strategies_path.read_text('utf-8'))
-            # TODO: validate title strategies schema
+            titles_strategies = yaml.safe_load(title_strategies_path.read_text('utf-8'))
+            self._titles_strategies = title_strategies_schema.validate(titles_strategies)
         else:
             self._titles_strategies = {}
 

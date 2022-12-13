@@ -4,8 +4,8 @@ from pathlib import Path
 from abc import ABC
 from rich.progress import Progress
 import re
-import ffmpeg
 import yaml
+import ffmpeg
 
 from lib.ffmpeg_with_progress import ffmpeg_command_with_progress
 from lib.ui_factory import transient_task_progress
@@ -23,25 +23,28 @@ class BaseDetect(ABC):
         self._movie_path = movie_path
 
     def _filter_out(self, output: list[str]) -> list[str]:
-        return [line for line in output if __class__.filter_pattern.search(line)]
+        return [line for line in output if self.filter_pattern.search(line)]
 
     def _map_out(self, output: list[str]):
-        return [str(tuple(__class__.filter_pattern.findall(line))) for line in output]
+        return [{key.split('_')[1]: value
+                 for key, value in self.filter_pattern.findall(line)}
+                for line in output]
 
     def detect(self):
         in_file = ffmpeg.input(str(self._movie_path))
         total_duration = total_movie_duration(self._movie_path)
 
         command = (
-            getattr(in_file, __class__.media)
-            .filter_(__class__.detect_filter, **__class__.args)
+            getattr(in_file, self.media)
+            .filter_(self.detect_filter, **self.args)
             .output('-', format='null')
         )
 
         logger.info('Running: %s', command.compile())
+        detection_result = []
 
         with Progress() as progress:
-             with transient_task_progress(progress, description=__class__.detect_filter, total=total_duration) as task_id:
+             with transient_task_progress(progress, description=self.detect_filter, total=total_duration) as task_id:
                 process = ffmpeg_command_with_progress(command, cmd=['ffmpeg', '-hwaccel', 'cuda'], keep_log=True)
 
                 try:
@@ -50,19 +53,22 @@ class BaseDetect(ABC):
                             processed_time = position_in_seconds(item['time'])
                             progress.update(task_id, completed=processed_time)
                 except StopIteration as e:
-                    return self._map_out(self._filter_out(e.value))
+                    detection_result = self._map_out(self._filter_out(e.value))
+
+        logger.info(detection_result)
+        return detection_result
 
 
 class BlackDetect(BaseDetect):
     detect_filter = 'blackdetect'
     media = 'video'
-    filter_pattern = re.compile(r'(?:black_start|black_end|black_duration)\s*\:\s*(\S+)')
+    filter_pattern = re.compile(r'(black_start|black_end|black_duration)\s*\:\s*(\S+)')
 
 
 class SilenceDetect(BaseDetect):
     detect_filter = 'silencedetect'
     media = 'audio'
-    filter_pattern = re.compile(r'(?:silence_start|silence_end|silence_duration)\s*\:\s*(\S+)')
+    filter_pattern = re.compile(r'(silence_start|silence_end|silence_duration)\s*\:\s*(\S+)')
 
     def _map_out(self, output: list[str]):
         grouped_output = zip(*[iter(output)]*2)
@@ -78,12 +84,12 @@ def run_segment_detectors(movie_path: Path):
     detected_segments = {}
 
     for detector_key, detector_value in detectors.items():
-        logger.info('Running: %s', command.compile())
+        logger.info('Running %s detection...', detector_key)
 
         detector_instance = detector_value(movie_path)
         detected_segments[detector_key] = detector_instance.detect()
 
-    return detectors
+    return detected_segments
 
 def command(options, config):
     logger.debug('args: %s', vars(options))
@@ -91,11 +97,10 @@ def command(options, config):
 
     try:
         if Path(movie_path).is_file():
-            detectors_result = { 'detectors': run_segment_detectors(movie_path)  }
-            edl_filepath = movie_path.with_suffix(f'{movie_path.suffix}.yml.txt')
+            segments_filepath = movie_path.with_suffix(f'{movie_path.suffix}.segments')
 
-            edl_filepath.write_text(
-                f"{edl_filepath.read_text(encoding='utf-8')}\n{yaml.dump(detectors_result)}", encoding='utf-8')
+            detectors_result = run_segment_detectors(movie_path)
+            segments_filepath.write_text(yaml.dump(detectors_result), encoding='utf-8')
         else:
             raise ValueError('Expect file, receive dir')
     except Exception as e:

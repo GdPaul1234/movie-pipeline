@@ -72,7 +72,7 @@ class SubtitleTitleExpanderExtractor(NaiveTitleExtractor):
             episode = cast(re.Match[str], __class__.episode_pattern.search(sub_title)).group(1)
             extracted_title += f'__{episode}'
 
-        return re.sub(forbidden_char_pattern, '_', extracted_title)
+        return self._cleaner.clean_title(re.sub(forbidden_char_pattern, '_', extracted_title))
 
 class SerieSubTitleAwareTitleExtractor(NaiveTitleExtractor):
     episode_extractor_params = ('sub_title', re.compile(r'(\d+)/\d+'))
@@ -80,7 +80,7 @@ class SerieSubTitleAwareTitleExtractor(NaiveTitleExtractor):
 
     def extract_title(self, movie_file_path: Path) -> str:
         metadata = load_metadata(movie_file_path)
-        base_title = super().extract_title(movie_file_path) # TODO: use the cleaned version
+        base_title = super().extract_title(movie_file_path)
 
         if not metadata or not is_serie_from_supplied_value(metadata):
             return base_title

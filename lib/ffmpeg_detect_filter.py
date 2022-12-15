@@ -27,15 +27,19 @@ class BaseDetect(ABC):
                  for key, value in self.filter_pattern.findall(line)}
                 for line in output]
 
-    def detect(self):
-        in_file = ffmpeg.input(str(self._movie_path))
-        total_duration = total_movie_duration(self._movie_path)
+    def _build_command(self, in_file_path: Path):
+        in_file = ffmpeg.input(str(in_file_path))
 
-        command = (
+        return (
             getattr(in_file, self.media)
             .filter_(self.detect_filter, **self.args)
             .output('-', format='null')
         )
+
+    def detect(self):
+        total_duration = total_movie_duration(self._movie_path)
+
+        command = self._build_command(self._movie_path)
 
         logger.info('Running: %s', command.compile())
         detection_result = []
@@ -76,3 +80,17 @@ class SilenceDetect(BaseDetect):
         grouped_output = zip(*[iter(output)]*2)
         flattened_ouput = [f'{start} {end}' for start, end in grouped_output] # type: ignore
         return super()._map_out(flattened_ouput)
+
+
+class AudioCrossCorrelationDetect(SilenceDetect):
+    detect_filter = 'axcorrelate'
+
+    def _build_command(self, in_file_path: Path):
+        in_files = [ffmpeg.input(str(in_file_path))[f'a:{i}'] for i in range(2)]
+
+        return (
+            ffmpeg
+            .filter_(in_files, 'axcorrelate')
+            .filter_('silencedetect', noise='0dB', duration=420)
+            .output('-', f='null')
+        )

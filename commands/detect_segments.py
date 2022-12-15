@@ -2,15 +2,17 @@ import logging
 from pathlib import Path
 import json
 
-from lib.ffmpeg_detect_filter import BlackDetect, SilenceDetect
+from lib.ffmpeg_detect_filter import AudioCrossCorrelationDetect, BlackDetect, SilenceDetect
+from util import seconds_to_position
 
 logger = logging.getLogger(__name__)
 
 
 def run_segment_detectors(movie_path: Path):
     detectors = {
-        'black': BlackDetect,
-        'silence': SilenceDetect
+        # 'black': BlackDetect,
+        # 'silence': SilenceDetect,
+        'axcorrelate_silence': AudioCrossCorrelationDetect
     }
     detected_segments = {}
 
@@ -18,7 +20,14 @@ def run_segment_detectors(movie_path: Path):
         logger.info('Running %s detection...', detector_key)
 
         detector_instance = detector_value(movie_path)
-        detected_segments[detector_key] = detector_instance.detect()
+        detector_result = detector_instance.detect()
+        detected_segments[detector_key] = {
+            "segments": detector_result,
+            "humanized_segments": ','.join([
+                '-'.join(map(seconds_to_position, [float(segment['start']), float(segment['end'])]))
+                for segment in detector_result
+            ])
+        }
 
     return detected_segments
 

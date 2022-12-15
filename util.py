@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from datetime import timedelta
 from pathlib import Path
 import logging
+import time
 import ffmpeg
 
 
@@ -13,6 +14,12 @@ def position_in_seconds(time: str) -> float:
         minutes=int(mins),
         seconds=float(secs)
     ).total_seconds()
+
+
+def seconds_to_position(seconds: float) -> str:
+    formatted_time = time.strftime('%H:%M:%S', time.gmtime(seconds))
+    formatted_decimal_part = f'{(seconds % 1):.3f}'.removeprefix('0')
+    return f"{formatted_time}{formatted_decimal_part}"
 
 
 def total_movie_duration(movie_file_path: Path|str) -> float:

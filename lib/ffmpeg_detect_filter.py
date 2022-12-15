@@ -86,11 +86,15 @@ class AudioCrossCorrelationDetect(SilenceDetect):
     detect_filter = 'axcorrelate'
 
     def _build_command(self, in_file_path: Path):
-        in_files = [ffmpeg.input(str(in_file_path))[f'a:{i}'] for i in range(2)]
+        # TODO Retrieve that in config
+        audio_tracks_input = input('Enter audio tracks to correlate separated with space: (0..nb_tracks, max: 2) ')
+        audio_tracks = map(int, audio_tracks_input.split(' ', 2))
+
+        in_files = [ffmpeg.input(str(in_file_path))[f'a:{i}'] for i in audio_tracks]
 
         return (
             ffmpeg
             .filter_(in_files, 'axcorrelate')
-            .filter_('silencedetect', noise='0dB', duration=420)
+            .filter_('silencedetect', noise='0dB', duration=300)
             .output('-', f='null')
         )

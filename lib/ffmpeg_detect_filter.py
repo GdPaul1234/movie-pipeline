@@ -23,7 +23,7 @@ class BaseDetect(ABC):
         self._movie_path = movie_path
 
     def _map_out(self, output: list[str]):
-        return [{key.split('_')[1]: value
+        return [{key.split('_')[1]: float(value)
                  for key, value in self.filter_pattern.findall(line)}
                 for line in output]
 
@@ -86,7 +86,6 @@ class AudioCrossCorrelationDetect(SilenceDetect):
     detect_filter = 'axcorrelate'
 
     def _build_command(self, in_file_path: Path):
-        # TODO Retrieve that in config
         audio_tracks_input = input('Enter audio tracks to correlate separated with space: (0..nb_tracks, max: 2) ')
         audio_tracks = map(int, audio_tracks_input.split(' ', 2))
 
@@ -95,6 +94,6 @@ class AudioCrossCorrelationDetect(SilenceDetect):
         return (
             ffmpeg
             .filter_(in_files, 'axcorrelate')
-            .filter_('silencedetect', noise='0dB', duration=300)
+            .filter_('silencedetect', noise='0dB', duration=420)
             .output('-', f='null')
         )

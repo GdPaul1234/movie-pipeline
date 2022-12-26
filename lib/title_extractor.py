@@ -61,7 +61,7 @@ class SubtitleTitleExpanderExtractor(NaiveTitleExtractor):
     def extract_title(self, movie_file_path: Path) -> str:
         metadata = load_metadata(movie_file_path)
 
-        if not metadata:
+        if not metadata or '...' not in metadata['title']:
             return super().extract_title(movie_file_path)
 
         title, sub_title = cast(tuple[str, str], itemgetter('title', 'sub_title')(metadata))

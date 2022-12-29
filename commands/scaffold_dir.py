@@ -63,7 +63,7 @@ class DirScaffolder:
         if (blacklist_path := Path(config.get('Paths', 'title_re_blacklist'))).exists():
             self._title_cleaner = TitleCleaner(blacklist_path)
         else:
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(blacklist_path))
+            raise FileNotFoundError(blacklist_path)
 
 
     def scaffold_dir(self):

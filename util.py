@@ -37,6 +37,15 @@ def diff_tracking(mut_prev_value: list[float], current_value: float):
     yield current_value - prev_value
     mut_prev_value[0] = current_value
 
+
+def timed_run(func, *args, **kwargs):
+    start_time = time.time()
+    result = func(*args, **kwargs)
+    end_time = time.time()
+
+    return result, end_time - start_time
+
+
 class ConsoleLoggerFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         return  record.name not in ['commands.process_movie', 'lib.backup_policy_executor'] \

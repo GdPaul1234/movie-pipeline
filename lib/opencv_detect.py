@@ -57,12 +57,13 @@ class OpenCVTemplateDetect:
         return template, width, height
 
     def _update_segments(self, position: float):
-        if len(self._segments) == 0 or self._segments[-1]['end'] - position > segments_min_duration:
+        if len(self._segments) == 0 or position - self._segments[-1]['end'] > segments_min_duration:
             self._segments.append({'start': position, 'end': position, 'duration': 0})
             logger.debug('Add segment at %f s', position)
         else:
             self._segments[-1]['end'] = position
             self._segments[-1]['duration'] = position - self._segments[-1]['start']
+            logger.debug('Update segment: %s', self._segments[-1])
 
     def _draw_detection_box(self,
                             image: cv2.Mat,

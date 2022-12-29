@@ -16,8 +16,6 @@ from util import seconds_to_position, timed_run
 
 logger = logging.getLogger(__name__)
 
-
-result_window_name = 'Match Template Result'
 segments_min_gap = 20.
 threshold = 0.8
 
@@ -88,6 +86,8 @@ class OpenCVTemplateDetect:
 
         target_fps = 5
         duration = video_metadata['source_duration_sec']
+        result_window_name = f'Match Template Result - {self._video_path}'
+
         cv2.namedWindow(result_window_name, cv2.WINDOW_NORMAL)
 
         with Progress() as progress:

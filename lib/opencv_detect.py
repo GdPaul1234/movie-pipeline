@@ -1,3 +1,4 @@
+from configparser import ConfigParser
 import json
 import logging
 from pathlib import Path
@@ -7,6 +8,7 @@ from deffcode import Sourcer
 import cv2
 
 from lib.ffmpeg_with_progress import ffmpeg_frame_producer
+from lib.opencv_annotator import draw_detection_box
 from lib.title_extractor import load_metadata
 from lib.ui_factory import transient_task_progress
 from models.detected_segments import humanize_segments
@@ -16,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 result_window_name = 'Match Template Result'
-segments_min_duration = 20.
+segments_min_gap = 20.
 threshold = 0.8
 
 
@@ -35,6 +37,7 @@ def OpenCVTemplateDetectWithInjectedTemplate(movie_path: Path, config):
 
     return lambda m: OpenCVTemplateDetect(m, template_path)
 
+
 class OpenCVTemplateDetect:
     def __init__(self, video_path: Path, template_path: Path) -> None:
         self._video_path = video_path
@@ -49,39 +52,33 @@ class OpenCVTemplateDetect:
         return template, width, height
 
     def _update_segments(self, position: float):
-        if len(self._segments) == 0 or position - self._segments[-1]['end'] > segments_min_duration:
+        position = round(position, 2)
+
+        if len(self._segments) == 0 or (position - self._segments[-1]['end']) > segments_min_gap:
             self._segments.append({'start': position, 'end': position, 'duration': 0})
+
             logger.debug('Add segment at %f s', position)
-            logger.debug('Updated segements: %s', self._segments)
+            logger.debug('Updated segments:\n%s', '\n'.join(map(str, self._segments)))
         else:
             self._segments[-1]['end'] = position
-            self._segments[-1]['duration'] = position - self._segments[-1]['start']
+            self._segments[-1]['duration'] = round(position - self._segments[-1]['start'], 2)
 
-    def _draw_detection_box(self,
-                            image: cv2.Mat,
-                            template_shape: tuple[int, int],
-                            result: tuple[float, tuple[int, int]],
-                            stats):
-        w, h = template_shape
-        max_val, pt = result
+    def _build_crop_filter(self):
+        template_metadata_path = self._template_path.with_suffix('.ini')
 
-        image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        if not template_metadata_path.exists():
+            return ''
 
-        if max_val >= threshold:
-         cv2.rectangle(image, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2) # type: ignore
+        config = ConfigParser()
+        config.read(template_metadata_path)
 
-        y0, dy, text = 0, 40, json.dumps(stats, indent=0)
-        for i, line in enumerate(text.replace('}', '').split('\n')):
-            y = y0 + i*dy
-            cv2.putText(image, line, (25, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA, False)
+        template_metadata = config['General']
 
-        cv2.imshow(result_window_name, image)
-        cv2.resizeWindow(result_window_name, 960, 540)
+        w = template_metadata.getint('x2') - template_metadata.getint('x1')
+        h = template_metadata.getint('y2') - template_metadata.getint('y1')
+        x, y = template_metadata.getint('x1'), template_metadata.getint('y1')
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            return True
-
-        return False
+        return f'crop={w=}:{h=}:{x=}:{y=}'
 
     def detect(self):
         template, t_width, t_height = self._read_template()
@@ -96,7 +93,10 @@ class OpenCVTemplateDetect:
         with Progress() as progress:
             try:
                 with transient_task_progress(progress, description='match_template', total=duration) as task_id:
-                    for frame, _, position_in_s in ffmpeg_frame_producer(self._video_path, target_fps=target_fps):
+                    for frame, _, position_in_s in ffmpeg_frame_producer(
+                        self._video_path, target_fps=target_fps,
+                        other_video_filter=self._build_crop_filter()
+                    ):
                         image = frame.copy()
 
                         def match_template(image):
@@ -114,14 +114,15 @@ class OpenCVTemplateDetect:
                             image_shape = (t_width, t_height)
                             match_result = (max_val, max_loc)
                             stats = {
-                                "fps": round(target_fps / process_time, 3),
+                                "fps": round(process_time and target_fps / process_time),
                                 "position": seconds_to_position(position_in_s),
                                 "segments": humanize_segments(self._segments)
                             }
-                            if self._draw_detection_box(image, image_shape, match_result, stats):
+
+                            if draw_detection_box(result_window_name, image, image_shape, match_result, threshold, stats):
                                 break
             finally:
                 cv2.destroyAllWindows()
 
-        logger.debug('Final segements before cleaning: %s', self._segments)
+        logger.debug('Final segments before cleaning: %s', self._segments)
         return self._segments

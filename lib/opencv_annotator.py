@@ -1,0 +1,61 @@
+import json
+import logging
+import cv2
+
+
+logger = logging.getLogger(__name__)
+
+
+def draw_detection_box(result_window_name: str,
+                       image: cv2.Mat,
+                       template_shape: tuple[int, int],
+                       result: tuple[float, tuple[int, int]],
+                       threshold: float,
+                       stats):
+    w, h = template_shape
+    max_val, pt = result
+
+    image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+
+    if max_val >= threshold:
+        cv2.rectangle(image, pt, (pt[0] + w, pt[1] + h), (0, 0, 255), 2)
+
+    image = resize_with_pad(image, (1920, 1080), color=(0, 0, 0))
+
+    y0, dy, text = 0, 40, json.dumps(stats, indent=0)
+    for i, line in enumerate(text.replace('}', '').split('\n')):
+        y = y0 + i*dy
+        cv2.putText(image, line, (25, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA, False)
+
+    cv2.imshow(result_window_name, image)
+    cv2.resizeWindow(result_window_name, 960, 540)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        return True
+
+    return False
+
+
+def resize_with_pad(image: cv2.Mat, new_shape: tuple[int, int], color=(255, 255, 255)):
+    """Maintains aspect ratio and resizes with padding.
+
+    source: https://gist.github.com/IdeaKing/11cf5e146d23c5bb219ba3508cca89ec
+
+    Params:
+        image: Image to be resized.
+        new_shape: Expected (width, height) of new image.
+        padding_color: Tuple in BGR of padding color
+    Returns:
+        image: Resized image with padding
+    """
+    original_shape = (image.shape[1], image.shape[0])
+
+    cv2.resize(image, new_shape)
+
+    delta_w = abs(new_shape[0] - original_shape[0])
+    delta_h = abs(new_shape[1] - original_shape[1])
+    top, bottom = delta_h//2, delta_h-(delta_h//2)
+    left, right = delta_w//2, delta_w-(delta_w//2)
+
+    image = cv2.copyMakeBorder(image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
+    return image

@@ -39,9 +39,9 @@ def diff_tracking(mut_prev_value: list[float], current_value: float):
 
 
 def timed_run(func, *args, **kwargs):
-    start_time = time.time()
+    start_time = time.perf_counter()
     result = func(*args, **kwargs)
-    end_time = time.time()
+    end_time = time.perf_counter()
 
     return result, end_time - start_time
 

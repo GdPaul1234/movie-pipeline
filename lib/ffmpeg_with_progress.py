@@ -52,14 +52,14 @@ def ffmpeg_command_with_progress(command, cmd=['ffmpeg'], keep_log=False, line_f
         return lines
 
 
-def ffmpeg_frame_producer(input: Path, target_fps: int):
+def ffmpeg_frame_producer(input: Path, target_fps: int, other_video_filter=''):
     ffparams = {
         "-vcodec": None,  # skip any decoder and let FFmpeg chose
         "-ffprefixes": [ "-hwaccel", "cuda"],
         "-custom_resolution": "null",  # discard `-custom_resolution`
         "-framerate": "null",  # discard `-framerate`
         # define your filters
-        "-vf": f"fps={target_fps}",
+        "-vf":  ','.join(filter(bool, [f"fps={target_fps}", other_video_filter]))
     }
 
     with FFdecoder(str(input), frame_format='gray', **ffparams) as decoder:

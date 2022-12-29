@@ -1,7 +1,10 @@
+import json
+from pathlib import Path
 from typing import IO, cast, TypedDict
 import logging
 import re
 import subprocess
+from deffcode import FFdecoder
 import ffmpeg
 
 logger = logging.getLogger(__name__)
@@ -47,3 +50,34 @@ def ffmpeg_command_with_progress(command, cmd=['ffmpeg'], keep_log=False, line_f
                 yield cast(ProgressItem, items)
 
         return lines
+
+
+def ffmpeg_frame_producer(input: Path, target_fps: int):
+    ffparams = {
+        "-vcodec": None,  # skip any decoder and let FFmpeg chose
+        "-ffprefixes": [ "-hwaccel", "cuda"],
+        "-custom_resolution": "null",  # discard `-custom_resolution`
+        "-framerate": "null",  # discard `-framerate`
+        # define your filters
+        "-vf": f"fps={target_fps}",
+    }
+
+    with FFdecoder(str(input), frame_format='gray', **ffparams) as decoder:
+        metadata = json.loads(decoder.metadata)
+
+        frame_pos = 0
+        seconds_pos = 0
+        frame_count = metadata['approx_video_nframes']
+
+        for frame in decoder.generateFrame():
+            try:
+                if frame_pos >= (frame_count - 100):
+                    break
+
+                frame_pos += 1
+                seconds_pos = frame_pos / target_fps
+
+                yield frame, frame_pos, seconds_pos
+
+            except KeyboardInterrupt:
+                break

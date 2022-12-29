@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import itertools
+
 from util import position_in_seconds
 
 @dataclass

@@ -88,7 +88,8 @@ class OpenCVTemplateDetect:
         duration = video_metadata['source_duration_sec']
         result_window_name = f'Match Template Result - {self._video_path}'
 
-        cv2.namedWindow(result_window_name, cv2.WINDOW_NORMAL)
+        if logger.isEnabledFor(logging.DEBUG):
+            cv2.namedWindow(result_window_name, cv2.WINDOW_NORMAL)
 
         with Progress() as progress:
             try:

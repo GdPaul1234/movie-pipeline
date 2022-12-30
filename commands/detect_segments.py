@@ -23,10 +23,7 @@ def run_segment_detectors(movie_path: Path, config):
         detector_instance = detector_value(movie_path)
         detector_result = cast(list[DetectedSegment], detector_instance.detect())
         detector_result = merge_adjacent_segments(detector_result)
-        detected_segments[detector_key] = {
-            "segments": detector_result,
-            "humanized_segments": humanize_segments(detector_result)
-        }
+        detected_segments[detector_key] = humanize_segments(detector_result)
 
     return detected_segments
 

@@ -2,6 +2,9 @@ import json
 import logging
 import cv2
 
+from models.detected_segments import DetectedSegment
+from util import seconds_to_position
+
 
 logger = logging.getLogger(__name__)
 
@@ -18,14 +21,16 @@ def draw_detection_box(result_window_name: str,
     image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
     if max_val >= threshold:
-        cv2.rectangle(image, pt, (pt[0] + w, pt[1] + h), (0, 0, 255), 2)
+        cv2.rectangle(image, pt, (pt[0] + w - 1, pt[1] + h - 1), (0, 0, 255), 2)
 
     image = resize_with_pad(image, (1920, 1080), color=(0, 0, 0))
 
-    y0, dy, text = 0, 40, json.dumps(stats, indent=0)
+    y0, dy, text = 0, 40, json.dumps({'fps': stats['fps'], 'position': seconds_to_position(stats['position'])}, indent=0)
     for i, line in enumerate(text.replace('}', '').split('\n')):
         y = y0 + i*dy
         cv2.putText(image, line, (25, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA, False)
+
+    draw_segments(image, stats['segments'], stats['duration'], stats['position'])
 
     cv2.imshow(result_window_name, image)
     cv2.resizeWindow(result_window_name, 960, 540)
@@ -59,3 +64,23 @@ def resize_with_pad(image: cv2.Mat, new_shape: tuple[int, int], color=(255, 255,
 
     image = cv2.copyMakeBorder(image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
     return image
+
+
+def draw_segments(image: cv2.Mat, segments: list[DetectedSegment], duration: float, position: float):
+    i_width, i_height = (image.shape[1], image.shape[0])
+
+    x, y = 0, round(0.9 * i_height)
+
+    cv2.rectangle(image, (x, y), (i_width, i_height), (255,255,255), cv2.FILLED)
+
+    for segment in segments:
+        cv2.rectangle(
+            image,
+            (round(x + segment['start'] * i_width / duration), y),
+            (round(x + segment['end'] * i_width / duration), i_height),
+            (255, 0, 0),
+            cv2.FILLED
+        )
+
+    position_x = round(x + position * i_width / duration)
+    cv2.line(image, (position_x, y), (position_x, i_height), (0, 0, 255), 8)

@@ -1,5 +1,4 @@
 from configparser import ConfigParser
-import json
 import logging
 from pathlib import Path
 from typing import Any, cast
@@ -11,12 +10,12 @@ from lib.ffmpeg_with_progress import ffmpeg_frame_producer
 from lib.opencv_annotator import draw_detection_box
 from lib.title_extractor import load_metadata
 from lib.ui_factory import transient_task_progress
-from models.detected_segments import humanize_segments
-from util import seconds_to_position, timed_run
+from util import timed_run
 
 logger = logging.getLogger(__name__)
 
 segments_min_gap = 20.
+segments_min_duration = 120.
 threshold = 0.8
 
 
@@ -53,10 +52,8 @@ class OpenCVTemplateDetect:
         position = round(position, 2)
 
         if len(self._segments) == 0 or (position - self._segments[-1]['end']) > segments_min_gap:
+            self._segments = [segment for segment in self._segments if segment['duration'] > segments_min_duration]
             self._segments.append({'start': position, 'end': position, 'duration': 0})
-
-            logger.debug('Add segment at %f s', position)
-            logger.debug('Updated segments:\n%s', '\n'.join(map(str, self._segments)))
         else:
             self._segments[-1]['end'] = position
             self._segments[-1]['duration'] = round(position - self._segments[-1]['start'], 2)
@@ -116,8 +113,9 @@ class OpenCVTemplateDetect:
                             match_result = (max_val, max_loc)
                             stats = {
                                 "fps": round(process_time and target_fps / process_time),
-                                "position": seconds_to_position(position_in_s),
-                                "segments": humanize_segments(self._segments)
+                                "position": position_in_s,
+                                "duration": duration,
+                                "segments": self._segments
                             }
 
                             if draw_detection_box(result_window_name, image, image_shape, match_result, threshold, stats):
@@ -125,5 +123,5 @@ class OpenCVTemplateDetect:
             finally:
                 cv2.destroyAllWindows()
 
-        logger.debug('Final segments before cleaning: %s', self._segments)
+        logger.debug('Segments before final cleaning: %s', '\n'.join(map(str, self._segments)))
         return self._segments

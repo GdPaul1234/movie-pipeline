@@ -15,7 +15,7 @@ class MoviePathDestinationFinder:
         season_folder_name = f'Saison {season_number}'
 
         matches_series = [p for p in series_path.iterdir()
-                          if p.is_dir() and p.name.startswith(serie_file_name)]
+                          if p.is_dir() and p.name.lower().startswith(serie_file_name.lower())]
         if not len(matches_series):
             created_serie_folder = series_path.joinpath(serie_file_name, season_folder_name)
             created_serie_folder.mkdir(parents=True)

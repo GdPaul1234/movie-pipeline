@@ -4,7 +4,6 @@ from typing import IO, cast, TypedDict
 import logging
 import re
 import subprocess
-from deffcode import FFdecoder
 import ffmpeg
 
 logger = logging.getLogger(__name__)
@@ -53,6 +52,8 @@ def ffmpeg_command_with_progress(command, cmd=['ffmpeg'], keep_log=False, line_f
 
 
 def ffmpeg_frame_producer(input: Path, target_fps: int, other_video_filter=''):
+    from deffcode import FFdecoder
+
     ffparams = {
         "-vcodec": None,  # skip any decoder and let FFmpeg chose
         "-ffprefixes": [ "-hwaccel", "cuda"],

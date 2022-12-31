@@ -35,6 +35,11 @@ class ProgressTask:
     task_id: TaskID
 
 
+@dataclass
+class RealTimeDetectResult:
+    value: float
+    location: tuple[int, int]
+
 def OpenCVDetectWithInjectedTemplate(detector: type['OpenCVBaseDetect'], movie_path: Path, config):
     templates_path = Path(config.get('SegmentDetection', 'templates_path'))
 
@@ -51,7 +56,34 @@ def OpenCVDetectWithInjectedTemplate(detector: type['OpenCVBaseDetect'], movie_p
     return lambda m: detector(m, template_path)
 
 
+def get_template_metadata(template_path: Path):
+    template_metadata_path = template_path.with_suffix('.ini')
+
+    if not template_metadata_path.exists():
+        return None
+
+    config = ConfigParser()
+    config.read(template_metadata_path)
+
+    return config['General']
+
+
+def build_crop_filter(template_path: Path):
+        template_metadata = get_template_metadata(template_path)
+
+        if template_metadata is None:
+            return ''
+
+        w = template_metadata.getint('x2') - template_metadata.getint('x1')
+        h = template_metadata.getint('y2') - template_metadata.getint('y1')
+        x, y = template_metadata.getint('x1'), template_metadata.getint('y1')
+
+        return f'crop={w=}:{h=}:{x=}:{y=}'
+
+
 class OpenCVBaseDetect(ABC):
+    other_video_filter = ''
+
     def __init__(self, video_path: Path, template_path: Path) -> None:
         self._video_path = video_path
         self._template_path = template_path
@@ -68,23 +100,6 @@ class OpenCVBaseDetect(ABC):
             self._segments[-1]['end'] = position
             self._segments[-1]['duration'] = round(position - self._segments[-1]['start'], 2)
 
-    def _build_crop_filter(self):
-        template_metadata_path = self._template_path.with_suffix('.ini')
-
-        if not template_metadata_path.exists():
-            return ''
-
-        config = ConfigParser()
-        config.read(template_metadata_path)
-
-        template_metadata = config['General']
-
-        w = template_metadata.getint('x2') - template_metadata.getint('x1')
-        h = template_metadata.getint('y2') - template_metadata.getint('y1')
-        x, y = template_metadata.getint('x1'), template_metadata.getint('y1')
-
-        return f'crop={w=}:{h=}:{x=}:{y=}'
-
     def _do_detect(
         self,
         image: cv2.Mat,
@@ -94,6 +109,27 @@ class OpenCVBaseDetect(ABC):
         result_window_name: str
     ) -> bool:
         ...
+
+    def _show_detect_result(
+        self,
+        image: cv2.Mat,
+        template: cv2.Mat,
+        position_metadata: PositionMetadata,
+        result: RealTimeDetectResult,
+        process_time: float,
+        result_window_name: str
+    ):
+        image_shape = template.shape[::-1]
+        match_result = (result.value, result.location)
+        stats = {
+            "fps": round(process_time and position_metadata.target_fps / process_time),
+            "position": position_metadata.position_in_s,
+            "duration": position_metadata.duration,
+            "segments": self._segments
+        }
+
+        return draw_detection_box(result_window_name, image, image_shape, match_result, threshold, stats)
+
 
     def detect(self) -> list[DetectedSegment]:
         template = cv2.imread(str(self._template_path), cv2.IMREAD_GRAYSCALE)
@@ -113,7 +149,7 @@ class OpenCVBaseDetect(ABC):
                 with transient_task_progress(progress, description='match_template', total=duration) as task_id:
                     for frame, _, position_in_s in ffmpeg_frame_producer(
                         self._video_path, target_fps=target_fps,
-                        other_video_filter=self._build_crop_filter()
+                        other_video_filter=self.other_video_filter
                     ):
                         image = frame.copy()
                         if self._do_detect(
@@ -132,6 +168,10 @@ class OpenCVBaseDetect(ABC):
 
 
 class OpenCVTemplateDetect(OpenCVBaseDetect):
+    def __init__(self, video_path: Path, template_path: Path) -> None:
+        super().__init__(video_path, template_path)
+        self.other_video_filter = build_crop_filter(template_path)
+
     def _do_detect(
         self,
         image: cv2.Mat,
@@ -152,16 +192,13 @@ class OpenCVTemplateDetect(OpenCVBaseDetect):
             self._update_segments(position_metadata.position_in_s)
 
         if logger.isEnabledFor(logging.DEBUG):
-            image_shape = template.shape[::-1]
-            match_result = (max_val, max_loc)
-            stats = {
-                "fps": round(process_time and position_metadata.target_fps / process_time),
-                "position": position_metadata.position_in_s,
-                "duration": position_metadata.duration,
-                "segments": self._segments
-            }
-
-            if draw_detection_box(result_window_name, image, image_shape, match_result, threshold, stats):
-                return True
+            return self._show_detect_result(
+                image,
+                template,
+                position_metadata,
+                RealTimeDetectResult(max_val, max_loc),
+                process_time,
+                result_window_name
+            )
 
         return False

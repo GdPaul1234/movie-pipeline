@@ -4,7 +4,7 @@ from typing import cast
 import json
 
 from lib.ffmpeg_detect_filter import AudioCrossCorrelationDetect
-from lib.opencv_detect import OpenCVTemplateDetectWithInjectedTemplate
+from lib.opencv_detect import OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect
 from models.detected_segments import DetectedSegment, humanize_segments, merge_adjacent_segments
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def run_segment_detectors(movie_path: Path, config):
     detectors = {
         # 'axcorrelate_silence': AudioCrossCorrelationDetect,
-        'match_template': OpenCVTemplateDetectWithInjectedTemplate(movie_path, config)
+        'match_template': OpenCVDetectWithInjectedTemplate(OpenCVTemplateDetect, movie_path, config)
     }
     detected_segments = {}
 

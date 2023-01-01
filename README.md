@@ -1,103 +1,111 @@
 # Movie Pipeline
 
-Ensemble d'outils automatisant une grande partie du processus d'extraction de 
-contenus pertinents des vidéos.
+Set of tools that automatize most of movies library management maintenance
 
-## Utilisation
+**This program is distributed WITHOUT ANY WARRANTY, use AT YOUR OWN RISK.**
+
+## Usage
 
 ```
 $ python app.py --help
-usage: app.py [-h] [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] {legacy_move,process_movie,scaffold_dir} ...
+usage: app.py [-h] [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--config-path CONFIG_PATH]
+              {legacy_move,process_movie,scaffold_dir,archive_movies,dump_for_kodi,detect_segments} ...
 
 positional arguments:
-  {legacy_move,process_movie,scaffold_dir}
+  {legacy_move,process_movie,scaffold_dir,archive_movies,dump_for_kodi,detect_segments}
                         Available commands:
     legacy_move         Move converted movies or series to their folder
     process_movie       Cut and merge movies to keep only relevant parts
-    scaffold_dir        Scaffold movie processed data files from movies
+    scaffold_dir        Scaffold movie edit decision files
+    archive_movies      Archive movies regarding options in config file
+    dump_for_kodi       Dump .vsmeta to .nfo if not exist
+    detect_segments     Run best-effort segments detectors
 
 options:
   -h, --help            show this help message and exit
   --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+  --config-path CONFIG_PATH
+                        Config path
 ```
 
-## Pipeline
+## Configuration
 
-Ouvrir un terminal et changer le répertoire courant
+Before using this program, you must provide a valid config file.
 
-```
-cd D:\Documents\Autres\movie-pipeline
-```
+You can find many of them in the `tests` directory.
 
-### 1. Génération des modèles et remplissage des fichiers d'instructions
+If no `--config-path` is empty, the app will fallback to `config.ini` file in the current directory.
 
-Si le répertoire contenant les vidéos est `V:\PVR`, lancer la commande suivante :
+You can find bellow an example:
 
-```
-python app.py scaffold_dir "V:\PVR"
-```
+```ini
+[Paths]
+base_path=V:\PVR
+base_backup_path=W:\Dossier personnel\video
 
-A la fin de l'exécution de ce module, vous devriez trouver pour chaque film
-un fichier portant le même nom se finissant par `.yml.txt`.
+movies_folder=${base_path}\Films
+series_folder=${base_path}\Séries
 
-Ce sont les modèles à remplir.
+backup_folder=${base_backup_path}\PVR\playground
+movies_archive_folder=${base_backup_path}\Films
 
-Ouvrir le film ayant le même nom que le fichier `.yml.txt` dans un programme
-de recherche de parties indésirables comme `Videpub` et lancer l'analyse.
+title_strategies=.\title_strategies.yml
+title_re_blacklist=.\title_re_blacklist.txt
 
-A la fin de l'analyse, vérifier les parties à garder, c'est-à-dire :
-- Supprimer les parties indésirables en sélectionnant le segment, puis cliquer
-  sur l'icône moins ;
+[Archive]
+max_retention_in_s=31_104_000
 
-- Joindre les segments séparés en sélectionnant les segments à joindre, puis en
-  cliquant sur `-><-` ;
+[SegmentDetection]
+templates_path=V:\PVR\autres\scripts\common-ressources\logo
 
-- Corriger le début et la fin de chaque segments restants. Les parties des segments
-  revus seront désormais en vert ;
+[Processor]
+nb_worker=2
 
-- Si le fichier en question est une **série**, rechercher le nom de l'épisode
-  (qui est souvent donné après le générique ou après la fin des crédits de début) 
-  et en déduire le numéro de _saison_ et d'_épisode_.
-
-  Par exemple pour l'épisode _Mariage à la mexicaine_ de la série _Drop Dead Diva_,
-  entrer dans le champ `filename` du modèle `Drop Dead Diva S05E08.mp4`.
-
-  Des sites comme [The movie Db](themoviedb.org) ou [IMDb](imdb.com) permet de trouver
-  facilement ces informations à partir du nom de la série.
-
-  Pour éviter cette fastidieuse phase de recherche, vous pouvez rechercher dans la liste
-  des enregistrements terminés dans l'interface d'administration de `TVHeadend` l'entrée
-  correspondante et faire une recherche sur internet. Des sites comme `L'internaute`
-  vous donneront toutes les informations nécessaires au remplissage du nom de fichier.
-
-- Enfin, sélectionner tous les segments restants, puis cliquer sur le bouton copier.
-  Remplacer `INSERT_SEGMENTS_HERE` par le résultat copier, puis ajouter une virgule
-  à la fin.
-
-  Ainsi, `00:31:53.960-01:00:51.520,01:06:54.480-01:31:40.160,01:37:34.480-02:23:05.560`
-  devient `00:31:53.960-01:00:51.520,01:06:54.480-01:31:40.160,01:37:34.480-02:23:05.560,`
-
-### 2. Conversion en lot des films
-
-Ce programme prend en charge toute la partie fastidieuse du traitement des films,
-de la conversion au déplacement dans le bon sous-dossier tout en journalisant
-chaque action.
-
-Pour ce faire, "activer" chaque fichier d'instructions en retirant changeant l'extension
-`.yml.txt` en `.yml`.
-
-Lancer la commande suivante :
+[Logger]
+file_path=${Paths:base_path}\log-quick.txt
 
 ```
-python app.py process_movie "V:\PVR"
-```
 
-et attendez la fin du traitement qui peut prendre plusieurs dizaines de minutes.
+## Pipelines
 
-Vérifier s'il n'y a pas eu d'erreur à l'exécution et que les films convertis
-sont bien lisibles.
+### Main pipeline
 
-S'il n'y a pas de problèmes, videz les poubelles.
+After filling the config file and after all recordings are done:
 
-> NB: Des marges de 30 min avant et après les films sont ajoutées lors de leurs 
-> enregistrements.
+1. Scaffold the recording directory using the command `scaffold_dir`
+
+2. Fill the edit decision file (`.yml.txt` files) by:
+    - Correcting the title if necessary, especially for Series.
+
+      For reference, the format of series are: `Serie Name S01E02.mp4`
+
+    - Using a third-party software or built-in `detect_segments` (beta) command to fill the segments to keep field
+
+      ie. `00:31:53.960-01:00:51.520,01:06:54.480-01:31:40.160,01:37:34.480-02:23:05.560,`.
+
+      Don't forget to carrefuly review the segments field and to append the leading comma at the end to validate your result!
+
+    - Add `skip_backup: yes` line if the movie file is too big (more than 10 Go).
+
+3. Process movie (cut, trim, convert movies and move them to the right location) by running the `process_movie` command
+
+### Archive pipeline
+
+If the remaining space of the `base_path` is low, use the `archive_movies` command.
+
+> WARNING
+> it takes for granted that you periodicaly backup each movies (located in `movies_folder`) to `${base_backup_path}/PVR/Films`.
+
+This command are primarly created to fit my need, don't run it if you don't have movies backup in place because it deletes the oldest movies in `base_path` and move the corresponding `${base_backup_path}/PVR/Films` to `movies_archive_folder`.
+
+Only movies are suported at the time of writing this document
+
+### Dump for kodi
+
+This pipeline converts `.vsmeta` dumped metadata to the kodi `.nfo` format.
+
+Useful for quickly set up kodi media library in external storage.
+
+## TODO
+
+- Implement segments review pipeline

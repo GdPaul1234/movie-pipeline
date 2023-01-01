@@ -1,6 +1,6 @@
 # Movie Pipeline
 
-Set of tools that automatize most of movies library management maintenance
+Set of tools that automatize most of movies library maintenance
 
 **This program is distributed WITHOUT ANY WARRANTY, use AT YOUR OWN RISK.**
 

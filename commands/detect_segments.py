@@ -28,17 +28,30 @@ def run_segment_detectors(movie_path: Path, config):
     return detected_segments
 
 
+def dump_segments_to_file(detectors_result, movie_path: Path):
+    segments_filepath = movie_path.with_suffix(f'{movie_path.suffix}.segments.json')
+    segments_filepath.write_text(json.dumps(detectors_result, indent=2), encoding='utf-8')
+
+
 def command(options, config):
     logger.debug('args: %s', vars(options))
-    movie_path = Path(options.file)
+    filepath = Path(options.file)
 
     try:
-        if Path(movie_path).is_file():
-            segments_filepath = movie_path.with_suffix(f'{movie_path.suffix}.segments.json')
+        if filepath.is_file():
+            detectors_result = run_segment_detectors(filepath, config)
+            dump_segments_to_file(detectors_result, movie_path=filepath)
+        elif filepath.is_dir():
+            for metadata_path in filepath.glob('*.metadata.json'):
+                movie_path = metadata_path.with_suffix('')
+                logger.info('Seach segments in "%s"...', movie_path)
 
-            detectors_result = run_segment_detectors(movie_path, config)
-            segments_filepath.write_text(json.dumps(detectors_result, indent=2), encoding='utf-8')
+                if not movie_path.with_suffix(f'{movie_path.suffix}.segments.json').exists():
+                    detectors_result = run_segment_detectors(movie_path, config)
+                    dump_segments_to_file(detectors_result, movie_path)
+                else:
+                    logger.warning('Segments already exist, skipping "%s"', movie_path)
         else:
-            raise ValueError('Expect file, receive dir')
+            raise ValueError('File is not a movie')
     except Exception as e:
         logger.exception(e)

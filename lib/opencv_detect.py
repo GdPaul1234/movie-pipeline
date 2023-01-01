@@ -50,7 +50,7 @@ def OpenCVDetectWithInjectedTemplate(detector: type['OpenCVBaseDetect'], movie_p
 
     template_path = templates_path.joinpath(f"{metadata['channel']}.bmp")
 
-    if not templates_path.exists():
+    if not template_path.exists():
         raise FileNotFoundError(template_path)
 
     return lambda m: detector(m, template_path)

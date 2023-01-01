@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 progress_pattern = re.compile(r'(frame|fps|size|time|bitrate|speed)\s*\=\s*(\S+)')
 match_all_pattern = re.compile('')
 
+
 class ProgressItem(TypedDict):
     frame: str
     fps: str
@@ -56,7 +57,7 @@ def ffmpeg_frame_producer(input: Path, target_fps: int, other_video_filter=''):
 
     ffparams = {
         "-vcodec": None,  # skip any decoder and let FFmpeg chose
-        "-ffprefixes": [ "-hwaccel", "cuda"],
+        "-ffprefixes": ["-hwaccel", "cuda"],
         "-custom_resolution": "null",  # discard `-custom_resolution`
         "-framerate": "null",  # discard `-framerate`
         # define your filters

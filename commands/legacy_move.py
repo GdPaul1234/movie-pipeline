@@ -6,7 +6,8 @@ from lib.movie_path_destination_finder import MoviePathDestinationFinder
 
 logger = logging.getLogger(__name__)
 
-def move_movie_file_to_dest(filepath: Path|str, config):
+
+def move_movie_file_to_dest(filepath: Path | str, config):
     movie_file = LegacyMovieFile(filepath)
     dest_path = MoviePathDestinationFinder(movie_file, config).resolve_destination()
 
@@ -30,4 +31,3 @@ def command(options, config):
             move_movie_in_directory_to_dest(filepath, config)
     except Exception as e:
         logger.exception(e)
-

@@ -6,10 +6,12 @@ import unittest
 
 from config_loader import ConfigLoader
 from lib.title_cleaner import TitleCleaner
-from lib.title_extractor import NaiveTitleExtractor, SerieSubTitleAwareTitleExtractor, SerieTitleAwareTitleExtractor, SubtitleTitleExpanderExtractor
+from lib.title_extractor import NaiveTitleExtractor, SerieSubTitleAwareTitleExtractor, SerieTitleAwareTitleExtractor, \
+    SubtitleTitleExpanderExtractor
 
 movie_metadata_path = Path(__file__).parent.joinpath('Channel 1_Movie Name_2022-12-05-2203-20.ts.metadata.json')
-serie_metadata_path = Path(__file__).parent.joinpath("Channel 1_Serie Name. 'Title..._2022-12-05-2203-20.ts.metadata.json")
+serie_metadata_path = Path(__file__).parent.joinpath(
+    "Channel 1_Serie Name. 'Title..._2022-12-05-2203-20.ts.metadata.json")
 
 blacklist_path = Path(__file__).parent.parent.joinpath('ressources', 'test_title_re_blacklist.txt')
 default_title_cleaner = TitleCleaner(blacklist_path)
@@ -31,6 +33,7 @@ def file_path_with_metadata_content(content: str, metadata_path: Path):
     finally:
         metadata_path.unlink()
         file_path.unlink()
+
 
 class TestTitleExtractor(unittest.TestCase):
     def test_movie_naive_title_extractor(self):

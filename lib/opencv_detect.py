@@ -69,16 +69,16 @@ def get_template_metadata(template_path: Path):
 
 
 def build_crop_filter(template_path: Path):
-        template_metadata = get_template_metadata(template_path)
+    template_metadata = get_template_metadata(template_path)
 
-        if template_metadata is None:
-            return ''
+    if template_metadata is None:
+        return ''
 
-        w = template_metadata.getint('x2') - template_metadata.getint('x1')
-        h = template_metadata.getint('y2') - template_metadata.getint('y1')
-        x, y = template_metadata.getint('x1'), template_metadata.getint('y1')
+    w = template_metadata.getint('x2') - template_metadata.getint('x1')
+    h = template_metadata.getint('y2') - template_metadata.getint('y1')
+    x, y = template_metadata.getint('x1'), template_metadata.getint('y1')
 
-        return f'crop={w=}:{h=}:{x=}:{y=}'
+    return f'crop={w=}:{h=}:{x=}:{y=}'
 
 
 class OpenCVBaseDetect(ABC):

@@ -20,6 +20,7 @@ options = Namespace()
 setattr(options, 'config_path', config_path)
 config = ConfigLoader(options).config
 
+
 class TestMoviePathDestinationFinder(unittest.TestCase):
     def setUp(self) -> None:
         input_dir_path.mkdir()

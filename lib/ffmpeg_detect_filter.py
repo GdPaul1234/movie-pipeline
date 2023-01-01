@@ -45,7 +45,7 @@ class BaseDetect(ABC):
         detection_result = []
 
         with Progress() as progress:
-             with transient_task_progress(progress, description=self.detect_filter, total=total_duration) as task_id:
+            with transient_task_progress(progress, description=self.detect_filter, total=total_duration) as task_id:
                 process = ffmpeg_command_with_progress(
                     command,
                     cmd=['ffmpeg', '-hwaccel', 'cuda'],

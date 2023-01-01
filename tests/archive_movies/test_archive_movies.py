@@ -67,7 +67,6 @@ class ArchiveMoviesTest(unittest.TestCase):
 
         self.assertEqual([], list(archive_movie_dir_path.iterdir()))
 
-
     def test_archive_confirm(self):
         movie_archiver = MoviesArchiver(config)
 

@@ -66,12 +66,13 @@ class SubtitleTitleExpanderExtractor(NaiveTitleExtractor):
         title, sub_title = cast(tuple[str, str], itemgetter('title', 'sub_title')(metadata))
         sub_title = sub_title.removeprefix(f'{title} : ')
 
-        extracted_title = cast(re.Match[str], __class__.title_pattern.match(sub_title)).group(1)
+        extracted_title = cast(re.Match[str], self.title_pattern.match(sub_title)).group(1)
         if is_serie_from_supplied_value(sub_title):
-            episode = cast(re.Match[str], __class__.episode_pattern.search(sub_title)).group(1)
+            episode = cast(re.Match[str], self.episode_pattern.search(sub_title)).group(1)
             extracted_title += f'__{episode}'
 
         return self._cleaner.clean_title(re.sub(forbidden_char_pattern, '_', extracted_title))
+
 
 class SerieSubTitleAwareTitleExtractor(NaiveTitleExtractor):
     episode_extractor_params = ('sub_title', re.compile(r'(\d+)/\d+'))

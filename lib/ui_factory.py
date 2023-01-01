@@ -17,6 +17,7 @@ def transient_task_progress(progress: Progress, description: str, total: float |
     progress.stop_task(task_id)
     progress.update(task_id, visible=False)
 
+
 class ProgressUIFactory:
     @staticmethod
     def create_process_listener():

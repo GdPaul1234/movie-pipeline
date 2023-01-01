@@ -23,7 +23,7 @@ class KodiDumper:
         output = template.render(parsed_data)
 
         path.write_text(output, encoding='utf-8')
-        logger.info('"%s" created',  path)
+        logger.info('"%s" created', path)
 
     def _render_image(self, image_type: str, image: bytes, md5: str, path: Path, auto_path=False):
         image_path = path.with_name(f'{path.stem}-{image_type}.jpg') if auto_path else path
@@ -45,14 +45,14 @@ class KodiDumper:
             return
 
         self._render_nfo(parser.media_type, parsed_data, self._nfo_filepath)
-        self._render_image('poster' if parser.media_type == 'movie' else 'thumb', 
-                           parsed_data['poster_data'], parsed_data['poster_md5'], 
+        self._render_image('poster' if parser.media_type == 'movie' else 'thumb',
+                           parsed_data['poster_data'], parsed_data['poster_md5'],
                            self._nfo_filepath, auto_path=True)
         if parser.media_type == 'movie':
             try:
                 self._render_image('fanart', parsed_data['backdrop']['image'][0],
-                                parsed_data['backdrop']['image_md5'][0], 
-                                self._nfo_filepath, auto_path=True)
+                                   parsed_data['backdrop']['image_md5'][0],
+                                   self._nfo_filepath, auto_path=True)
             except KeyError:
                 logger.info('No fanart found in "%s"', self._filepath)
 
@@ -61,11 +61,11 @@ class KodiDumper:
             if not tvshow_nfo_path.exists():
                 self._render_nfo('tvshow', parsed_data, tvshow_nfo_path)
                 self._render_image('poster', parsed_data['tv_data']['poster_data'],
-                               parsed_data['tv_data']['poster_md5'], 
-                               tvshow_nfo_path.with_name('poster.jpg'))
+                                   parsed_data['tv_data']['poster_md5'],
+                                   tvshow_nfo_path.with_name('poster.jpg'))
                 self._render_image('fanart', parsed_data['tv_data']['backdrop']['image'][0],
-                                parsed_data['tv_data']['backdrop']['image_md5'][0], 
-                                tvshow_nfo_path.with_name('fanart.jpg'))
+                                   parsed_data['tv_data']['backdrop']['image_md5'][0],
+                                   tvshow_nfo_path.with_name('fanart.jpg'))
 
 
 def command(options, config):

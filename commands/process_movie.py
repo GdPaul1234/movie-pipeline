@@ -151,12 +151,12 @@ class MovieFileProcessorFolderRunner:
         task_id = job_progress.add_task(f'{edl_ext}...', total=len(edls))
 
         for edl in sorted(edls, key=lambda edl: edl.stat().st_size, reverse=True):
-            prev_edl_progress = [0.] # mutable!
+            prev_edl_progress = [0.]  # mutable!
 
             for edl_progress in MovieFileProcessor(edl, job_progress, self._config).process_with_progress():
                 with diff_tracking(prev_edl_progress, edl_progress) as diff_edl_progress:
                     job_progress.advance(task_id, advance=diff_edl_progress)
-                    self._progress.overall_progress.advance(self._progress.overall_task, advance=diff_edl_progress/len(edls))
+                    self._progress.overall_progress.advance(self._progress.overall_task, advance=diff_edl_progress / len(edls))
 
     def process_directory(self):
         logger.info('Processing: "%s"', self._folder_path)
@@ -179,7 +179,7 @@ class MovieFileProcessorFolderRunner:
                 for future in concurrent.futures.as_completed(future_tasks):
                     edl_ext = future_tasks[future]
                     try:
-                        future.result() # wait for completion
+                        future.result()  # wait for completion
                     except Exception as e:
                         logger.error('Exception when processing *%s files: %s', edl_ext, e)
                     else:
@@ -195,7 +195,6 @@ def command(options, config):
 
     filepath = Path(options.file)
     edl_ext: str = options.custom_ext
-
 
     try:
         if filepath.is_file() and filepath.suffix == edl_ext:

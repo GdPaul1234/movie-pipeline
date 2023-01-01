@@ -8,15 +8,18 @@ from models.movie_file import LegacyMovieFile
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class OriginalMovie:
     file_path: Path
     movie: LegacyMovieFile
 
+
 @dataclass
 class EdlFile:
     path: Path
     content: Any
+
 
 class BackupPolicyExecutor:
     def __init__(self, edl_file: EdlFile, config) -> None:

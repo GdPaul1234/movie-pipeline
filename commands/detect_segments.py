@@ -43,7 +43,7 @@ def command(options, config):
             dump_segments_to_file(detectors_result, movie_path=filepath)
         elif filepath.is_dir():
             for metadata_path in filepath.glob('*.metadata.json'):
-                movie_path = metadata_path.with_suffix('')
+                movie_path = metadata_path.with_name(f"{metadata_path.name.removesuffix('.metadata.json')}")
                 logger.info('Seach segments in "%s"...', movie_path)
 
                 if not movie_path.with_suffix(f'{movie_path.suffix}.segments.json').exists():

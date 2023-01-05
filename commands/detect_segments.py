@@ -52,7 +52,7 @@ def command(options, config):
         elif filepath.is_dir():
             for metadata_path in filepath.glob('*.metadata.json'):
                 movie_path = metadata_path.with_name(f"{metadata_path.name.removesuffix('.metadata.json')}")
-                logger.info('Seach segments in "%s"...', movie_path)
+                logger.info('Search segments in "%s"...', movie_path)
 
                 if not movie_path.with_suffix(f'{movie_path.suffix}.segments.json').exists():
                     detectors_result = run_segment_detectors(movie_path, config)

@@ -87,7 +87,12 @@ After filling the config file and after all recordings are done:
 
     - Add `skip_backup: yes` line if the movie file is too big (more than 10 Go).
 
-3. Process movie (cut, trim, convert movies and move them to the right location) by running the `process_movie` command
+3. Process movie (cut, trim, convert movies, backup and move them to the right location) by running the `process_movie` command
+
+  > WARNING
+  > The current implementation of `backup_policy_executor` deletes the original file if is identified as a **serie**.
+  > Be sure that you have some kind of recycle bin puts in place in your system, so the deleted file is moved inside it
+  > instead of being definitly deleted.
 
 ### Archive pipeline
 
@@ -109,3 +114,4 @@ Useful for quickly set up kodi media library in external storage.
 ## TODO
 
 - Implement segments review pipeline
+- Improve segments detection, auto selection of the best strategies

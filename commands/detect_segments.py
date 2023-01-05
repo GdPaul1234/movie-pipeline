@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import cast
 import json
 
-from lib.ffmpeg_detect_filter import AudioCrossCorrelationDetect
+from lib.ffmpeg_detect_filter import AudioCrossCorrelationDetect, CropDetect
 from lib.opencv_detect import OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect
 from models.detected_segments import DetectedSegment, humanize_segments, merge_adjacent_segments
 
@@ -16,7 +16,8 @@ def run_segment_detectors(movie_path: Path, config):
     try:
         detectors = {
             # 'axcorrelate_silence': AudioCrossCorrelationDetect,
-            'match_template': OpenCVDetectWithInjectedTemplate(OpenCVTemplateDetect, movie_path, config)
+            # 'match_template': OpenCVDetectWithInjectedTemplate(OpenCVTemplateDetect, movie_path, config),
+            'crop': CropDetect
         }
 
         for detector_key, detector_value in detectors.items():

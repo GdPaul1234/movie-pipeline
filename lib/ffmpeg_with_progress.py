@@ -29,27 +29,47 @@ class FFmpegLineFilter:
         return self._filter_pattern.search(line) is not None
 
 
-def ffmpeg_command_with_progress(command, cmd=['ffmpeg'], keep_log=False, line_filter=FFmpegLineFilter(), **args):
-    lines = []
+class FFmpegLineContainer:
+    def __init__(self) -> None:
+        self._lines = []
 
-    with subprocess.Popen(command.compile(cmd=cmd), **args, text=True, stderr=subprocess.PIPE) as process:
+    @property
+    def lines(self) -> list[str]:
+        return self._lines
+
+    def update(self, line: str):
+        logger.info(line)
+        self._lines.append(line)
+
+
+def ffmpeg_command_with_progress(
+    command, cmd=['ffmpeg'],
+    keep_log=False,
+    line_filter=FFmpegLineFilter(),
+    line_container=FFmpegLineContainer(),
+    **kwargs
+):
+    with subprocess.Popen(command.compile(cmd=cmd), **kwargs, text=True, stderr=subprocess.PIPE) as process:
         for line in cast(IO[str], process.stderr):
-            if (retcode := process.poll()) is not None:
-                if retcode != 0:
-                    raise ffmpeg.Error('ffmpeg', None, line)
-                break
+            try:
+                if (retcode := process.poll()) is not None:
+                    if retcode != 0:
+                        raise ffmpeg.Error('ffmpeg', None, line)
+                    break
 
-            if keep_log and line_filter.filter(line):
-                logger.info(line)
-                lines.append(line)
-            else:
-                logger.debug(line)
+                if keep_log and line_filter.filter(line):
+                    line_container.update(line)
+                else:
+                    logger.debug(line)
 
-            if items := {key: value
-                        for key, value in progress_pattern.findall(line) if value != 'N/A'}:
-                yield cast(ProgressItem, items)
+                if items := {key: value
+                            for key, value in progress_pattern.findall(line) if value != 'N/A'}:
+                    yield cast(ProgressItem, items)
+            except Exception as e:
+                logger.exception(e)
+                process.terminate()
 
-        return lines
+        return line_container.lines
 
 
 def ffmpeg_frame_producer(input: Path, target_fps: int, other_video_filter=''):

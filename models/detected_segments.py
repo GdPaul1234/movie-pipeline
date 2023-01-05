@@ -18,7 +18,6 @@ def humanize_segments(segments: list[DetectedSegment]) -> str:
 
 
 def merge_adjacent_segments(segments: list[DetectedSegment], min_gap=0.1, min_duration=1200.) -> list[DetectedSegment]:
-
     if len(segments) == 0:
         return []
 

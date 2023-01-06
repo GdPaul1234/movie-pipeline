@@ -84,7 +84,11 @@ def command(options, config):
             dump_to_nfo(filepath)
         elif filepath.is_dir():
             for file in filepath.glob('**/*.vsmeta'):
-                dump_to_nfo(file)
+                try:
+                    dump_to_nfo(file)
+                except Exception as e:
+                    logger.warning('Skipping "%s"', file)
+                    logger.exception(e)
         else:
             raise ValueError('Unknown file type')
     except Exception as e:

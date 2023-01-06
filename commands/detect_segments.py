@@ -16,8 +16,8 @@ def run_segment_detectors(movie_path: Path, config):
     try:
         detectors = {
             # 'axcorrelate_silence': AudioCrossCorrelationDetect,
-            # 'match_template': OpenCVDetectWithInjectedTemplate(OpenCVTemplateDetect, movie_path, config),
-            'crop': CropDetect
+            'match_template': OpenCVDetectWithInjectedTemplate(OpenCVTemplateDetect, movie_path, config),
+            # 'crop': CropDetect
         }
 
         for detector_key, detector_value in detectors.items():

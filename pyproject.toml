@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "movie-pipeline"
+name = "movie_pipeline"
 version = "0.1.0"
 description = ""
 authors = ["GdPaul1234 <paul.godin1234@outlook.fr>"]

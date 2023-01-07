@@ -53,7 +53,7 @@ def main():
     # the code to dispatch commands could all be in this file. For the purposes
     # of illustration only, we implement each command in a separate module.
     try:
-        mod = importlib.import_module(f'commands.{options.command}')
+        mod = importlib.import_module(f'movie_pipeline.commands.{options.command}')
         cmd = getattr(mod, 'command')
     except (ImportError, AttributeError):
         print('Unable to find the code for command \'%s\'' % options.command)

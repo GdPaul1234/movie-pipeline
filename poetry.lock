@@ -181,6 +181,22 @@ python-versions = ">=3.6"
 plugins = ["importlib-metadata"]
 
 [[package]]
+name = "pysimplegui"
+version = "4.60.4"
+description = "Python GUIs for Humans. Launched in 2018. It's 2022 & PySimpleGUI is an ACTIVE & supported project. Super-simple to create custom GUI's. 325+ Demo programs & Cookbook for rapid start. Extensive documentation. Main docs at www.PySimpleGUI.org. Fun & your success are the focus. Examples using Machine Learning (GUI, OpenCV Integration), Rainmeter Style Desktop Widgets, Matplotlib + Pyplot, PIL support, add GUI to command line scripts, PDF & Image Viewers. Great for beginners & advanced GUI programmers."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "python-vlc"
+version = "3.0.18121"
+description = "VLC bindings for python."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "pyyaml"
 version = "6.0"
 description = "YAML parser and emitter for Python"
@@ -265,7 +281,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "477510898cd3191ada424b1f6d0eff8c2b9fa2af01e7029102f662a5085a3bf1"
+content-hash = "6a1ebb1499f1174ecb79a18c3eb3a66e2e8c731338907f6524a990844bd8c813"
 
 [metadata.files]
 binpacking = [
@@ -440,6 +456,14 @@ opencv-contrib-python = [
 pygments = [
     {file = "Pygments-2.13.0-py3-none-any.whl", hash = "sha256:f643f331ab57ba3c9d89212ee4a2dabc6e94f117cf4eefde99a0574720d14c42"},
     {file = "Pygments-2.13.0.tar.gz", hash = "sha256:56a8508ae95f98e2b9bdf93a6be5ae3f7d8af858b43e02c5a2ff083726be40c1"},
+]
+pysimplegui = [
+    {file = "PySimpleGUI-4.60.4-py3-none-any.whl", hash = "sha256:e133fbd21779f0f125cebbc2a4e1f5a931a383738661013ff33ad525d5611eda"},
+    {file = "PySimpleGUI-4.60.4.tar.gz", hash = "sha256:f88c82c301a51aea35be605dc060bcceb0dcb6682e16280544884701ab4b23ba"},
+]
+python-vlc = [
+    {file = "python-vlc-3.0.18121.tar.gz", hash = "sha256:24550314a3e6ed55fd347b009491c98b865f9dfa05a92e889d7b0a2210e7485b"},
+    {file = "python_vlc-3.0.18121-py3-none-any.whl", hash = "sha256:b8f4bdea22d363377c51996db94cac38d02df02fee9b79c03f1840ff6d376455"},
 ]
 pyyaml = [
     {file = "PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:d4db7c7aef085872ef65a8fd7d6d09a14ae91f691dec3e87ee5ee0539d516f53"},

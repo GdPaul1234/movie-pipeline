@@ -1,5 +1,6 @@
 from pathlib import Path
 import time
+from typing import cast
 import PySimpleGUI as sg
 import vlc
 
@@ -11,7 +12,7 @@ from .views.detector_selector import detector_selector
 from .views.status_bar import status_bar, handle_status_bar
 from .views.media_control import media_control, handle_media_control
 from .views.timeline import timeline, handle_timeline
-from .views.segments_timeline import segments_timeline
+from .views.segments_timeline import segments_timeline, handle_segments_timeline
 from .views.segments_list import segments_list
 from .views.video import video
 
@@ -49,8 +50,12 @@ def load_media(window: sg.Window, filepath: Path):
 
 
 left_col = [
-    video, timeline, segments_timeline, media_control,
-    [sg.Sizer(0, 5)],
+    [sg.VPush()],
+    video,
+    timeline, segments_timeline,
+    [sg.Sizer(0, 10)],
+    media_control,
+    [sg.VPush()],
     status_bar
 ]
 
@@ -77,6 +82,7 @@ handlers = (
     handle_status_bar,
     handle_media_control,
     handle_timeline,
+    handle_segments_timeline
 )
 
 
@@ -85,6 +91,7 @@ def main(filepath: Path):
 
     load_media(window, filepath)
     window['-VID-OUT-'].expand(True, True)
+    window['-SEGMENTS-TIMELINE-'].expand(True, False, False)
 
     while True:
         event, values = window.read(timeout=500)  # type: ignore

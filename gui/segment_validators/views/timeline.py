@@ -9,6 +9,7 @@ timeline = [
         enable_events=True,
         disable_number_display=True,
         expand_x=True,
+        pad=0,
         key='-TIMELINE-'
     )
 ]

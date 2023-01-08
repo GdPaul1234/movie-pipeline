@@ -9,18 +9,21 @@ timeline = [
         enable_events=True,
         disable_number_display=True,
         expand_x=True,
-        key='-MEDIA-SLIDER-'
+        key='-TIMELINE-'
     )
 ]
 
 
 def handle_timeline(window: sg.Window, event: str, values: dict[str, Any]):
-    player = window.metadata['vlc'].player
+    media_player = window.metadata['media_player']
+    duration_ms = window.metadata['duration_ms']
 
     if event == '-VIDEO-LOADED-':
-        window['-MEDIA-SLIDER-'].update(value=0, range=(0, player.get_length()))
-    elif event == '-MEDIA-SLIDER-':
-        new_position = values['-MEDIA-SLIDER-']
-        player.set_position(new_position)
-    elif player.is_playing():
-        window['-MEDIA-SLIDER-'].update(value=player.get_time())
+        window['-TIMELINE-'].update(value=0, range=(0, duration_ms))
+
+    elif event == '-TIMELINE-':
+        new_position = int(values['-TIMELINE-'])
+        media_player.set_time(new_position)
+
+    elif media_player.is_playing():
+        window['-TIMELINE-'].update(value=media_player.get_time())

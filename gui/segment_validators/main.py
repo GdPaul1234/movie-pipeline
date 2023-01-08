@@ -50,12 +50,14 @@ def load_media(window: sg.Window, filepath: Path):
 
 left_col = [
     video, timeline, segments_timeline, media_control,
-    status_bar,
+    [sg.Sizer(0, 5)],
+    status_bar
 ]
 
 right_col = [
     detector_selector,
     segments_list,
+    [sg.Input('Nom du fichier converti.mp4', size=(35, 0), pad=((0,0), (5,0)), key='-NAME-')],
     [sg.Button('Validate and quit', size=(30, 0), pad=((0,0), (5,0)))]
 ]
 
@@ -63,10 +65,12 @@ layout = [
     [sg.Column([[
         sg.Text('Review the segments in the right, then click on "Validate and quit"', font='Any 12'),
     ]], element_justification='c', expand_x=True)],
-    [sg.Column([[
+    [
+        sg.Push(),
         sg.Column(left_col, expand_x=True, expand_y=True, pad=0),
-        sg.Column(right_col, expand_y=True, pad=0),
-    ]], element_justification='c', expand_x=True, expand_y=True)]
+        sg.VerticalSeparator(),
+        sg.Column(right_col, expand_x=True, expand_y=True, pad=0),
+    ]
 ]
 
 handlers = (
@@ -80,7 +84,7 @@ def main(filepath: Path):
     window = make_window()
 
     load_media(window, filepath)
-    window['-VID_OUT-'].expand(True, True)
+    window['-VID-OUT-'].expand(True, True)
 
     while True:
         event, values = window.read(timeout=500)  # type: ignore

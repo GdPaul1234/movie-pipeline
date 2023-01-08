@@ -8,7 +8,7 @@ def btn(name):
 
 
 def txt(text, key):
-    return sg.Column([[sg.StatusBar(text, key=key)]], pad=0)
+    return sg.Column([[sg.Text(text, key=key, pad=0)]], pad=0)
 
 
 media_control = [

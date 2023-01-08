@@ -9,7 +9,7 @@ def create_vlc_player(window: sg.Window) -> vlc.MediaPlayer:
     player = cast(vlc.MediaPlayer, vlc.MediaPlayer())
 
     # tell VLC where to render the video(s)
-    tk_id = window['-VID_OUT-'].Widget.winfo_id()
+    tk_id = window['-VID-OUT-'].Widget.winfo_id()
 
     if sg.running_linux():
         player.set_xwindow(tk_id)

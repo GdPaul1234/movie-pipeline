@@ -28,3 +28,4 @@ class SegmentContainer:
 
     def remove(self, segment: Segment):
         self._segments.remove(segment)
+        self._segments.sort()

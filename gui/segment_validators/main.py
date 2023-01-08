@@ -1,6 +1,5 @@
-from pathlib import Path
 import time
-from typing import cast
+from pathlib import Path
 import PySimpleGUI as sg
 import vlc
 
@@ -9,11 +8,11 @@ from .lib.vlc_instance import create_vlc_player
 from .models.segment_container import SegmentContainer
 
 from .views.detector_selector import detector_selector
-from .views.status_bar import status_bar, handle_status_bar
+from .views.status_bar import status_bar
 from .views.media_control import media_control, handle_media_control
 from .views.timeline import timeline, handle_timeline
 from .views.segments_timeline import segments_timeline, handle_segments_timeline
-from .views.segments_list import segments_list
+from .views.segments_list import segments_list, render_values, handle_segments_list
 from .views.video import video
 
 
@@ -79,10 +78,10 @@ layout = [
 ]
 
 handlers = (
-    handle_status_bar,
     handle_media_control,
     handle_timeline,
-    handle_segments_timeline
+    handle_segments_timeline,
+    handle_segments_list
 )
 
 
@@ -92,11 +91,14 @@ def main(filepath: Path):
     load_media(window, filepath)
     window['-VID-OUT-'].expand(True, True)
     window['-SEGMENTS-TIMELINE-'].expand(True, False, False)
+    render_values(window)
 
     while True:
         event, values = window.read(timeout=500)  # type: ignore
         if event == sg.WIN_CLOSED:
             break
+        if event == sg.TIMEOUT_KEY:
+            continue
 
         for handler in handlers:
             handler(window, event, values)

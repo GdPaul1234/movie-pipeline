@@ -7,6 +7,7 @@ segments_list = [
         enable_events=True,
         enable_click_events=True,
         expand_y=True,
+        pad=0,
         key='-TABLE-'
     )
 ]

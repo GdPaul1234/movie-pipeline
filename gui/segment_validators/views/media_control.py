@@ -1,19 +1,37 @@
 from typing import Any
 import PySimpleGUI as sg
 
+from util import seconds_to_position
 
 def btn(name):
     return sg.Button(name, size=(6, 1), pad=(1, 1))
 
 
+def txt(text, key):
+    return sg.Column([[sg.StatusBar(text, key=key)]], pad=0)
+
+
 media_control = [
-    sg.Column(
-        [[btn('play'), btn('pause')]],
-        justification='c'
-    )
+    txt('00:00:00', key='-VIDEO-POSITION-'),
+    sg.Push(),
+    btn('play'), btn('pause'),
+    sg.Push(),
+    txt('00:00:00', key='-VIDEO-DURATION-'),
 ]
 
 
 def handle_media_control(window: sg.Window, event: str, values: dict[str, Any]):
+    player = window.metadata['media_player']
+
     if event in ('play', 'pause'):
         getattr(window.metadata['media_player'], event)()
+
+    elif event == '-VIDEO-LOADED-':
+        duration_ms = window.metadata['duration_ms']
+        filepath = window.metadata['filepath']
+
+        window['-VIDEO-DURATION-'].update(value=seconds_to_position(duration_ms / 1000).split('.')[0])
+        window['-FILENAME-'].update(value=filepath.name)
+
+    elif event == '-TIMELINE-' or player.is_playing():
+        window['-VIDEO-POSITION-'].update(value=seconds_to_position(player.get_time() / 1000).split('.')[0])

@@ -7,7 +7,7 @@ from .lib.vlc_instance import create_vlc_player
 
 from .models.segment_container import SegmentContainer
 
-from .views.toolbar import toolbar
+from .views.detector_selector import detector_selector
 from .views.status_bar import status_bar, handle_status_bar
 from .views.media_control import media_control, handle_media_control
 from .views.timeline import timeline, handle_timeline
@@ -15,11 +15,9 @@ from .views.segments_timeline import segments_timeline
 from .views.segments_list import segments_list
 from .views.video import video
 
-padding_right_none = ((10, 0), (0, 0))
 
 def make_window():
-    window = sg.Window('Segments Reviewer', layout,
-                       finalize=True, resizable=True, use_default_focus=False)
+    window = sg.Window('Segments Reviewer', layout, finalize=True, resizable=True, use_default_focus=False)
     window.set_min_size(window.size)
     window.bring_to_front()
     window.force_focus()
@@ -50,14 +48,25 @@ def load_media(window: sg.Window, filepath: Path):
     window.write_event_value('-VIDEO-LOADED-', True)
 
 
+left_col = [
+    video, timeline, segments_timeline, media_control,
+    status_bar,
+]
+
+right_col = [
+    detector_selector,
+    segments_list,
+    [sg.Button('Validate and quit', size=(30, 0), pad=((0,0), (5,0)))]
+]
+
 layout = [
-    [toolbar],
     [sg.Column([[
-        sg.Column([video, timeline, segments_timeline, media_control],
-                  element_justification='c', expand_x=True, expand_y=True, pad=0),
-        sg.Column([segments_list], justification='r', element_justification='r', expand_y=True, pad=0)
-    ]], expand_x=True, expand_y=True, pad=0)],
-    [sg.Column([[*status_bar, sg.Button('Validate and quit', size=(30, 0), pad=padding_right_none)]], expand_x=True)]
+        sg.Text('Review the segments in the right, then click on "Validate and quit"', font='Any 12'),
+    ]], element_justification='c', expand_x=True)],
+    [sg.Column([[
+        sg.Column(left_col, expand_x=True, expand_y=True, pad=0),
+        sg.Column(right_col, expand_y=True, pad=0),
+    ]], element_justification='c', expand_x=True, expand_y=True)]
 ]
 
 handlers = (

@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 
-GRAPH_SIZE = (480, 20)
+GRAPH_SIZE = (480, 40)
 
 segments_timeline = [
     sg.Graph(

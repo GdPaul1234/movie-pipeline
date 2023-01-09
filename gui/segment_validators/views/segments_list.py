@@ -61,4 +61,6 @@ def handle_segments_list(window: sg.Window, event: str, values: dict[str, Any]):
         render_values(window)
 
     elif event == 'Merge segments':
+        selected_segments = [segment_container.segments[row] for row in table.SelectedRows]
+        segment_container.merge(selected_segments)
         render_values(window)

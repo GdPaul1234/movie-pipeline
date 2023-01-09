@@ -31,3 +31,10 @@ class SegmentContainer:
     def edit(self, old_segment: Segment, new_segment: Segment):
         self._segments.remove(old_segment)
         self._segments.add(new_segment)
+
+    def merge(self, segments: list[Segment]):
+        self._segments -= set(segments)
+
+        sorted_segments = sorted(segments)
+        merged_segment = Segment(sorted_segments[0].start, sorted_segments[-1].end)
+        self._segments.add(merged_segment)

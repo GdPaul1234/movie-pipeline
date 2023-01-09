@@ -92,6 +92,7 @@ def main(filepath: Path):
     load_media(window, filepath)
     window['-VID-OUT-'].expand(True, True)
     window['-SEGMENTS-TIMELINE-'].expand(True, False, False)
+    window.bind('<Configure>', '-CONFIGURE-')
     render_values(window)
 
     while True:

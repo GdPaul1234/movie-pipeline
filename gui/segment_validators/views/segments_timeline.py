@@ -55,6 +55,12 @@ def handle_segments_timeline(window: sg.Window, event: str, values: dict[str, An
         position_handle = graph.draw_line((0.,0.), (0.,1.), color='red')
         graph.metadata['position'] = position_handle
 
+    elif event == '-CONFIGURE-':
+        graph.CanvasSize = graph.get_size()
+        graph.relocate_figure(graph.metadata['position'], player.get_position(), 0)
+        draw_segments(window)
+        window.refresh()
+
     elif event == '-SEGMENTS-UPDATED-':
         draw_segments(window)
 

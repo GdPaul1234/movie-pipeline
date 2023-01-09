@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from util import seconds_to_position
+
 
 @dataclass(eq=True, order=True, frozen=True)
 class Segment:
@@ -9,6 +11,13 @@ class Segment:
     def  __post_init__(self):
         if self.start > self.end:
             raise ValueError('Incoherent Segment')
+
+    def __repr__(self) -> str:
+        return ','.join((
+            seconds_to_position(self.start),
+            seconds_to_position(self.end),
+            "{:02.0f}:{:02.0f}".format(*divmod(self.duration, 60))
+        ))
 
     @property
     def duration(self) -> float:

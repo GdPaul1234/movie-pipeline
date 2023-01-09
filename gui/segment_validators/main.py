@@ -25,6 +25,7 @@ def make_window():
     window.metadata = {
         'segment_container': SegmentContainer(),
         'media_player': create_vlc_player(window),
+        'selected_segments': [],
         'filepath': Path(''),
         'duration_ms': 0
     }

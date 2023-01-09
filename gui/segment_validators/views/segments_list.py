@@ -73,3 +73,19 @@ def handle_segments_list(window: sg.Window, event: str, values: dict[str, Any]):
     elif event == 'Merge segments':
         segment_container.merge(selected_segments)
         render_values(window)
+
+    elif event == 'Set start' and len(selected_segments) == 1:
+        player = window.metadata['media_player']
+        current_position = player.get_time() / 1000
+        edited_segment = Segment(current_position, selected_segments[0].end)
+
+        segment_container.edit(selected_segments[0], edited_segment)
+        render_values(window)
+
+    elif event == 'Set end' and len(selected_segments) == 1:
+        player = window.metadata['media_player']
+        current_position = player.get_time() / 1000
+        edited_segment = Segment(selected_segments[0].start, current_position)
+
+        segment_container.edit(selected_segments[0], edited_segment)
+        render_values(window)

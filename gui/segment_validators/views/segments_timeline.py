@@ -2,21 +2,14 @@ from typing import Any, cast
 import PySimpleGUI as sg
 
 GRAPH_SIZE = (480, 30)
+
 right_click_menu = [
     '&Segments',
     [
         '&Add segment',
-        '!Set &start',
-        '!Set &end'
-        ]
-]
-
-right_click_menu_on_segment = [
-    '&Segments',
-    [
-        '&Add segment',
-        '!Set &start',
-        '!Set &end'
+        '---',
+        'Set &start',
+        'Set &end'
     ]
 ]
 
@@ -67,12 +60,12 @@ def handle_segments_timeline(window: sg.Window, event: str, values: dict[str, An
 
     elif event == '-SEGMENTS-TIMELINE-':
         if len(figures := graph.get_figures_at_location(values['-SEGMENTS-TIMELINE-'])):
-            selected_segment = next(
+            selected_timeline_segment = next(
                 (segment['value'] for segment in graph.metadata['segments'] if segment['fid'] == figures[0]),
                 None
             )
-            window.metadata['selected_segments'] = [selected_segment]
-            window.write_event_value('-SEGMENT-TIMELINE-SELECTED-', selected_segment)
+            window.metadata['selected_segments'] = [selected_timeline_segment]
+            window.write_event_value('-SEGMENT-TIMELINE-SELECTED-', selected_timeline_segment)
 
     elif event == '-TIMELINE-' or player.is_playing():
         graph.relocate_figure(graph.metadata['position'], player.get_position(), 0)

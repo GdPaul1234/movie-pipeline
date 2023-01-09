@@ -23,7 +23,7 @@ def make_window():
     window.force_focus()
 
     window.metadata = {
-        'segments': SegmentContainer(),
+        'segment_container': SegmentContainer(),
         'media_player': create_vlc_player(window),
         'filepath': Path(''),
         'duration_ms': 0
@@ -97,8 +97,6 @@ def main(filepath: Path):
         event, values = window.read(timeout=500)  # type: ignore
         if event == sg.WIN_CLOSED:
             break
-        if event == sg.TIMEOUT_KEY:
-            continue
 
         for handler in handlers:
             handler(window, event, values)

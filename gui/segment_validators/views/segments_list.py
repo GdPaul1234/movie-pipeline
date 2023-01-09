@@ -29,7 +29,7 @@ segments_list = [
 
 
 def render_values(window: sg.Window):
-    segments = cast(tuple[Segment], window.metadata['segments'].segments)
+    segments = cast(tuple[Segment], window.metadata['segment_container'].segments)
 
     def render(segment: Segment):
         start, end = astuple(segment)
@@ -41,10 +41,11 @@ def render_values(window: sg.Window):
 
     values = [render(segment) for segment in segments]
     window['-SEGMENTS-LIST-'].update(values=values)
+    window.write_event_value('-SEGMENTS-UPDATED-', True)
 
 
 def get_selected_segment(window: sg.Window) -> Segment|None:
-    segment_container = cast(SegmentContainer, window.metadata['segments'])
+    segment_container = cast(SegmentContainer, window.metadata['segment_container'])
     table = cast(sg.Table, window['-SEGMENTS-LIST-'])
     row, _ = table.get_last_clicked_position()
 
@@ -56,7 +57,7 @@ def get_selected_segment(window: sg.Window) -> Segment|None:
 
 
 def handle_segments_list(window: sg.Window, event: str, values: dict[str, Any]):
-    segment_container = cast(SegmentContainer, window.metadata['segments'])
+    segment_container = cast(SegmentContainer, window.metadata['segment_container'])
 
     if event == 'Add segment':
         player = window.metadata['media_player']

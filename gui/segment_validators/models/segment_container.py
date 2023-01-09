@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 
-@dataclass(eq=True, order=True)
+@dataclass(eq=True, order=True, frozen=True)
 class Segment:
     start: float
     end: float
@@ -16,16 +16,18 @@ class Segment:
 
 
 class SegmentContainer:
-    _segments: list[Segment] = []
+    _segments: set[Segment] = set()
 
     @property
     def segments(self):
-        return tuple(self._segments)
+        return tuple(sorted(self._segments))
 
     def add(self, segment: Segment):
-        self._segments.append(segment)
-        self._segments.sort()
+        self._segments.add(segment)
 
     def remove(self, segment: Segment):
         self._segments.remove(segment)
-        self._segments.sort()
+
+    def edit(self, old_segment: Segment, new_segment: Segment):
+        self._segments.remove(old_segment)
+        self._segments.add(new_segment)

@@ -45,9 +45,9 @@ title_strategies_schema = Schema({
     str: lambda strategy: strategy in available_title_strategies.keys()
 })
 
-class DirScaffolder:
-    def __init__(self, dir_path: Path, config) -> None:
-        self._dir_path = dir_path
+class PathScaffolder:
+    def __init__(self, path: Path, config) -> None:
+        self._path = path
         self._config = config
 
         title_strategies_path = Path(config.get('Paths', 'title_strategies', fallback='invalid path'))
@@ -63,24 +63,27 @@ class DirScaffolder:
         else:
             raise FileNotFoundError(blacklist_path)
 
+    def _generate_file(self, file: Path) -> bool:
+        if len(list(file.parent.glob(f'{file.name}.*yml*'))): return False
 
-    def scaffold_dir(self):
-        if not self._dir_path.is_dir():
-            raise ValueError(f'dir_path must be a dir')
+        matches = channel_pattern.search(file.stem)
 
-        for file in self._dir_path.glob('*.ts'):
-            if not len(list(file.parent.glob(f'{file.name}.*yml*'))):
-                matches = channel_pattern.search(file.stem)
+        if not matches:
+            logger.warning('Skipping "%s" because its filename does not match the required pattern', file)
+            return False
 
-                if not matches:
-                    logger.warning('Skipping "%s" because its filename does not match the required pattern', file)
-                    continue
+        channel = matches.group(1)
+        title_strategy_name = self._titles_strategies.get(channel) or 'NaiveTitleExtractor'
+        title_strategy = available_title_strategies[title_strategy_name](self._title_cleaner)
 
-                channel = matches.group(1)
-                title_strategy_name = self._titles_strategies.get(channel) or 'NaiveTitleExtractor'
-                title_strategy = available_title_strategies[title_strategy_name](self._title_cleaner)
+        MovieProcessedFileGenerator(file, title_strategy).generate()
+        return True
 
-                MovieProcessedFileGenerator(file, title_strategy).generate()
+    def _scaffold_dir(self) -> bool:
+        return all(self._generate_file(file) for file in self._path.glob('*.ts'))
+
+    def scaffold(self):
+        return self._scaffold_dir() if self._path.is_dir() else self._generate_file(self._path)
 
 
 def command(options, config):
@@ -88,6 +91,6 @@ def command(options, config):
     dir_path = Path(options.dir)
 
     try:
-        DirScaffolder(dir_path, config).scaffold_dir()
+        PathScaffolder(dir_path, config).scaffold()
     except Exception as e:
         logger.exception(e)

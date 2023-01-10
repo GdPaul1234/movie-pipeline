@@ -1,14 +1,16 @@
-from typing import Any, cast
+from pathlib import Path
+from typing import Any, Literal, cast
 import PySimpleGUI as sg
 
+from ..controllers.edit_decision_file_dumper import EditDecisionFileDumper
 from ..models.segment_container import SegmentContainer, Segment
 
 
 right_click_menu = [
     '&Segments',
     [
-        '&Delete segment(s)',
         '&Merge segments',
+        '&Delete segment(s)',
     ]
 ]
 
@@ -36,6 +38,38 @@ def render_values(window: sg.Window):
     values = [render(segment) for segment in segments]
     window['-SEGMENTS-LIST-'].update(values=values)
     window.write_event_value('-SEGMENTS-UPDATED-', True)
+
+
+def edit_segments(window: sg.Window, event: Literal['Set start', 'Set end'], values: dict[str, Any]):
+    segment_container = cast(SegmentContainer, window.metadata['segment_container'])
+    table = cast(sg.Table, window['-SEGMENTS-LIST-'])
+    selected_segments = [segment_container.segments[row] for row in table.SelectedRows]
+
+    if len(selected_segments) != 1: return
+
+    player = window.metadata['media_player']
+    current_position = player.get_time() / 1000
+
+    try:
+        edited_segment = Segment(current_position, selected_segments[0].end) if event == 'Set start' \
+            else Segment(selected_segments[0].start, current_position)
+    except ValueError as e:
+        sg.popup_error(e)
+    else:
+        segment_container.edit(selected_segments[0], edited_segment)
+        render_values(window)
+
+
+def write_segments(window: sg.Window, values: dict[str, Any]) -> Path|None:
+    segment_container = cast(SegmentContainer, window.metadata['segment_container'])
+    dumper = EditDecisionFileDumper(
+        title=values['-NAME-'],
+        source_path=window.metadata['filepath'],
+        segment_container=segment_container,
+        config=window.metadata['config']
+    )
+
+    return dumper.dump_decision_file()
 
 
 def handle_segments_list(window: sg.Window, event: str, values: dict[str, Any]):
@@ -74,18 +108,12 @@ def handle_segments_list(window: sg.Window, event: str, values: dict[str, Any]):
         segment_container.merge(selected_segments)
         render_values(window)
 
-    elif event == 'Set start' and len(selected_segments) == 1:
-        player = window.metadata['media_player']
-        current_position = player.get_time() / 1000
-        edited_segment = Segment(current_position, selected_segments[0].end)
+    elif event in ('Set start', 'Set end'):
+        edit_segments(window, event, values)
 
-        segment_container.edit(selected_segments[0], edited_segment)
-        render_values(window)
-
-    elif event == 'Set end' and len(selected_segments) == 1:
-        player = window.metadata['media_player']
-        current_position = player.get_time() / 1000
-        edited_segment = Segment(selected_segments[0].start, current_position)
-
-        segment_container.edit(selected_segments[0], edited_segment)
-        render_values(window)
+    elif event == 'Validate and quit':
+        if edl_path := write_segments(window, values):
+            sg.popup_notify(edl_path, title='Segments saved', display_duration_in_ms=2000, fade_in_duration=500)
+            window.write_event_value(sg.WIN_CLOSED, True)
+        else:
+            sg.popup_notify(title='Segments not saved, an error has occured')

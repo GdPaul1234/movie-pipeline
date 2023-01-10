@@ -27,7 +27,8 @@ def make_window():
         'media_player': create_vlc_player(window),
         'selected_segments': [],
         'filepath': Path(''),
-        'duration_ms': 0
+        'duration_ms': 0,
+        'config': None
     }
 
     return window
@@ -86,8 +87,9 @@ handlers = (
 )
 
 
-def main(filepath: Path):
+def main(filepath: Path, config):
     window = make_window()
+    window.metadata['config'] = config
 
     load_media(window, filepath)
     window['-VID-OUT-'].expand(True, True)

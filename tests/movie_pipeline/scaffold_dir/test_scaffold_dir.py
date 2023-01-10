@@ -3,7 +3,7 @@ import shutil
 import unittest
 from pathlib import Path
 
-from movie_pipeline.commands.scaffold_dir import DirScaffolder, MovieProcessedFileGenerator
+from movie_pipeline.commands.scaffold_dir import PathScaffolder, MovieProcessedFileGenerator
 from config_loader import ConfigLoader
 
 from movie_pipeline.lib.title_cleaner import TitleCleaner
@@ -45,23 +45,21 @@ class TestScaffoldDir(unittest.TestCase):
     def test_scaffold_dir(self):
         shutil.copyfile(sample_video_path, video_path.with_suffix('.ts'))
 
-        DirScaffolder(input_dir_path, config).scaffold_dir()
+        self.assertTrue(PathScaffolder(input_dir_path, config).scaffold())
         self.assertTrue(video_path.with_suffix('.ts.yml.txt'))
 
     def test_no_scaffold_dir_when_already_created(self):
         shutil.copyfile(sample_video_path, video_path.with_suffix('.ts'))
         video_path.with_suffix('.ts.yml').write_text("DON'T EDIT ME!")
 
-        DirScaffolder(input_dir_path, config).scaffold_dir()
-
+        self.assertFalse(PathScaffolder(input_dir_path, config).scaffold())
         self.assertFalse(video_path.with_suffix('.ts.yml.txt').exists())
 
     def test_no_scaffold_dir_when_already_processing(self):
         shutil.copyfile(sample_video_path, video_path.with_suffix('.ts'))
         video_path.with_suffix('.ts.pending_yml_2').write_text("DON'T EDIT ME!")
 
-        DirScaffolder(input_dir_path, config).scaffold_dir()
-
+        self.assertFalse(PathScaffolder(input_dir_path, config).scaffold())
         self.assertFalse(video_path.with_suffix('.ts.yml.txt').exists())
 
     def tearDown(self) -> None:

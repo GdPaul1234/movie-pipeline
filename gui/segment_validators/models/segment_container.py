@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 from util import seconds_to_position
+from movie_pipeline.models.detected_segments import humanize_segments
 
 
 @dataclass(eq=True, order=True, frozen=True)
@@ -39,6 +40,9 @@ class SegmentContainer:
     @staticmethod
     def check_validity(segments, new_segment: Segment):
         return not any(segment.is_overlapping(new_segment) for segment in segments)
+
+    def __repr__(self) -> str:
+        return humanize_segments(list(map(asdict, self.segments))) # type: ignore
 
     def add(self, segment: Segment):
         if self.check_validity(self._segments, segment):

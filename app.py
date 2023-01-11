@@ -49,6 +49,11 @@ def main():
         'detect_segments', help='Run best-effort segments detectors')
     detect_segments_cmd.add_argument('file', metavar='FILE', help='Movie to be processed')
 
+    # validate dir
+    validate_dir_cmd = subparsers.add_parser(
+        'validate_dir', help='Validate segments and generate edit decision files in given directory')
+    validate_dir_cmd.add_argument('dir', metavar='DIR',help='Movies to be processed directory')
+
     options = parser.parse_args()
     # the code to dispatch commands could all be in this file. For the purposes
     # of illustration only, we implement each command in a separate module.

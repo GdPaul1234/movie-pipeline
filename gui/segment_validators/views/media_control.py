@@ -11,14 +11,15 @@ def txt(text, key):
     return sg.Column([[sg.Text(text, key=key, pad=0)]], pad=0)
 
 
-media_control = [
-    txt('00:00:00', key='-VIDEO-POSITION-'),
-    sg.Push(),
-    btn('play'), btn('pause'),
-    sg.Sizer(0,5), btn('>|', key='next_frame'),
-    sg.Push(),
-    txt('00:00:00', key='-VIDEO-DURATION-'),
-]
+def layout():
+    return [
+        txt('00:00:00', key='-VIDEO-POSITION-'),
+        sg.Push(),
+        btn('play'), btn('pause'),
+        sg.Sizer(0, 5), btn('>|', key='next_frame'),
+        sg.Push(),
+        txt('00:00:00', key='-VIDEO-DURATION-'),
+    ]
 
 
 def handle_media_control(window: sg.Window, event: str, values: dict[str, Any]):

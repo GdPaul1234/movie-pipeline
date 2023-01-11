@@ -15,18 +15,19 @@ right_click_menu = [
 ]
 
 
-segments_list = [
-    sg.Table(
-        headings=(' Start ', '  End  ', 'Dur '),
-        values=[('0:00:00', '0:00:00', '00:00')],
-        right_click_menu=right_click_menu,
-        enable_events=True,
-        enable_click_events=True,
-        expand_y=True,
-        pad=0,
-        key='-SEGMENTS-LIST-'
-    )
-]
+def layout():
+    return [
+        sg.Table(
+            headings=(' Start ', '  End  ', 'Dur '),
+            values=[('0:00:00', '0:00:00', '00:00')],
+            right_click_menu=right_click_menu,
+            enable_events=True,
+            enable_click_events=True,
+            expand_y=True,
+            pad=0,
+            key='-SEGMENTS-LIST-'
+        )
+    ]
 
 
 def render_values(window: sg.Window):
@@ -113,7 +114,7 @@ def handle_segments_list(window: sg.Window, event: str, values: dict[str, Any]):
 
     elif event == 'Validate and quit':
         if edl_path := write_segments(window, values):
-            sg.popup_notify(edl_path, title='Segments saved', display_duration_in_ms=1000, fade_in_duration=250)
+            sg.popup_auto_close(edl_path, title='Segments saved')
             window.write_event_value(sg.WIN_CLOSED, True)
         else:
-            sg.popup_notify(title='Segments not saved, an error has occured')
+            sg.popup_auto_close(title='Segments not saved, an error has occured')

@@ -7,15 +7,17 @@ from ..models.segment_container import SegmentContainer, Segment
 from ..views.segments_list import render_values
 
 
-detector_selector = [
-    sg.Combo(
-        [],
-        enable_events=True,
-        size=(33,0),
-        pad=((0,0), (5,5)),
-        key='-DETECTOR-'
-    )
-]
+def layout():
+    return [
+        sg.Combo(
+            [],
+            enable_events=True,
+            size=(33, 0),
+            pad=((0, 0), (5, 5)),
+            key='-DETECTOR-'
+        )
+    ]
+
 
 def handle_detector(window: sg.Window, event: str, values: dict[str, Any]):
     selector = cast(sg.Combo, window['-DETECTOR-'])

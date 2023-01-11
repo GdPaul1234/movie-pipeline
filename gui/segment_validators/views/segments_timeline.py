@@ -14,19 +14,20 @@ right_click_menu = [
 ]
 
 
-segments_timeline = [
-    sg.Graph(
-        # Define the graph area
-        canvas_size=GRAPH_SIZE, graph_bottom_left=(0., 0.), graph_top_right=(1., 1.),
-        float_values=True,
-        enable_events=True, # mouse click events
-        right_click_menu=right_click_menu,
-        pad=0,
-        background_color='#a6b2be',
-        metadata={'position': None, 'segments': []},
-        key='-SEGMENTS-TIMELINE-'
-    )
-]
+def layout():
+    return [
+        sg.Graph(
+            # Define the graph area
+            canvas_size=GRAPH_SIZE, graph_bottom_left=(0., 0.), graph_top_right=(1., 1.),
+            float_values=True,
+            enable_events=True,  # mouse click events
+            right_click_menu=right_click_menu,
+            pad=0,
+            background_color='#a6b2be',
+            metadata={'position': None, 'segments': []},
+            key='-SEGMENTS-TIMELINE-'
+        )
+    ]
 
 
 def draw_segments(window: sg.Window):
@@ -38,7 +39,7 @@ def draw_segments(window: sg.Window):
     graph.metadata['segments'].clear()
 
     for segment in window.metadata['segment_container'].segments:
-        top_left = (1000*segment.start / duration_ms , 1.)
+        top_left = (1000*segment.start / duration_ms, 1.)
         bottom_right = (1000*segment.end / duration_ms, 0.)
         fill_color = '#f0f3f7' if segment in window.metadata['selected_segments'] else '#283b5b'
 
@@ -52,7 +53,7 @@ def handle_segments_timeline(window: sg.Window, event: str, values: dict[str, An
     graph = cast(sg.Graph, window['-SEGMENTS-TIMELINE-'])
 
     if event == '-VIDEO-LOADED-':
-        position_handle = graph.draw_line((0.,0.), (0.,1.), color='red')
+        position_handle = graph.draw_line((0., 0.), (0., 1.), color='red')
         graph.metadata['position'] = position_handle
 
     elif event == '-CONFIGURE-':

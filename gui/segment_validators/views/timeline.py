@@ -1,18 +1,20 @@
 from typing import Any
 import PySimpleGUI as sg
 
-timeline = [
-    sg.Slider(
-        (0, 0),
-        0,
-        orientation='h',
-        enable_events=True,
-        disable_number_display=True,
-        expand_x=True,
-        pad=0,
-        key='-TIMELINE-'
-    )
-]
+
+def layout():
+    return [
+        sg.Slider(
+            (0, 0),
+            0,
+            orientation='h',
+            enable_events=True,
+            disable_number_display=True,
+            expand_x=True,
+            pad=0,
+            key='-TIMELINE-'
+        )
+    ]
 
 
 def handle_timeline(window: sg.Window, event: str, values: dict[str, Any]):

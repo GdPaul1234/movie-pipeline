@@ -3,8 +3,8 @@ import PySimpleGUI as sg
 
 from util import seconds_to_position
 
-def btn(name):
-    return sg.Button(name, size=(6, 1), pad=(1, 1))
+def btn(name, /, *, key=None):
+    return sg.Button(name, key=(key or name), size=(6, 1), pad=(1, 1))
 
 
 def txt(text, key):
@@ -15,6 +15,7 @@ media_control = [
     txt('00:00:00', key='-VIDEO-POSITION-'),
     sg.Push(),
     btn('play'), btn('pause'),
+    sg.Sizer(0,5), btn('>|', key='next_frame'),
     sg.Push(),
     txt('00:00:00', key='-VIDEO-DURATION-'),
 ]
@@ -23,7 +24,7 @@ media_control = [
 def handle_media_control(window: sg.Window, event: str, values: dict[str, Any]):
     player = window.metadata['media_player']
 
-    if event in ('play', 'pause'):
+    if event in ('play', 'pause', 'next_frame'):
         getattr(window.metadata['media_player'], event)()
 
     elif event == '-VIDEO-LOADED-':

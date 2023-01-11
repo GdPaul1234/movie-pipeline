@@ -64,7 +64,7 @@ class PathScaffolder:
             raise FileNotFoundError(blacklist_path)
 
     def _generate_file(self, file: Path) -> bool:
-        if len(list(file.parent.glob(f'{file.name}.*yml*'))): return False
+        if len(list(file.parent.glob(f'{file.name}.*yml'))): return False
 
         matches = channel_pattern.search(file.stem)
 

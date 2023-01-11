@@ -1,4 +1,3 @@
-from typing import Any
 import PySimpleGUI as sg
 
 status_bar = [

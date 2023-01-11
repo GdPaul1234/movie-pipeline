@@ -6,6 +6,10 @@ from movie_pipeline.commands.process_movie import edl_content_schema
 from movie_pipeline.commands.scaffold_dir import PathScaffolder
 
 
+def ensure_decision_file_template(source_path: Path, config):
+    return PathScaffolder(source_path, config).scaffold()
+
+
 class EditDecisionFileDumper:
     def __init__(self, title: str, source_path: Path, segment_container: SegmentContainer, config) -> None:
         self._title = title
@@ -13,11 +17,8 @@ class EditDecisionFileDumper:
         self._segment_container = segment_container
         self._config = config
 
-    def _ensure_decision_file_template(self):
-        PathScaffolder(self._source_path, self._config).scaffold()
-
     def dump_decision_file(self):
-        self._ensure_decision_file_template()
+        ensure_decision_file_template(self._source_path, self._config)
         decision_file_path = self._source_path.with_suffix(f'{self._source_path.suffix}.yml')
 
         decision_file_content = {

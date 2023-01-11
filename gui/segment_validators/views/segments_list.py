@@ -113,7 +113,7 @@ def handle_segments_list(window: sg.Window, event: str, values: dict[str, Any]):
 
     elif event == 'Validate and quit':
         if edl_path := write_segments(window, values):
-            sg.popup_notify(edl_path, title='Segments saved', display_duration_in_ms=2000, fade_in_duration=500)
+            sg.popup_notify(edl_path, title='Segments saved', display_duration_in_ms=1000, fade_in_duration=250)
             window.write_event_value(sg.WIN_CLOSED, True)
         else:
             sg.popup_notify(title='Segments not saved, an error has occured')

@@ -97,11 +97,11 @@ def main_layout():
 
 handlers = (
     handle_timeline,
+    handle_video,
     handle_media_control,
     handle_segments_timeline,
     handle_segments_list,
     handle_detector,
-    handle_video
 )
 
 
@@ -113,7 +113,6 @@ def main(filepath: Path, config):
     import_segment(window, filepath)
     prefill_name(window, filepath, config)
 
-    window['-VID-OUT-'].expand(True, True)
     window['-SEGMENTS-TIMELINE-'].expand(True, False, False)
     window.bind('<Configure>', '-CONFIGURE-')
     render_values(window)
@@ -129,4 +128,5 @@ def main(filepath: Path, config):
         for handler in handlers:
             handler(window, event, values)
 
+    window.metadata['media_player'].pause()
     window.close()

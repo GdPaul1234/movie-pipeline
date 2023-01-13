@@ -17,7 +17,7 @@ def layout():
         )
     ]
 
-@debounce(1)
+@debounce(0.1)
 def seek_to_position(media_player, new_position, window):
     media_player.set_position(new_position, window)
 

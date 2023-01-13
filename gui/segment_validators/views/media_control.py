@@ -3,8 +3,8 @@ import PySimpleGUI as sg
 
 from util import seconds_to_position
 
-def btn(name, /, *, key=None):
-    return sg.Button(name, key=(key or name), size=(6, 1), pad=(1, 1))
+def btn(text, /, *, key=None, size=(6,1), pad=(1,1)):
+    return sg.Button(text, key=(key or text), size=size, pad=pad)
 
 
 def txt(text, key):
@@ -16,14 +16,26 @@ def layout():
         txt('00:00:00', key='-VIDEO-POSITION-'),
         sg.Push(),
         btn('play'), btn('pause'),
+        sg.Sizer(5),
+        btn('-1s', key='set_relative_position::-1', size=(3,1)),
+        btn('+1s', key='set_relative_position::1', size=(3,1)),
+        sg.Sizer(5),
+        btn('-5s', key='set_relative_position::-5', size=(3,1)),
+        btn('+5s', key='set_relative_position::5', size=(3,1)),
         sg.Push(),
         txt('00:00:00', key='-VIDEO-DURATION-'),
     ]
 
 
 def handle_media_control(window: sg.Window, event: str, values: dict[str, Any]):
+    player = window.metadata['media_player']
+
     if event in ('play', 'pause'):
-        window.perform_long_operation(lambda: getattr(window.metadata['media_player'], event)(window), '-TASK-DONE-')
+        window.perform_long_operation(lambda: getattr(player, event)(window), '-TASK-DONE-')
+
+    elif isinstance(event, str) and event.startswith('set_relative_position::'):
+        command, delta = event.split('::')
+        window.perform_long_operation(lambda: getattr(player, command)(float(delta), window), '-TASK-DONE-')
 
     elif event == '-VIDEO-LOADED-':
         duration_ms = window.metadata['duration_ms']

@@ -17,8 +17,8 @@ rich = "^12.6.0"
 deffcode = "^0.2.4"
 opencv-contrib-python = "^4.7.0.68"
 pysimplegui = "^4.60.4"
-python-vlc = "^3.0.18121"
 decoratoroperations = {git = "https://github.com/salesforce/decorator-operations"}
+pillow = "^9.4.0"
 
 [build-system]
 requires = ["poetry-core"]

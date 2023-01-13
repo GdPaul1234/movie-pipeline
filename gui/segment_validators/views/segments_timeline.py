@@ -49,7 +49,6 @@ def draw_segments(window: sg.Window):
 
 
 def handle_segments_timeline(window: sg.Window, event: str, values: dict[str, Any]):
-    player = window.metadata['media_player']
     graph = cast(sg.Graph, window['-SEGMENTS-TIMELINE-'])
     position_in_percent = window.metadata['position_ms'] / window.metadata['duration_ms']
 

@@ -48,7 +48,7 @@ def edit_segments(window: sg.Window, event: Literal['Set start', 'Set end'], val
 
     if len(selected_segments) != 1: return
 
-    current_position = values['position_ms'] / 1000
+    current_position = window.metadata['position_ms'] / 1000
 
     try:
         edited_segment = Segment(current_position, selected_segments[0].end) if event == 'Set start' \
@@ -94,7 +94,7 @@ def handle_segments_list(window: sg.Window, event: str, values: dict[str, Any]):
             tree.selection_set(child_id)
 
     elif event == 'Add segment':
-        current_position = values['position_ms'] / 1000
+        current_position = window.metadata['position_ms'] / 1000
         segment_container.add(Segment(current_position, current_position + 1))
         render_values(window)
 

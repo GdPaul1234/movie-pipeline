@@ -55,7 +55,7 @@ class SimpleVideoOnlyPlayerConsumer:
         stream = ffmpeg.input(str(self._source))
         frame = extract_frame(stream, self._current_position)
 
-        if self._current_position >= (self._duration - 1):
+        if self._current_position < 0 or self._current_position >= (self._duration - 1):
             self._current_position = 0.
             return
 

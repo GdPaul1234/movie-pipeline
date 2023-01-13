@@ -33,7 +33,7 @@ class SimpleVideoOnlyPlayerConsumer:
 
     def play(self, window: sg.Window):
         logger.debug('Play "%s" from %fs', self._source, self._current_position)
-
+        fps = self._metadata['source_video_framerate']
         self._stop_event.clear()
 
         while not self._stop_event.is_set():
@@ -41,8 +41,8 @@ class SimpleVideoOnlyPlayerConsumer:
                 self._current_position = 0.
                 break
 
-            self.set_relative_position(0.1, window)
-            time.sleep(.05)
+            self.set_relative_position(3/fps, window)
+            time.sleep(1/fps)
 
 
     def pause(self, window: sg.Window|None = None):

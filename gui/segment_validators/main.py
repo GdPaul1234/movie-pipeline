@@ -1,11 +1,10 @@
-import time
 from pathlib import Path
 from typing import cast
 import PySimpleGUI as sg
+from deffcode import Sourcer
 import yaml
-import vlc
 
-from .lib.vlc_instance import create_vlc_player
+from .lib.simple_video_only_player import SimpleVideoOnlyPlayerConsumer
 
 from .controllers.import_segments_from_file import SegmentImporter
 from .controllers.edit_decision_file_dumper import ensure_decision_file_template
@@ -18,7 +17,7 @@ from .views.media_control import layout as media_control, handle_media_control
 from .views.timeline import layout as timeline, handle_timeline
 from .views.segments_timeline import layout as segments_timeline, handle_segments_timeline
 from .views.segments_list import layout as segments_list, render_values, handle_segments_list
-from .views.video import layout as video
+from .views.video import layout as video, handle_video
 
 
 def make_window():
@@ -29,10 +28,11 @@ def make_window():
 
     window.metadata = {
         'segment_container': SegmentContainer(),
-        'media_player': create_vlc_player(window),
+        'media_player': None,
         'selected_segments': [],
         'filepath': Path(''),
         'imported_segments': {},
+        'position_ms': 0,
         'duration_ms': 0,
         'config': None
     }
@@ -41,17 +41,11 @@ def make_window():
 
 
 def load_media(window: sg.Window, filepath: Path):
-    media_player = window.metadata['media_player']
+    sourcer = Sourcer(str(filepath)).probe_stream()
+    metadata = cast(dict, sourcer.retrieve_metadata())
 
-    media = vlc.Media(filepath)
-    media_player.set_media(media)
-
-    media_player.play()
-    time.sleep(0.75)
-    duration_ms = media_player.get_length()
-    media_player.pause()
-
-    window.metadata['duration_ms'] = duration_ms
+    window.metadata['media_player'] = SimpleVideoOnlyPlayerConsumer(filepath)
+    window.metadata['duration_ms'] = 1000 * metadata['source_duration_sec']
     window.metadata['filepath'] = filepath
     window.write_event_value('-VIDEO-LOADED-', True)
 
@@ -102,11 +96,12 @@ def main_layout():
     ]
 
 handlers = (
-    handle_media_control,
     handle_timeline,
+    handle_media_control,
     handle_segments_timeline,
     handle_segments_list,
-    handle_detector
+    handle_detector,
+    handle_video
 )
 
 

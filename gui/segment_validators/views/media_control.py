@@ -16,17 +16,14 @@ def layout():
         txt('00:00:00', key='-VIDEO-POSITION-'),
         sg.Push(),
         btn('play'), btn('pause'),
-        sg.Sizer(0, 5), btn('>|', key='next_frame'),
         sg.Push(),
         txt('00:00:00', key='-VIDEO-DURATION-'),
     ]
 
 
 def handle_media_control(window: sg.Window, event: str, values: dict[str, Any]):
-    player = window.metadata['media_player']
-
-    if event in ('play', 'pause', 'next_frame'):
-        getattr(window.metadata['media_player'], event)()
+    if event in ('play', 'pause'):
+        window.perform_long_operation(lambda: getattr(window.metadata['media_player'], event)(window), '-TASK-DONE-')
 
     elif event == '-VIDEO-LOADED-':
         duration_ms = window.metadata['duration_ms']
@@ -35,5 +32,6 @@ def handle_media_control(window: sg.Window, event: str, values: dict[str, Any]):
         window['-VIDEO-DURATION-'].update(value=seconds_to_position(duration_ms / 1000).split('.')[0])
         window['-FILENAME-'].update(value=filepath.name)
 
-    elif event == '-TIMELINE-' or player.is_playing():
-        window['-VIDEO-POSITION-'].update(value=seconds_to_position(player.get_time() / 1000).split('.')[0])
+    elif event in('-TIMELINE-', '-VIDEO-NEW-POSITION-'):
+        position = window.metadata['position_ms'] / 1000
+        window['-VIDEO-POSITION-'].update(value=seconds_to_position(position).split('.')[0])

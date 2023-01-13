@@ -51,6 +51,7 @@ def draw_segments(window: sg.Window):
 def handle_segments_timeline(window: sg.Window, event: str, values: dict[str, Any]):
     player = window.metadata['media_player']
     graph = cast(sg.Graph, window['-SEGMENTS-TIMELINE-'])
+    position_in_percent = window.metadata['position_ms'] / window.metadata['duration_ms']
 
     if event == '-VIDEO-LOADED-':
         position_handle = graph.draw_line((0., 0.), (0., 1.), color='red')
@@ -58,7 +59,7 @@ def handle_segments_timeline(window: sg.Window, event: str, values: dict[str, An
 
     elif event == '-CONFIGURE-':
         graph.CanvasSize = graph.get_size()
-        graph.relocate_figure(graph.metadata['position'], player.get_position(), 0)
+        graph.relocate_figure(graph.metadata['position'], position_in_percent, 0)
         draw_segments(window)
         window.refresh()
 
@@ -74,5 +75,5 @@ def handle_segments_timeline(window: sg.Window, event: str, values: dict[str, An
             window.metadata['selected_segments'] = [selected_timeline_segment]
             window.write_event_value('-SEGMENT-TIMELINE-SELECTED-', selected_timeline_segment)
 
-    elif event == '-TIMELINE-' or player.is_playing():
-        graph.relocate_figure(graph.metadata['position'], player.get_position(), 0)
+    elif event in ('-TIMELINE-', '-VIDEO-NEW-POSITION-'):
+        graph.relocate_figure(graph.metadata['position'], position_in_percent, 0)

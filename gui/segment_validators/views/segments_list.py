@@ -48,8 +48,7 @@ def edit_segments(window: sg.Window, event: Literal['Set start', 'Set end'], val
 
     if len(selected_segments) != 1: return
 
-    player = window.metadata['media_player']
-    current_position = player.get_time() / 1000
+    current_position = values['position_ms'] / 1000
 
     try:
         edited_segment = Segment(current_position, selected_segments[0].end) if event == 'Set start' \
@@ -95,8 +94,7 @@ def handle_segments_list(window: sg.Window, event: str, values: dict[str, Any]):
             tree.selection_set(child_id)
 
     elif event == 'Add segment':
-        player = window.metadata['media_player']
-        current_position = player.get_time() / 1000
+        current_position = values['position_ms'] / 1000
         segment_container.add(Segment(current_position, current_position + 1))
         render_values(window)
 
@@ -106,8 +104,9 @@ def handle_segments_list(window: sg.Window, event: str, values: dict[str, Any]):
         render_values(window)
 
     elif event == 'Merge segments':
-        segment_container.merge(selected_segments)
-        render_values(window)
+        if len(selected_segments) >= 2:
+            segment_container.merge(selected_segments)
+            render_values(window)
 
     elif event in ('Set start', 'Set end'):
         edit_segments(window, event, values)

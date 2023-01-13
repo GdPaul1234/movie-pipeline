@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from typing import Any, cast
+from typing import cast
 import PySimpleGUI as sg
 import vlc
 

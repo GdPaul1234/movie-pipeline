@@ -1,5 +1,6 @@
 from typing import Any
 import PySimpleGUI as sg
+from decoratorOperations import debounce
 
 
 def layout():
@@ -16,6 +17,10 @@ def layout():
         )
     ]
 
+@debounce(1)
+def seek_to_position(media_player, new_position, window):
+    media_player.set_position(new_position, window)
+
 
 def handle_timeline(window: sg.Window, event: str, values: dict[str, Any]):
     media_player = window.metadata['media_player']
@@ -25,8 +30,9 @@ def handle_timeline(window: sg.Window, event: str, values: dict[str, Any]):
         window['-TIMELINE-'].update(value=0, range=(0, duration_ms))
 
     elif event == '-TIMELINE-':
-        new_position = int(values['-TIMELINE-'])
-        media_player.set_time(new_position)
+        new_position = values['-TIMELINE-'] / 1000
+        seek_to_position(media_player, new_position, window)
 
-    elif media_player.is_playing():
-        window['-TIMELINE-'].update(value=media_player.get_time())
+    elif event == '-VIDEO-NEW-POSITION-':
+        position_ms = window.metadata['position_ms'] = 1000 * values['-VIDEO-NEW-POSITION-']
+        window['-TIMELINE-'].update(value=position_ms)

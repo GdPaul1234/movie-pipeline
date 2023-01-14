@@ -15,13 +15,15 @@ def layout():
     return [
         txt('00:00:00', key='-VIDEO-POSITION-'),
         sg.Push(),
-        btn('play'), btn('pause'),
         sg.Sizer(5),
         btn('-1s', key='set_relative_position::-1', size=(3,1)),
         btn('+1s', key='set_relative_position::1', size=(3,1)),
         sg.Sizer(5),
         btn('-5s', key='set_relative_position::-5', size=(3,1)),
         btn('+5s', key='set_relative_position::5', size=(3,1)),
+        sg.Sizer(5),
+        btn('-15s', key='set_relative_position::-15', size=(4,1)),
+        btn('+15s', key='set_relative_position::15', size=(4,1)),
         sg.Push(),
         txt('00:00:00', key='-VIDEO-DURATION-'),
     ]
@@ -30,10 +32,7 @@ def layout():
 def handle_media_control(window: sg.Window, event: str, values: dict[str, Any]):
     player = window.metadata['media_player']
 
-    if event in ('play', 'pause'):
-        window.perform_long_operation(lambda: getattr(player, event)(window), '-TASK-DONE-')
-
-    elif isinstance(event, str) and event.startswith('set_relative_position::'):
+    if isinstance(event, str) and event.startswith('set_relative_position::'):
         command, delta = event.split('::')
         window.perform_long_operation(lambda: getattr(player, command)(float(delta), window), '-TASK-DONE-')
 

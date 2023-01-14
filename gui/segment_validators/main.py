@@ -128,5 +128,4 @@ def main(filepath: Path, config):
         for handler in handlers:
             handler(window, event, values)
 
-    window.metadata['media_player'].pause()
     window.close()

@@ -96,12 +96,12 @@ def main_layout():
     ]
 
 handlers = (
+    handle_detector,
     handle_timeline,
-    handle_video,
-    handle_media_control,
     handle_segments_timeline,
     handle_segments_list,
-    handle_detector,
+    handle_media_control,
+    handle_video,
 )
 
 

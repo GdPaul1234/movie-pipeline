@@ -48,6 +48,10 @@ def main():
     detect_segments_cmd = subparsers.add_parser(
         'detect_segments', help='Run best-effort segments detectors')
     detect_segments_cmd.add_argument('file', metavar='FILE', help='Movie to be processed')
+    detect_segments_cmd.add_argument('--detector',
+        choices=('axcorrelate_silence', 'match_template', 'crop'),
+        help='Run detect segments with selected detectors',
+        action='extend', nargs='+', default=('match_template',))
 
     # validate dir
     validate_dir_cmd = subparsers.add_parser(

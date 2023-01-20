@@ -1,4 +1,5 @@
 import logging
+from multiprocessing import Process, log_to_stderr
 from pathlib import Path
 
 from gui.segment_validators.main import main as run_gui
@@ -11,9 +12,14 @@ def command(options, config):
     dir_path = Path(options.dir)
 
     try:
+        log_to_stderr(logging.DEBUG)
+
         for segment_file in dir_path.glob('*.segments.json'):
             movie_file = segment_file.with_name(segment_file.name.replace('.segments.json', ''))
-            run_gui(movie_file, config)
+
+            task = Process(target=run_gui, args=(movie_file, config))
+            task.start()
+            task.join()
 
     except Exception as e:
         logger.exception(e)

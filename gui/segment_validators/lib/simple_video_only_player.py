@@ -1,9 +1,7 @@
 import logging
 from pathlib import Path
-from threading import Event
-import time
 from typing import cast
-from deffcode import FFdecoder, Sourcer
+from deffcode import Sourcer
 import PySimpleGUI as sg
 import ffmpeg
 

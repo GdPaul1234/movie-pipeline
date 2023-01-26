@@ -5,7 +5,8 @@ from jinja2 import Environment, FileSystemLoader
 
 from ..lib.vsmeta_parser import VsMetaParser
 
-file_loader = FileSystemLoader('templates')
+template_path = Path(__file__).parent.parent.joinpath('templates')
+file_loader = FileSystemLoader(template_path)
 env = Environment(loader=file_loader)
 env.trim_blocks = True
 env.lstrip_blocks = True

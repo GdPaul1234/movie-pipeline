@@ -18,7 +18,7 @@ right_click_menu = [
 def layout():
     return [
         sg.Table(
-            headings=(' Start  ', '  End   ', ' Dur '),
+            headings=(' Start ', '  End  ', 'Dur '),
             values=[('00:00:000', '00:00:000', '00:00')],
             right_click_menu=right_click_menu,
             enable_events=True,

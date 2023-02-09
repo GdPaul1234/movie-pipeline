@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import cast
 import json
 
-from ..lib.ffmpeg_detect_filter import AudioCrossCorrelationDetect, CropDetect
+from ..lib.ffmpeg_detect_filter import AudioCrossCorrelationDetect, BaseDetect, CropDetect
 from ..lib.opencv_detect import OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect
 from ..models.detected_segments import DetectedSegment, humanize_segments, merge_adjacent_segments
 
@@ -13,10 +13,16 @@ logger = logging.getLogger(__name__)
 def run_segment_detectors(movie_path: Path, selected_detectors_key, config):
     detected_segments = {}
 
+    def try_match_template(movie_path):
+        try:
+            return OpenCVDetectWithInjectedTemplate(OpenCVTemplateDetect, movie_path, config)(movie_path)
+        except Exception as e:
+            logger.exception(e)
+
     try:
         detectors = {
             'axcorrelate_silence': AudioCrossCorrelationDetect,
-            'match_template': OpenCVDetectWithInjectedTemplate(OpenCVTemplateDetect, movie_path, config),
+            'match_template': try_match_template,
             'crop': CropDetect
         }
 
@@ -31,7 +37,7 @@ def run_segment_detectors(movie_path: Path, selected_detectors_key, config):
             detected_segments[detector_key] = humanize_segments(detector_result)
 
     except Exception as e:
-        logger.error(e)
+        logger.exception(e)
         logger.warning('Skipping " %s"', movie_path)
 
     return detected_segments

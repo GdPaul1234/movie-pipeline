@@ -4,6 +4,7 @@ from typing import Literal
 from pathlib import Path
 from abc import ABC
 from rich.progress import Progress
+import multiprocessing
 import re
 import ffmpeg
 
@@ -27,7 +28,7 @@ class BaseDetect(ABC):
     def _map_out(self, output: list[str]):
         return [{key.split('_')[1]: float(value)
                  for key, value in self.filter_pattern.findall(line)}
-                for line in output]
+                for line in output or []]
 
     def _build_command(self, in_file_path: Path):
         in_file = ffmpeg.input(str(in_file_path))
@@ -48,19 +49,27 @@ class BaseDetect(ABC):
 
         with Progress() as progress:
             with transient_task_progress(progress, description=self.detect_filter, total=total_duration) as task_id:
+                stop_signal = multiprocessing.Event()
+
                 process = ffmpeg_command_with_progress(
                     command,
                     cmd=['ffmpeg', '-hwaccel', 'cuda'],
                     keep_log=True,
                     line_filter=FFmpegLineFilter(self.filter_pattern),
-                    line_container=self.line_container
+                    line_container=self.line_container,
+                    stop_signal=stop_signal
                 )
 
                 try:
                     while True:
-                        if (item := next(process)).get('time'):
-                            processed_time = position_in_seconds(item['time'])
-                            progress.update(task_id, completed=processed_time)
+                        try:
+                            if (item := next(process)).get('time'):
+                                processed_time = position_in_seconds(item['time'])
+                                progress.update(task_id, completed=processed_time)
+
+                        except KeyboardInterrupt:
+                            stop_signal.set()
+
                 except StopIteration as e:
                     detection_result = self._map_out(e.value)
 

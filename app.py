@@ -21,37 +21,31 @@ def main():
     subparsers = parser.add_subparsers(dest='command', help='Available commands:')
 
     # move command
-    move_cmd = subparsers.add_parser(
-        'legacy_move', help='Move converted movies or series to their folder')
+    move_cmd = subparsers.add_parser('legacy_move', help='Move converted movies or series to their folder')
     move_cmd.add_argument('file', metavar='FILE', help='File or folder to move')
 
     # process command
-    process_cmd = subparsers.add_parser(
-        'process_movie', help='Cut and merge movies to keep only relevant parts')
+    process_cmd = subparsers.add_parser('process_movie', help='Cut and merge movies to keep only relevant parts')
     process_cmd.add_argument('file', metavar='FILE', help='File or folder to process')
     process_cmd.add_argument('--custom-ext', help='Extension of processing decision file', default='.yml')
 
     # scaffold command
-    scaffold_cmd = subparsers.add_parser(
-        'scaffold_dir', help='Scaffold movie edit decision files')
+    scaffold_cmd = subparsers.add_parser('scaffold_dir', help='Scaffold movie edit decision files')
     scaffold_cmd.add_argument('dir', metavar='DIR',help='Movies to be processed directory')
 
     # archive movies command
     subparsers.add_parser('archive_movies', help='Archive movies regarding options in config file')
 
     # dump for kodi
-    dump_for_kodi_cmd = subparsers.add_parser(
-        'dump_for_kodi', help='Dump .vsmeta to .nfo if not exist')
+    dump_for_kodi_cmd = subparsers.add_parser('dump_for_kodi', help='Dump .vsmeta to .nfo if not exist')
     dump_for_kodi_cmd.add_argument('file', metavar='FILE', help='File or folder to process')
 
     # detect segments
-    detect_segments_cmd = subparsers.add_parser(
-        'detect_segments', help='Run best-effort segments detectors')
+    detect_segments_cmd = subparsers.add_parser('detect_segments', help='Run best-effort segments detectors')
     detect_segments_cmd.add_argument('file', metavar='FILE', help='Movie to be processed')
     detect_segments_cmd.add_argument('--detector',
-        choices=('axcorrelate_silence', 'match_template', 'crop'),
-        help='Run detect segments with selected detectors',
-        action='extend', nargs='+', default=('match_template',))
+                                     choices=('axcorrelate_silence', 'match_template', 'crop'),
+                                     help='Run detect segments with selected detectors', nargs='+', default=['match_template'])
 
     # validate dir
     validate_dir_cmd = subparsers.add_parser(

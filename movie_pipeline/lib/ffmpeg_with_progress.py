@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import IO, cast, TypedDict
+from multiprocessing import Event
 import logging
 import re
 import subprocess
@@ -47,6 +48,7 @@ def ffmpeg_command_with_progress(
     keep_log=False,
     line_filter=FFmpegLineFilter(),
     line_container=FFmpegLineContainer(),
+    stop_signal=Event(),
     **kwargs
 ):
     with subprocess.Popen(command.compile(cmd=cmd), **kwargs, text=True, stderr=subprocess.PIPE) as process:
@@ -56,6 +58,10 @@ def ffmpeg_command_with_progress(
                     if retcode != 0:
                         raise ffmpeg.Error('ffmpeg', None, line)
                     break
+
+                if stop_signal.is_set():
+                    logger.info('Killing')
+                    raise InterruptedError
 
                 if keep_log and line_filter.filter(line):
                     line_container.update(line)
@@ -68,7 +74,7 @@ def ffmpeg_command_with_progress(
             except Exception as e:
                 logger.exception(e)
                 process.terminate()
-
+        logger.info('OK')
         return line_container.lines
 
 

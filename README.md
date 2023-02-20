@@ -9,17 +9,18 @@ Set of tools that automatize most of movies library maintenance
 ```
 $ python app.py --help
 usage: app.py [-h] [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--config-path CONFIG_PATH]
-              {legacy_move,process_movie,scaffold_dir,archive_movies,dump_for_kodi,detect_segments} ...
+              {legacy_move,process_movie,scaffold_dir,archive_movies,dump_for_kodi,detect_segments,validate_dir} ...
 
 positional arguments:
-  {legacy_move,process_movie,scaffold_dir,archive_movies,dump_for_kodi,detect_segments}
+  {legacy_move,process_movie,scaffold_dir,archive_movies,dump_for_kodi,detect_segments,validate_dir}
                         Available commands:
     legacy_move         Move converted movies or series to their folder
-    process_movie       Cut and merge movies to keep only relevant parts
+    process_movie       Cut and merge movie segments to keep only relevant parts
     scaffold_dir        Scaffold movie edit decision files
     archive_movies      Archive movies regarding options in config file
     dump_for_kodi       Dump .vsmeta to .nfo if not exist
     detect_segments     Run best-effort segments detectors
+    validate_dir        Validate segments and generate edit decision files in given directory
 
 options:
   -h, --help            show this help message and exit
@@ -48,6 +49,7 @@ series_folder=${base_path}\Séries
 
 backup_folder=${base_backup_path}\PVR\playground
 movies_archive_folder=${base_backup_path}\Films
+series_archive_folder=${base_backup_path}\Séries
 
 title_strategies=.\title_strategies.yml
 title_re_blacklist=.\title_re_blacklist.txt
@@ -62,8 +64,7 @@ templates_path=V:\PVR\autres\scripts\common-ressources\logo
 nb_worker=2
 
 [Logger]
-file_path=${Paths:base_path}\log-quick.txt
-
+file_path=${Paths:base_path}\log.txt
 ```
 
 ## Pipelines
@@ -85,6 +86,8 @@ After filling the config file and after all recordings are done:
 
       Don't forget to carrefuly review the segments field and to append the leading comma at the end to validate your result!
 
+      > INFO You can use the built-in `validate_dir` commands to validate segments from all completed movies that have been analyzed by the `detect_segments` command
+
     - Add `skip_backup: yes` line if the movie file is too big (more than 10 Go).
 
 3. Process movie (cut, trim, convert movies, backup and move them to the right location) by running the `process_movie` command
@@ -103,7 +106,7 @@ If the remaining space of the `base_path` is low, use the `archive_movies` comma
 
 This command are primarly created to fit my need, don't run it if you don't have movies backup in place because it deletes the oldest movies in `base_path` and move the corresponding `${base_backup_path}/PVR/Films` to `movies_archive_folder`.
 
-Only movies are suported at the time of writing this document
+Only movies are supported at the time of writing this document
 
 ### Dump for kodi
 
@@ -113,5 +116,4 @@ Useful for quickly set up kodi media library in external storage.
 
 ## TODO
 
-- Implement segments review pipeline
 - Improve segments detection, auto selection of the best strategies

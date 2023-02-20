@@ -74,7 +74,7 @@ def ffmpeg_command_with_progress(
             except Exception as e:
                 logger.exception(e)
                 process.terminate()
-        logger.info('OK')
+
         return line_container.lines
 
 

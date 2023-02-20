@@ -1,5 +1,8 @@
-from typing import Any
+from typing import Any, cast
 import PySimpleGUI as sg
+
+from gui.segment_validators.lib.simple_video_only_player import SimpleVideoOnlyPlayerConsumer
+from gui.segment_validators.models.segment_container import SegmentContainer
 
 from util import seconds_to_position
 
@@ -15,6 +18,8 @@ def layout():
     return [
         txt('00:00:00', key='-VIDEO-POSITION-'),
         sg.Push(),
+        btn('>[-', key='goto_selected_segment::start', size=(3,1)),
+        btn('-]<', key='goto_selected_segment::end', size=(3,1)),
         sg.Sizer(5),
         btn('-1s', key='set_relative_position::-1', size=(3,1)),
         btn('+1s', key='set_relative_position::1', size=(3,1)),
@@ -30,11 +35,21 @@ def layout():
 
 
 def handle_media_control(window: sg.Window, event: str, values: dict[str, Any]):
-    player = window.metadata['media_player']
+    player = cast(SimpleVideoOnlyPlayerConsumer, window.metadata['media_player'])
 
     if isinstance(event, str) and event.startswith('set_relative_position::'):
         command, delta = event.split('::')
         window.perform_long_operation(lambda: getattr(player, command)(float(delta), window), '-TASK-DONE-')
+
+    elif isinstance(event, str) and event.startswith('goto_selected_segment::'):
+        segment_container = cast(SegmentContainer, window.metadata['segment_container'])
+        table = cast(sg.Table, window['-SEGMENTS-LIST-'])
+        selected_segments = [segment_container.segments[row] for row in table.SelectedRows]
+
+        if len(selected_segments) != 1: return
+
+        _, position = event.split('::')
+        window.perform_long_operation(lambda: player.set_position(getattr(selected_segments[0], position), window), '-TASK-DONE-')
 
     elif event == '-VIDEO-LOADED-':
         duration_ms = window.metadata['duration_ms']

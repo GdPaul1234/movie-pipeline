@@ -1,26 +1,27 @@
 import concurrent.futures
-import binpacking
 import itertools
 import logging
-from pathlib import Path
-from rich.live import Live
-from rich.tree import Tree
-from rich.progress import Progress
-from rich import print
 from collections import deque
-from schema import Schema, Optional, Regex
+from pathlib import Path
 from typing import cast
-import yaml
+
+import binpacking
 import ffmpeg
+import yaml
+from rich import print
+from rich.live import Live
+from rich.progress import Progress
+from rich.tree import Tree
+from schema import Optional, Regex, Schema
+
+from util import diff_tracking, position_in_seconds
 
 from ..lib.backup_policy_executor import BackupPolicyExecutor, EdlFile
 from ..lib.ffmpeg_with_progress import ffmpeg_command_with_progress
-from ..lib.ui_factory import ProgressUIFactory, ProgressListener, transient_task_progress
 from ..lib.movie_path_destination_finder import MoviePathDestinationFinder
-
-from ..models.movie_segments import MovieSegments
+from ..lib.ui_factory import (ProgressListener, ProgressUIFactory, transient_task_progress)
 from ..models.movie_file import LegacyMovieFile
-from util import position_in_seconds, diff_tracking
+from ..models.movie_segments import MovieSegments
 
 logger = logging.getLogger(__name__)
 
@@ -170,7 +171,6 @@ class MovieFileProcessorFolderRunner:
             ProgressUIFactory.create_job_panel_row_from_job_progress(self._progress.layout, self._jobs_progresses)
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=self._nb_worker) as executor:
-                nb_completed_tasks = 0
                 future_tasks = {
                     executor.submit(self._execute_processing, index, edl_ext): edl_ext
                     for index, edl_ext in map(lambda index: (index, f'.pending_yml_{index}'), range(self._nb_worker))
@@ -183,8 +183,6 @@ class MovieFileProcessorFolderRunner:
                     except Exception as e:
                         logger.error('Exception when processing *%s files: %s', edl_ext, e)
                     else:
-                        nb_completed_tasks += 1
-                        self._progress.overall_progress.update(self._progress.overall_task, completed=nb_completed_tasks)
                         logger.info('Processed all %s edl files', edl_ext)
 
         logger.info('All movie files in "%s" processed', self._folder_path)

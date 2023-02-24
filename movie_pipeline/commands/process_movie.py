@@ -137,17 +137,25 @@ class MovieFileProcessorFolderRunner:
         )
 
     def _prepare_processing(self, tree_logger: Tree):
+        groups: list[list[Path]] = []
+
         for index, group in enumerate(self._distribute_fairly_edl()):
             subtree = tree_logger.add(f'Worker {index}')
+            subgroup: list[Path] = []
 
             # rename distributed edls
             for edl in cast(list[Path], group):
                 new_edl_name = edl.with_suffix(f'.pending_yml_{index}')
                 edl.rename(new_edl_name)
+
+                subgroup.append(new_edl_name)
                 subtree.add(str(new_edl_name))
 
-    def _execute_processing(self, worker_id: int, edl_ext: str):
-        edls = list(self._folder_path.glob(f'*{edl_ext}'))
+            groups.append(subgroup)
+
+        return groups
+
+    def _execute_processing(self, worker_id: int, edls: list[Path], edl_ext: str):
         job_progress = self._jobs_progresses[worker_id]
         task_id = job_progress.add_task(f'{edl_ext}...', total=len(edls))
 
@@ -163,7 +171,7 @@ class MovieFileProcessorFolderRunner:
         logger.info('Processing: "%s"', self._folder_path)
 
         tree = Tree("EDL to be processed")
-        self._prepare_processing(tree_logger=tree)
+        edl_groups = self._prepare_processing(tree_logger=tree)
         print(tree)
 
         with Live(self._progress.layout, refresh_per_second=10):
@@ -172,8 +180,11 @@ class MovieFileProcessorFolderRunner:
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=self._nb_worker) as executor:
                 future_tasks = {
-                    executor.submit(self._execute_processing, index, edl_ext): edl_ext
-                    for index, edl_ext in map(lambda index: (index, f'.pending_yml_{index}'), range(self._nb_worker))
+                    executor.submit(self._execute_processing, index, group, edl_ext): edl_ext
+                    for index, edl_ext, group in map(
+                        lambda index: (index, f'.pending_yml_{index}', edl_groups[index]),
+                        range(self._nb_worker)
+                    )
                 }
 
                 for future in concurrent.futures.as_completed(future_tasks):

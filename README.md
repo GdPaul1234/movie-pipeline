@@ -92,19 +92,19 @@ After filling the config file and after all recordings are done:
 
 3. Process movie (cut, trim, convert movies, backup and move them to the right location) by running the `process_movie` command
 
-  > WARNING
+  > **WARNING**
   > The current implementation of `backup_policy_executor` deletes the original file if is identified as a **serie**.
   > Be sure that you have some kind of recycle bin puts in place in your system, so the deleted file is moved inside it
   > instead of being definitly deleted.
 
 ### Archive pipeline
 
-If the remaining space of the `base_path` is low, use the `archive_movies` command.
+If the remaining space of `base_path` is low, use the `archive_movies` command.
 
-> WARNING
+> **WARNING**
 > it takes for granted that you periodicaly backup each movies (located in `movies_folder`) to `${base_backup_path}/PVR/Films`.
 
-This command are primarly created to fit my need, don't run it if you don't have movies backup in place because it deletes the oldest movies in `base_path` and move the corresponding `${base_backup_path}/PVR/Films` to `movies_archive_folder`.
+This command is mainly created for my needs, don't run it if you don't have a movie backup in place because it deletes the oldest movies in `base_path` and move the corresponding `${base_backup_path}/PVR/Films` to `movies_archive_folder`.
 
 Only movies are supported at the time of writing this document
 
@@ -117,3 +117,5 @@ Useful for quickly set up kodi media library in external storage.
 ## TODO
 
 - Improve segments detection, auto selection of the best strategies
+- Migrate config files to Pydantic BaseSettings
+- Add tests for GUI and segment detections

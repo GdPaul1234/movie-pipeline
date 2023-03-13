@@ -86,13 +86,16 @@ After filling the config file and after all recordings are done:
 
       Don't forget to carrefuly review the segments field and to append the leading comma at the end to validate your result!
 
-      > INFO You can use the built-in `validate_dir` commands to validate segments from all completed movies that have been analyzed by the `detect_segments` command
+      > **INFO**
+      >
+      > You can use the built-in `validate_dir` commands to validate segments from all completed movies that have been analyzed by the `detect_segments` command
 
     - Add `skip_backup: yes` line if the movie file is too big (more than 10 Go).
 
 3. Process movie (cut, trim, convert movies, backup and move them to the right location) by running the `process_movie` command
 
   > **WARNING**
+  >
   > The current implementation of `backup_policy_executor` deletes the original file if is identified as a **serie**.
   > Be sure that you have some kind of recycle bin puts in place in your system, so the deleted file is moved inside it
   > instead of being definitly deleted.
@@ -102,7 +105,8 @@ After filling the config file and after all recordings are done:
 If the remaining space of `base_path` is low, use the `archive_movies` command.
 
 > **WARNING**
-> it takes for granted that you periodicaly backup each movies (located in `movies_folder`) to `${base_backup_path}/PVR/Films`.
+>
+> It takes for granted that you periodicaly backup each movies (located in `movies_folder`) to `${base_backup_path}/PVR/Films`.
 
 This command is mainly created for my needs, don't run it if you don't have a movie backup in place because it deletes the oldest movies in `base_path` and move the corresponding `${base_backup_path}/PVR/Films` to `movies_archive_folder`.
 

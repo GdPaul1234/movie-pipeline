@@ -85,9 +85,9 @@ class MovieFileProcessor:
             .output(
                 str(dest_filepath),
                 vcodec='h264_nvenc',
+                **{'preset:v': 'p7', 'tune:v': 'hq', 'rc:v': 'vbr', 'cq:v': 28, 'profile:v': 'high'},
                 acodec='aac', cutoff='20K', audio_bitrate='256K', ac=2,
                 dn=None, sn=None, ignore_unknown=None,
-                **{'preset:v': 'p7', '-tune:v': 'hq', 'rc:v': 'vbr', 'cq:v': 28, 'b:v': 0, 'profile:v': 'high'}
             )
         )
 

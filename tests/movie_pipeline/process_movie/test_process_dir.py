@@ -3,10 +3,12 @@ import textwrap
 import unittest
 from pathlib import Path
 
-from movie_pipeline.commands.process_movie import MovieFileProcessorFolderRunner
+from movie_pipeline.commands.process_movie import \
+    MovieFileProcessorFolderRunner
 from movie_pipeline.lib.ui_factory import ProgressUIFactory
 
-from ..concerns import get_output_movies_directories, create_output_movies_directories, lazy_load_config_file
+from ..concerns import (copy_files, create_output_movies_directories,
+                        get_output_movies_directories, lazy_load_config_file)
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 video_path = input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')
@@ -19,10 +21,11 @@ lazy_config = lazy_load_config_file(Path(__file__).parent)
 
 class TestProcessDir(unittest.TestCase):
     def setUp(self) -> None:
-        input_dir_path.mkdir()
         sample_video_path = Path(__file__).parent.parent.joinpath('ressources', 'counter-30s.mp4')
-        shutil.copyfile(sample_video_path, video_path)
-        shutil.copyfile(sample_video_path, serie_path)
+        copy_files([
+            {'source': sample_video_path, 'destination': video_path},
+            {'source': sample_video_path, 'destination': serie_path}
+        ])
 
         create_output_movies_directories(Path(__file__).parent)
 

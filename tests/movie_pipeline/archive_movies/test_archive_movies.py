@@ -8,7 +8,9 @@ from unittest.mock import patch
 
 from movie_pipeline.commands.archive_movies import MoviesArchiver
 
-from ..concerns import get_output_movies_directories, create_output_movies_directories, lazy_load_config_file
+from ..concerns import (copy_files, create_output_movies_directories,
+                        get_output_movies_directories, lazy_load_config_file,
+                        make_dirs)
 
 output_dir_path, movie_dir_path, serie_dir_path, backup_dir_path = \
     get_output_movies_directories(Path(__file__).parent)
@@ -24,29 +26,24 @@ lazy_config = lazy_load_config_file(Path(__file__).parent)
 class ArchiveMoviesTest(unittest.TestCase):
     def setUp(self) -> None:
         create_output_movies_directories(Path(__file__).parent)
+
+        pvr_movie_backup_dir_path = backup_dir_path.joinpath('PVR', 'Films')
+        video_not_to_backup_archive_path = pvr_movie_backup_dir_path.joinpath('Movie Name', 'Movie Name.mp4')
+        video_to_backup_archive_path = pvr_movie_backup_dir_path.joinpath('Old Movie Name', 'Old Movie Name.mp4')
+
         sample_video_path = Path(__file__).parent.parent.joinpath('ressources', 'counter-30s.mp4')
 
-        # movie 1, recent (not to backup)
-        video_not_to_backup_path.parent.mkdir(parents=True)
-        shutil.copyfile(sample_video_path, video_not_to_backup_path)
+        def change_created_at_to_past(path: Path):
+            past_datetime = datetime.now().timestamp() - timedelta(days=5).total_seconds()
+            os.utime(path, (past_datetime, past_datetime))
 
-        # movie 2, to backup
-        video_to_backup_path.parent.mkdir(parents=True)
-        shutil.copyfile(sample_video_path, video_to_backup_path)
-        past_datetime = datetime.now().timestamp() - timedelta(days=5).total_seconds()
-        os.utime(video_to_backup_path, (past_datetime, past_datetime))
-
-        # backups
-        pvr_movie_backup_dir_path = backup_dir_path.joinpath('PVR', 'Films')
-        pvr_movie_backup_dir_path.mkdir(parents=True)
-
-        video_not_to_backup_archive_path = pvr_movie_backup_dir_path.joinpath('Movie Name')
-        video_not_to_backup_archive_path.mkdir()
-        shutil.copy2(video_not_to_backup_path, video_not_to_backup_archive_path)
-
-        video_to_backup_archive_path = pvr_movie_backup_dir_path.joinpath('Old Movie Name')
-        video_to_backup_archive_path.mkdir()
-        shutil.copy2(video_to_backup_path, video_to_backup_archive_path)
+        copy_files([
+            {'source': sample_video_path, 'destination': video_not_to_backup_path},
+            {'source': video_not_to_backup_path, 'destination': video_not_to_backup_archive_path},
+            # ---
+            {'source': sample_video_path, 'destination': video_to_backup_path, 'after_copy': change_created_at_to_past},
+            {'source': video_to_backup_path, 'destination': video_to_backup_archive_path}
+        ])
 
         archive_movie_dir_path.mkdir()
 

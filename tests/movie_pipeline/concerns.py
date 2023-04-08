@@ -1,5 +1,7 @@
 from pathlib import Path
+from typing import Callable, NotRequired, TypedDict
 from settings import Settings
+import shutil
 
 def get_output_movies_directories(base_path_folder: Path):
     output_dir_path = base_path_folder / 'out'
@@ -18,5 +20,24 @@ def lazy_load_config_file(base_path_folder: Path):
 
 
 def create_output_movies_directories(base_path_folder: Path):
-    for folder in get_output_movies_directories(base_path_folder):
-        folder.mkdir(parents=True)
+    make_dirs(list(get_output_movies_directories(base_path_folder)))
+
+
+class SourceDestinationDict(TypedDict):
+    source: Path
+    destination: Path
+    after_copy: NotRequired[Callable[[Path], None]]
+
+
+def make_dirs(paths: list[Path]):
+    for path in paths:
+        path.mkdir(parents=True)
+
+
+def copy_files(rules: list[SourceDestinationDict]):
+    for rule in rules:
+        rule['destination'].parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(rule['source'], rule['destination'])
+
+        if (after_copy_fn := rule.get('after_copy')) is not None:
+            after_copy_fn(rule['destination'])

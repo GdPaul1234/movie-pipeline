@@ -1,26 +1,20 @@
-from argparse import Namespace
 import shutil
 import unittest
 from pathlib import Path
 
-from movie_pipeline.models.movie_file import LegacyMovieFile
 from movie_pipeline.lib.movie_path_destination_finder import MoviePathDestinationFinder
-from settings import Settings
+from movie_pipeline.models.movie_file import LegacyMovieFile
+
+from ..concerns import get_output_movies_directories, lazy_load_config_file
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 video_path = input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')
 serie_path = input_dir_path.joinpath('channel 1_Serie Name S01E23_2022-11-1601-20.mp4')
 
-output_dir_path = Path(__file__).parent.joinpath('out')
-output_dir_movie_path = output_dir_path.joinpath('Films')
-output_dir_serie_path = output_dir_path.joinpath('Séries')
-backup_dir_path = output_dir_path.joinpath('backup')
+output_dir_path, output_dir_movie_path, output_dir_serie_path, backup_dir_path = \
+    get_output_movies_directories(Path(__file__).parent)
 
-config_path = Path(__file__).parent.joinpath('test_config.env')
-options = Namespace()
-setattr(options, 'config_path', config_path)
-lazy_config = lambda: Settings(_env_file=options.config_path, _env_file_encoding='utf-8') # type: ignore
-
+lazy_config = lazy_load_config_file(Path(__file__).parent)
 
 class TestMoviePathDestinationFinder(unittest.TestCase):
     def setUp(self) -> None:

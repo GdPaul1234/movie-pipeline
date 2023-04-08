@@ -1,29 +1,24 @@
-from argparse import Namespace
-from datetime import datetime, timedelta
-from io import StringIO
-from pathlib import Path
 import os
 import shutil
 import unittest
+from datetime import datetime, timedelta
+from io import StringIO
+from pathlib import Path
 from unittest.mock import patch
 
 from movie_pipeline.commands.archive_movies import MoviesArchiver
-from settings import Settings
 
-output_dir_path = Path(__file__).parent.joinpath('out')
-backup_dir_path = output_dir_path.joinpath('backup')
+from ..concerns import get_output_movies_directories, lazy_load_config_file
 
-movie_dir_path = output_dir_path.joinpath('Films')
-serie_dir_path = output_dir_path.joinpath('Séries')
+output_dir_path, movie_dir_path, serie_dir_path, backup_dir_path = \
+    get_output_movies_directories(Path(__file__).parent)
+
 video_to_backup_path = movie_dir_path.joinpath('Old Movie Name', 'Old Movie Name.mp4')
 video_not_to_backup_path = movie_dir_path.joinpath('Movie Name', 'Movie Name.mp4')
 
 archive_movie_dir_path = backup_dir_path.joinpath('Films')
 
-config_path = Path(__file__).parent.joinpath('test_config.env')
-options = Namespace()
-setattr(options, 'config_path', config_path)
-lazy_config = lambda: Settings(_env_file=options.config_path, _env_file_encoding='utf-8') # type: ignore
+lazy_config = lazy_load_config_file(Path(__file__).parent)
 
 
 class ArchiveMoviesTest(unittest.TestCase):

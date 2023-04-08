@@ -1,26 +1,22 @@
-from argparse import Namespace
-from pathlib import Path
-from rich.tree import Tree
 import shutil
 import textwrap
 import unittest
+from pathlib import Path
 
+from rich.tree import Tree
+
+from movie_pipeline.commands.process_movie import \
+    MovieFileProcessorFolderRunner
 from movie_pipeline.lib.ui_factory import ProgressUIFactory
-from movie_pipeline.commands.process_movie import MovieFileProcessorFolderRunner
-from settings import Settings
+
+from ..concerns import get_output_movies_directories, lazy_load_config_file
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 
-output_dir_path = Path(__file__).parent.joinpath('out')
-output_dir_movie_path = output_dir_path.joinpath('Films')
-output_dir_serie_path = output_dir_path.joinpath('Séries')
-backup_dir_path = output_dir_path.joinpath('backup')
+output_dir_path, output_dir_movie_path, output_dir_serie_path,backup_dir_path = \
+    get_output_movies_directories(Path(__file__).parent)
 
-config_path = Path(__file__).parent.joinpath('test_config.env')
-options = Namespace()
-setattr(options, 'config_path', config_path)
-lazy_config = lambda: Settings(_env_file=options.config_path, _env_file_encoding='utf-8') # type: ignore
-
+lazy_config = lazy_load_config_file(Path(__file__).parent)
 
 class TestThreadedProcessDir(unittest.TestCase):
     def setUp(self) -> None:

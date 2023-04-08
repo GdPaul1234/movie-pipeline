@@ -16,3 +16,7 @@ def lazy_load_config_file(base_path_folder: Path):
 
     return lambda: Settings(_env_file=config_path, _env_file_encoding='utf-8') # type: ignore
 
+
+def create_output_movies_directories(base_path_folder: Path):
+    for folder in get_output_movies_directories(base_path_folder):
+        folder.mkdir(parents=True)

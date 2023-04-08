@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from movie_pipeline.commands.archive_movies import MoviesArchiver
 
-from ..concerns import get_output_movies_directories, lazy_load_config_file
+from ..concerns import get_output_movies_directories, create_output_movies_directories, lazy_load_config_file
 
 output_dir_path, movie_dir_path, serie_dir_path, backup_dir_path = \
     get_output_movies_directories(Path(__file__).parent)
@@ -23,7 +23,7 @@ lazy_config = lazy_load_config_file(Path(__file__).parent)
 
 class ArchiveMoviesTest(unittest.TestCase):
     def setUp(self) -> None:
-        movie_dir_path.mkdir(parents=True)
+        create_output_movies_directories(Path(__file__).parent)
         sample_video_path = Path(__file__).parent.parent.joinpath('ressources', 'counter-30s.mp4')
 
         # movie 1, recent (not to backup)
@@ -48,7 +48,6 @@ class ArchiveMoviesTest(unittest.TestCase):
         video_to_backup_archive_path.mkdir()
         shutil.copy2(video_to_backup_path, video_to_backup_archive_path)
 
-        serie_dir_path.mkdir(parents=True)
         archive_movie_dir_path.mkdir()
 
     def test_is_old_movie(self):

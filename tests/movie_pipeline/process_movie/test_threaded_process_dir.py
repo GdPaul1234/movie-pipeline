@@ -9,7 +9,7 @@ from movie_pipeline.commands.process_movie import \
     MovieFileProcessorFolderRunner
 from movie_pipeline.lib.ui_factory import ProgressUIFactory
 
-from ..concerns import get_output_movies_directories, lazy_load_config_file
+from ..concerns import get_output_movies_directories, create_output_movies_directories, lazy_load_config_file
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 
@@ -35,9 +35,7 @@ class TestThreadedProcessDir(unittest.TestCase):
                 segments: 00:00:02.370-00:00:04.960,
             '''), encoding='utf-8')
 
-        output_dir_movie_path.mkdir(parents=True)
-        output_dir_serie_path.mkdir(parents=True)
-        backup_dir_path.mkdir()
+        create_output_movies_directories(Path(__file__).parent)
 
 
     def test_distribute_fairly_edl(self):

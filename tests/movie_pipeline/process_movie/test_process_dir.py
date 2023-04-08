@@ -6,7 +6,7 @@ from pathlib import Path
 from movie_pipeline.commands.process_movie import MovieFileProcessorFolderRunner
 from movie_pipeline.lib.ui_factory import ProgressUIFactory
 
-from ..concerns import get_output_movies_directories, lazy_load_config_file
+from ..concerns import get_output_movies_directories, create_output_movies_directories, lazy_load_config_file
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 video_path = input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')
@@ -24,9 +24,7 @@ class TestProcessDir(unittest.TestCase):
         shutil.copyfile(sample_video_path, video_path)
         shutil.copyfile(sample_video_path, serie_path)
 
-        output_dir_movie_path.mkdir(parents=True)
-        output_dir_serie_path.mkdir(parents=True)
-        backup_dir_path.mkdir()
+        create_output_movies_directories(Path(__file__).parent)
 
     def test_custom_ext_process(self):
         edl_serie_path = serie_path.with_suffix('.mp4.custom_ext')

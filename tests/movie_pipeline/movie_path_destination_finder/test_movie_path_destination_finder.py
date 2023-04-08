@@ -5,7 +5,7 @@ from pathlib import Path
 from movie_pipeline.lib.movie_path_destination_finder import MoviePathDestinationFinder
 from movie_pipeline.models.movie_file import LegacyMovieFile
 
-from ..concerns import get_output_movies_directories, lazy_load_config_file
+from ..concerns import get_output_movies_directories, create_output_movies_directories, lazy_load_config_file
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 video_path = input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')
@@ -23,9 +23,7 @@ class TestMoviePathDestinationFinder(unittest.TestCase):
         shutil.copyfile(sample_video_path, video_path)
         shutil.copyfile(sample_video_path, serie_path)
 
-        output_dir_movie_path.mkdir(parents=True)
-        output_dir_serie_path.mkdir(parents=True)
-        backup_dir_path.mkdir()
+        create_output_movies_directories(Path(__file__).parent)
 
     def test_movie_resolve_destination(self):
         finder = MoviePathDestinationFinder(LegacyMovieFile('Movie Name.mp4'), lazy_config())

@@ -19,6 +19,7 @@ opencv-contrib-python = "^4.7.0.68"
 pysimplegui = "^4.60.4"
 decoratoroperations = {git = "https://github.com/salesforce/decorator-operations"}
 pillow = "^9.4.0"
+pydantic = {extras = ["dotenv"], version = "^1.10.7"}
 
 [build-system]
 requires = ["poetry-core"]

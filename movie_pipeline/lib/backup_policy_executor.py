@@ -5,6 +5,7 @@ import shutil
 from pathlib import Path
 
 from ..models.movie_file import LegacyMovieFile
+from settings import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ class EdlFile:
 
 
 class BackupPolicyExecutor:
-    def __init__(self, edl_file: EdlFile, config) -> None:
+    def __init__(self, edl_file: EdlFile, config: Settings) -> None:
         self._edl_file = edl_file
         self._config = config
 
@@ -59,7 +60,7 @@ class BackupPolicyExecutor:
         self._edl_file.path.rename(self._edl_file.path.with_suffix('.yml.done'))
 
     def execute(self, original_file_path: Path):
-        backup_folder = self._config.get('Paths', 'backup_folder', fallback=None)
+        backup_folder = self._config.Paths.backup_folder
         skip_backup = self._edl_file.content.get('skip_backup', False)
 
         if skip_backup or backup_folder is None:

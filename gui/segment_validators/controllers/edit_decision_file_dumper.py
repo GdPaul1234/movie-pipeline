@@ -5,13 +5,21 @@ from ..models.segment_container import SegmentContainer
 from movie_pipeline.commands.process_movie import edl_content_schema
 from movie_pipeline.commands.scaffold_dir import PathScaffolder
 
+from settings import Settings
 
-def ensure_decision_file_template(source_path: Path, config):
+
+def ensure_decision_file_template(source_path: Path, config: Settings):
     return PathScaffolder(source_path, config).scaffold()
 
 
 class EditDecisionFileDumper:
-    def __init__(self, title: str, source_path: Path, segment_container: SegmentContainer, config) -> None:
+    def __init__(
+        self,
+        title: str,
+        source_path: Path,
+        segment_container: SegmentContainer,
+        config: Settings
+    ) -> None:
         self._title = title
         self._source_path = source_path
         self._segment_container = segment_container

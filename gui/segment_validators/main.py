@@ -19,6 +19,7 @@ from .views.segments_timeline import layout as segments_timeline, handle_segment
 from .views.segments_list import layout as segments_list, render_values, handle_segments_list
 from .views.video import layout as video, handle_video
 
+from settings import Settings
 
 def make_window():
     window = sg.Window('Segments Reviewer', main_layout(), finalize=True, resizable=True, use_default_focus=False)
@@ -55,7 +56,7 @@ def import_segment(window: sg.Window, filepath: Path):
     window.write_event_value('-SEGMENTS-IMPORTED-', True)
 
 
-def prefill_name(window: sg.Window, filepath: Path, config):
+def prefill_name(window: sg.Window, filepath: Path, config: Settings):
     if ensure_decision_file_template(filepath, config):
         template_path = filepath.with_suffix(f'{filepath.suffix}.yml.txt')
         template = yaml.safe_load(template_path.read_text(encoding='utf-8'))
@@ -105,7 +106,7 @@ handlers = (
 )
 
 
-def main(filepath: Path, config):
+def main(filepath: Path, config: Settings):
     window = make_window()
     window.metadata['config'] = config
 

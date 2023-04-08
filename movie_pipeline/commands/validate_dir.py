@@ -3,11 +3,11 @@ from multiprocessing import Process, log_to_stderr
 from pathlib import Path
 
 from gui.segment_validators.main import main as run_gui
-
+from settings import Settings
 
 logger = logging.getLogger(__name__)
 
-def command(options, config):
+def command(options, config: Settings):
     logger.debug('args: %s', vars(options))
     dir_path = Path(options.dir)
 

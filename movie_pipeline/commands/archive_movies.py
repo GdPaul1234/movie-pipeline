@@ -4,15 +4,20 @@ from pathlib import Path
 import shutil
 import time
 
+from settings import Settings
+
 logger = logging.getLogger(__name__)
 
 
 class MoviesArchiver:
-    def __init__(self, config) -> None:
-        self._movies_path = Path(config.get('Paths', 'movies_folder'))
-        self._base_backup_path = Path(config.get('Paths', 'base_backup_path'))
-        self._movies_archive_folder = Path( config.get('Paths', 'movies_archive_folder'))
-        self._max_retention_in_s = config.getint('Archive', 'max_retention_in_s')
+    def __init__(self, config: Settings) -> None:
+        if config.Archive is None:
+            raise ValueError('Missing Archive configuration in config')
+
+        self._movies_path = config.Paths.movies_folder
+        self._base_backup_path = config.Archive.base_backup_path
+        self._movies_archive_folder = config.Archive.movies_archive_folder
+        self._max_retention_in_s = config.Archive.max_retention_in_s
 
     def _is_old_movie(self, movie: Path) -> bool:
         today = time.time()
@@ -57,6 +62,6 @@ class MoviesArchiver:
             logger.info('Operation aborted')
 
 
-def command(options, config):
+def command(options, config: Settings):
     logger.debug('args: %s', vars(options))
     MoviesArchiver(config).archive()

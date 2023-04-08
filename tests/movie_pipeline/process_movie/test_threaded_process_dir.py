@@ -5,20 +5,21 @@ import shutil
 import textwrap
 import unittest
 
-from config_loader import ConfigLoader
 from movie_pipeline.lib.ui_factory import ProgressUIFactory
 from movie_pipeline.commands.process_movie import MovieFileProcessorFolderRunner
+from settings import Settings
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 
 output_dir_path = Path(__file__).parent.joinpath('out')
 output_dir_movie_path = output_dir_path.joinpath('Films')
+output_dir_serie_path = output_dir_path.joinpath('Séries')
 backup_dir_path = output_dir_path.joinpath('backup')
 
-config_path = Path(__file__).parent.joinpath('test_config.ini')
+config_path = Path(__file__).parent.joinpath('test_config.env')
 options = Namespace()
 setattr(options, 'config_path', config_path)
-config = ConfigLoader(options).config
+lazy_config = lambda: Settings(_env_file=options.config_path, _env_file_encoding='utf-8') # type: ignore
 
 
 class TestThreadedProcessDir(unittest.TestCase):
@@ -39,14 +40,13 @@ class TestThreadedProcessDir(unittest.TestCase):
             '''), encoding='utf-8')
 
         output_dir_movie_path.mkdir(parents=True)
+        output_dir_serie_path.mkdir(parents=True)
         backup_dir_path.mkdir()
 
-        # update config for multi threading
-        config.set('Processor', 'nb_worker', '2')
 
     def test_distribute_fairly_edl(self):
         progress_listener = ProgressUIFactory.create_process_listener()
-        folder_processor = MovieFileProcessorFolderRunner(input_dir_path, '.yml', progress_listener, config)
+        folder_processor = MovieFileProcessorFolderRunner(input_dir_path, '.yml', progress_listener, lazy_config())
 
         distributed_edls = folder_processor._distribute_fairly_edl()
         comparable_distributed_elds = [list(map(lambda edl: edl.name, group)) for group in distributed_edls]
@@ -64,7 +64,7 @@ class TestThreadedProcessDir(unittest.TestCase):
 
     def test_prepare_processing(self):
         progress_listener = ProgressUIFactory.create_process_listener()
-        folder_processor = MovieFileProcessorFolderRunner(input_dir_path, '.yml', progress_listener, config)
+        folder_processor = MovieFileProcessorFolderRunner(input_dir_path, '.yml', progress_listener, lazy_config())
 
         tree = Tree("EDL to be processed")
         folder_processor._prepare_processing(tree)
@@ -80,7 +80,7 @@ class TestThreadedProcessDir(unittest.TestCase):
 
     def test_execute_processing(self):
         progress_listener = ProgressUIFactory.create_process_listener()
-        folder_processor = MovieFileProcessorFolderRunner(input_dir_path, '.yml', progress_listener, config)
+        folder_processor = MovieFileProcessorFolderRunner(input_dir_path, '.yml', progress_listener, lazy_config())
 
         folder_processor.process_directory()
 

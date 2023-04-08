@@ -12,6 +12,8 @@ from ..lib.title_extractor import (
     SubtitleTitleExpanderExtractor
 )
 
+from settings import Settings
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,19 +48,19 @@ title_strategies_schema = Schema({
 })
 
 class PathScaffolder:
-    def __init__(self, path: Path, config) -> None:
+    def __init__(self, path: Path, config: Settings) -> None:
         self._path = path
         self._config = config
 
-        title_strategies_path = Path(config.get('Paths', 'title_strategies', fallback='invalid path'))
+        title_strategies_path = config.Paths.title_strategies
 
-        if title_strategies_path.exists():
+        if title_strategies_path is not None:
             titles_strategies = yaml.safe_load(title_strategies_path.read_text('utf-8'))
             self._titles_strategies = title_strategies_schema.validate(titles_strategies)
         else:
             self._titles_strategies = {}
 
-        if (blacklist_path := Path(config.get('Paths', 'title_re_blacklist'))).exists():
+        if (blacklist_path := config.Paths.title_re_blacklist) is not None:
             self._title_cleaner = TitleCleaner(blacklist_path)
         else:
             raise FileNotFoundError(blacklist_path)
@@ -86,7 +88,7 @@ class PathScaffolder:
         return self._scaffold_dir() if self._path.is_dir() else self._generate_file(self._path)
 
 
-def command(options, config):
+def command(options, config: Settings):
     logger.debug('args: %s', vars(options))
     dir_path = Path(options.dir)
 

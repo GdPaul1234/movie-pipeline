@@ -8,6 +8,8 @@ from deffcode import Sourcer
 import cv2
 
 from configparser import ConfigParser
+from settings import Settings
+
 from ..lib.ffmpeg_with_progress import ffmpeg_frame_producer
 from ..lib.opencv_annotator import draw_detection_box
 from ..lib.title_extractor import load_metadata
@@ -40,9 +42,11 @@ class RealTimeDetectResult:
     value: float
     location: tuple[int, int]
 
-def OpenCVDetectWithInjectedTemplate(detector: type['OpenCVBaseDetect'], movie_path: Path, config):
-    templates_path = Path(config.get('SegmentDetection', 'templates_path'))
+def OpenCVDetectWithInjectedTemplate(detector: type['OpenCVBaseDetect'], movie_path: Path, config: Settings):
+    if config.SegmentDetection is None:
+        raise ValueError('No config path provided')
 
+    templates_path = config.SegmentDetection.templates_path
     metadata = load_metadata(movie_path)
 
     if metadata is None:
@@ -57,7 +61,7 @@ def OpenCVDetectWithInjectedTemplate(detector: type['OpenCVBaseDetect'], movie_p
 
 
 def get_template_metadata(template_path: Path):
-    template_metadata_path = template_path.with_suffix('.ini')
+    template_metadata_path = template_path.with_suffix('.env')
 
     if not template_metadata_path.exists():
         return None

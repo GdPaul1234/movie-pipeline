@@ -8,21 +8,23 @@ import unittest
 from unittest.mock import patch
 
 from movie_pipeline.commands.archive_movies import MoviesArchiver
-from config_loader import ConfigLoader
+from settings import Settings
 
 output_dir_path = Path(__file__).parent.joinpath('out')
 backup_dir_path = output_dir_path.joinpath('backup')
 
 movie_dir_path = output_dir_path.joinpath('Films')
+serie_dir_path = output_dir_path.joinpath('Séries')
 video_to_backup_path = movie_dir_path.joinpath('Old Movie Name', 'Old Movie Name.mp4')
 video_not_to_backup_path = movie_dir_path.joinpath('Movie Name', 'Movie Name.mp4')
 
 archive_movie_dir_path = backup_dir_path.joinpath('Films')
 
-config_path = Path(__file__).parent.joinpath('test_config.ini')
+config_path = Path(__file__).parent.joinpath('test_config.env')
 options = Namespace()
 setattr(options, 'config_path', config_path)
-config = ConfigLoader(options).config
+lazy_config = lambda: Settings(_env_file=options.config_path, _env_file_encoding='utf-8') # type: ignore
+
 
 class ArchiveMoviesTest(unittest.TestCase):
     def setUp(self) -> None:
@@ -51,16 +53,17 @@ class ArchiveMoviesTest(unittest.TestCase):
         video_to_backup_archive_path.mkdir()
         shutil.copy2(video_to_backup_path, video_to_backup_archive_path)
 
+        serie_dir_path.mkdir(parents=True)
         archive_movie_dir_path.mkdir()
 
     def test_is_old_movie(self):
-        movie_archiver = MoviesArchiver(config)
+        movie_archiver = MoviesArchiver(lazy_config())
 
         self.assertTrue(movie_archiver._is_old_movie(video_to_backup_path))
         self.assertFalse(movie_archiver._is_old_movie(video_not_to_backup_path))
 
-    def test_archive_arbort(self):
-        movie_archiver = MoviesArchiver(config)
+    def test_archive_abort(self):
+        movie_archiver = MoviesArchiver(lazy_config())
 
         with patch('sys.stdin', StringIO('n\n')):
             movie_archiver.archive()
@@ -68,7 +71,7 @@ class ArchiveMoviesTest(unittest.TestCase):
         self.assertEqual([], list(archive_movie_dir_path.iterdir()))
 
     def test_archive_confirm(self):
-        movie_archiver = MoviesArchiver(config)
+        movie_archiver = MoviesArchiver(lazy_config())
 
         with patch('sys.stdin', StringIO('Y')):
             movie_archiver.archive()

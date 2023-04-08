@@ -15,6 +15,7 @@ from rich.tree import Tree
 from schema import Optional, Regex, Schema
 
 from util import diff_tracking, position_in_seconds
+from settings import Settings
 
 from ..lib.backup_policy_executor import BackupPolicyExecutor, EdlFile
 from ..lib.ffmpeg_with_progress import ffmpeg_command_with_progress
@@ -39,7 +40,7 @@ class MovieFileProcessor:
         self,
         edl_path: Path,
         progress: Progress,
-        config,
+        config: Settings,
         *,
         backup_policy_executor=BackupPolicyExecutor
     ) -> None:
@@ -116,13 +117,13 @@ class MovieFileProcessor:
 
 
 class MovieFileProcessorFolderRunner:
-    def __init__(self, folder_path: Path, edl_ext: str, progress_listener: ProgressListener, config) -> None:
+    def __init__(self, folder_path: Path, edl_ext: str, progress_listener: ProgressListener, config: Settings) -> None:
         self._folder_path = folder_path
         self._edl_ext = edl_ext
         self._progress = progress_listener
         self._config = config
 
-        self._nb_worker = self._config.getint('Processor', 'nb_worker', fallback=1)
+        self._nb_worker = config.Processor.nb_worker if config.Processor else 1
         self._jobs_progresses = [ProgressUIFactory.create_job_progress() for _ in range(self._nb_worker)]
 
     def _distribute_fairly_edl(self):
@@ -200,7 +201,7 @@ class MovieFileProcessorFolderRunner:
         logger.info('All movie files in "%s" processed', self._folder_path)
 
 
-def command(options, config):
+def command(options, config: Settings):
     logger.debug('args: %s', vars(options))
 
     filepath = Path(options.file)

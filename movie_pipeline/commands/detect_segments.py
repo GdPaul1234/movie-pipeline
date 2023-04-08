@@ -6,11 +6,12 @@ import json
 from ..lib.ffmpeg_detect_filter import AudioCrossCorrelationDetect, BaseDetect, CropDetect
 from ..lib.opencv_detect import OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect
 from ..models.detected_segments import DetectedSegment, humanize_segments, merge_adjacent_segments
+from settings import Settings
 
 logger = logging.getLogger(__name__)
 
 
-def run_segment_detectors(movie_path: Path, selected_detectors_key, config):
+def run_segment_detectors(movie_path: Path, selected_detectors_key, config: Settings):
     detected_segments = {}
 
     def try_match_template(movie_path):
@@ -51,7 +52,7 @@ def dump_segments_to_file(detectors_result, movie_path: Path):
     segments_filepath.write_text(json.dumps(detectors_result, indent=2), encoding='utf-8')
 
 
-def command(options, config):
+def command(options, config: Settings):
     logger.debug('args: %s', vars(options))
 
     filepath = Path(options.file)

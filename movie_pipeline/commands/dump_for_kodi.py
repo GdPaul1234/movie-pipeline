@@ -4,6 +4,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from ..lib.vsmeta_parser import VsMetaParser
+from settings import Settings
 
 template_path = Path(__file__).parent.parent.joinpath('templates')
 file_loader = FileSystemLoader(template_path)
@@ -69,7 +70,7 @@ class KodiDumper:
                                    tvshow_nfo_path.with_name('fanart.jpg'))
 
 
-def command(options, config):
+def command(options, config: Settings):
     logger.debug('args: %s', vars(options))
     filepath = Path(options.file)
 

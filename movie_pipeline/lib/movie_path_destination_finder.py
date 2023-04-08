@@ -2,12 +2,12 @@ import re
 from pathlib import Path
 
 from ..models.movie_file import LegacyMovieFile
-
+from settings import Settings
 
 class MoviePathDestinationFinder:
-    def __init__(self, movie_file: LegacyMovieFile, config) -> None:
+    def __init__(self, movie_file: LegacyMovieFile, config: Settings) -> None:
         self._movie_file = movie_file
-        self._paths = config['Paths']
+        self._paths = config.Paths
 
     def _find_or_create_serie_folder(self, series_path: Path, serie_file: LegacyMovieFile) -> Path:
         serie_file_name = re.sub(r' S\d{2}E\d{2,}$', '', serie_file.title)
@@ -29,10 +29,10 @@ class MoviePathDestinationFinder:
 
     def resolve_destination(self):
         if self._movie_file.is_serie:
-            series_folder_path = Path(self._paths.get('series_folder'))
+            series_folder_path = self._paths.series_folder
             return self._find_or_create_serie_folder(series_folder_path, self._movie_file)
         else:
-            movies_folder_path = Path(self._paths.get('movies_folder'))
+            movies_folder_path = self._paths.movies_folder
             dest_path = movies_folder_path.joinpath(self._movie_file.title)
             dest_path.mkdir()
             return dest_path

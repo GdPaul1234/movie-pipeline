@@ -1,10 +1,8 @@
-from argparse import Namespace
 from contextlib import contextmanager
 from pathlib import Path
 import json
 import unittest
 
-from config_loader import ConfigLoader
 from movie_pipeline.lib.title_cleaner import TitleCleaner
 from movie_pipeline.lib.title_extractor import (
     NaiveTitleExtractor,
@@ -18,11 +16,6 @@ serie_metadata_path = Path(__file__).parent.joinpath("Channel 1_Serie Name. 'Tit
 
 blacklist_path = Path(__file__).parent.parent.joinpath('ressources', 'test_title_re_blacklist.txt')
 default_title_cleaner = TitleCleaner(blacklist_path)
-
-config_path = Path(__file__).parent.joinpath('test_config.ini')
-options = Namespace()
-setattr(options, 'config_path', config_path)
-config = ConfigLoader(options).config
 
 
 @contextmanager

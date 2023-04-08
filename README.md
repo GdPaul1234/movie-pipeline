@@ -35,9 +35,12 @@ Before using this program, you must provide a valid config file.
 
 You can find many of them in the `tests` directory.
 
-If no `--config-path` is empty, the app will fallback to `config.ini` file in the current directory.
+If no `--config-path` is empty, the app will fallback to `config.env` file in the current directory.
 
-You can find bellow an example:
+> **Warning**
+> There is a breaking change with the configuration format to ensure runtime validation with Pydantic and python-dotenv
+
+You can find bellow an example of the old format:
 
 ```ini
 [Paths]
@@ -67,6 +70,12 @@ nb_worker=2
 file_path=${Paths:base_path}\log.txt
 ```
 
+The equivalent in the newer format is:
+
+```env
+
+```
+
 ## Pipelines
 
 ### Main pipeline
@@ -80,11 +89,13 @@ After filling the config file and after all recordings are done:
 
       For reference, the format of series are: `Serie Name S01E02.mp4`
 
-    - Using a third-party software or built-in `detect_segments` (beta) command to fill the segments to keep field
+    - Using a third-party software or built-in `detect_segments` command to fill the segments to keep field
 
       ie. `00:31:53.960-01:00:51.520,01:06:54.480-01:31:40.160,01:37:34.480-02:23:05.560,`.
 
-      Don't forget to carrefuly review the segments field and to append the leading comma at the end to validate your result!
+      Don't forget to:
+        1. Carrefuly review the segments field
+        2. To append the leading comma at the end to validate your result!
 
       > **Note**
       > You can use the built-in `validate_dir` commands to validate segments from all completed movies that have been analyzed by the `detect_segments` command
@@ -105,7 +116,8 @@ If the remaining space of `base_path` is low, use the `archive_movies` command.
 > **Warning**
 > It takes for granted that you periodicaly backup each movies (located in `movies_folder`) to `${base_backup_path}/PVR/Films`.
 
-This command is mainly created for my needs, don't run it if you don't have a movie backup in place because it deletes the oldest movies in `base_path` and move the corresponding `${base_backup_path}/PVR/Films` to `movies_archive_folder`.
+This command is mainly created for my needs, don't run it if you don't have a movie backup in place because it deletes
+the oldest movies in `base_path` and move the corresponding `${base_backup_path}/PVR/Films` to `movies_archive_folder`.
 
 Only movies are supported at the time of writing this document
 
@@ -118,5 +130,4 @@ Useful for quickly set up kodi media library in external storage.
 ## TODO
 
 - Improve segments detection, auto selection of the best strategies
-- Migrate config files to Pydantic BaseSettings
 - Add tests for GUI and segment detections

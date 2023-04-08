@@ -8,7 +8,7 @@ from rich.logging import RichHandler
 import os
 import sys
 
-from config_loader import ConfigLoader
+from settings import Settings
 from util import ConsoleLoggerFilter
 
 def main():
@@ -17,7 +17,7 @@ def main():
     levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
 
     parser.add_argument('--log-level', default='INFO', choices=levels)
-    parser.add_argument('--config-path', default='config.ini', help='Config path')
+    parser.add_argument('--config-path', default='config.env', help='Config path')
     subparsers = parser.add_subparsers(dest='command', help='Available commands:')
 
     # move command
@@ -48,8 +48,7 @@ def main():
                                      help='Run detect segments with selected detectors', nargs='+', default=['match_template'])
 
     # validate dir
-    validate_dir_cmd = subparsers.add_parser(
-        'validate_dir', help='Validate segments and generate edit decision files in given directory')
+    validate_dir_cmd = subparsers.add_parser('validate_dir', help='Validate segments and generate edit decision files in given directory')
     validate_dir_cmd.add_argument('dir', metavar='DIR',help='Movies to be processed directory')
 
     options = parser.parse_args()
@@ -62,11 +61,10 @@ def main():
         print('Unable to find the code for command \'%s\'' % options.command)
         return 1
 
-    config = ConfigLoader(options).config
+    config = Settings(_env_file=options.config_path, _env_file_encoding='utf-8') # type: ignore
 
     # Could get fancy here and load configuration from file or dictionary
-    fh = logging.handlers.TimedRotatingFileHandler(
-        filename=config.get('Logger', 'file_path', fallback='log.txt'))
+    fh = logging.handlers.TimedRotatingFileHandler( filename=config.Logger.file_path if config.Logger else 'log.txt')
     fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 
     ch = RichHandler(rich_tracebacks=True)

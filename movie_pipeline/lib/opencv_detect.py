@@ -61,9 +61,10 @@ def OpenCVDetectWithInjectedTemplate(detector: type['OpenCVBaseDetect'], movie_p
 
 
 def get_template_metadata(template_path: Path):
-    template_metadata_path = template_path.with_suffix('.env')
+    template_metadata_path = template_path.with_suffix('.ini')
 
     if not template_metadata_path.exists():
+        logger.warning('Cannot found template metadata, cropping disabled')
         return None
 
     config = ConfigParser()

@@ -73,7 +73,24 @@ file_path=${Paths:base_path}\log.txt
 The equivalent in the newer format is:
 
 ```env
+Paths__base_path=V:\PVR
+Archive__base_backup_path=W:\Dossier personnel\video
 
+Paths__movies_folder=${Paths__base_path}\Films
+Paths__series_folder=${Paths__base_path}\Séries
+Paths__backup_folder=${Archive__base_backup_path}\PVR\playground
+
+Archive__movies_archive_folder=${Archive__base_backup_path}\Films
+Archive__max_retention_in_s=31_104_000
+
+Paths__title_strategies=.\title_strategies.yml
+Paths__title_re_blacklist=.\title_re_blacklist.txt
+
+SegmentDetection__templates_path=V:\PVR\autres\scripts\common-ressources\logo
+
+Processor__nb_worker=2
+
+Logger__file_path=${Paths__base_path}\log-quick.txt
 ```
 
 ## Pipelines

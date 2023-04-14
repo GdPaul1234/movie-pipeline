@@ -10,6 +10,7 @@
     </ratings>
     <userrating>0</userrating>
     <plot>{{ tv_data.summary|e }}</plot>
+    {% if tv_data.metadata|length %}
     {% for poster in (tv_data.metadata.get('com.synology.TheMovieDb.Tv') or tv_data.metadata['com.synology.TheMovieDb'])['poster'] %}
     <thumb spoof="" cache="" aspect="poster" preview="">{{ poster|e }}</thumb>
     {% endfor %}
@@ -18,6 +19,7 @@
         <thumb colors="" preview="">{{ backdrop|e }}</thumb>
         {% endfor %}
     </fanart>
+    {% endif %}
     <mpaa>{{ classification|e }}</mpaa>
     {% for reference_type, reference_id in (metadata.get('com.synology.TheMovieDb.Tv') or metadata['com.synology.TheMovieDb'])['reference']|items %}
     <uniqueid type="{{ reference_type|e }}">{{ reference_id|e }}</uniqueid>

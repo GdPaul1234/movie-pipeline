@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<tvshow>
+    <title>Modern Family</title>
+    <ratings>
+        <rating name="themoviedb_tv" max="10">
+            <value>7.7</value>
+        </rating>
+    </ratings>
+    <userrating>0</userrating>
+    <plot>Quand les familles Pritchett, Delgado et Dunphy acceptent qu&#39;un documentaire soit tourné sur leurs vies, elles étaient loin d&#39;imaginer qu&#39;elles allaient tant en révéler... Jay Pritchett a rencontré la très sexy Colombienne Gloria Delgado le jour où sa femme l&#39;a quitté. Leur différence d&#39;âge est pour lui un challenge de tous les jours. Sa fille, Claire, a elle-même bien du mal à gérer sa vie de famille depuis que son mari, Phil, est persuadé d&#39;être en phase avec ses enfants adolescents alors qu&#39;il ne fait que les embarrasser ! Quant au frère de Claire, Mitchell, il vit avec son petit-ami Cameron et ils viennent d&#39;adopter Lily, une petite Vietnamienne...</plot>
+    <mpaa>TV-PG</mpaa>
+    <uniqueid type="imdb">tt1442437</uniqueid>
+    <uniqueid type="themoviedb_tv">1421</uniqueid>
+    <genre>Comédie</genre>
+    <premiered>2009-09-23</premiered> <!-- yyyy-mm-dd -->
+    <year>2009</year>
+    <status></status>
+    <studio></studio>
+    <actor>
+        <name>Ed O&#39;Neill</name>
+        <role></role>
+        <order>1</order>
+    </actor>
+    <actor>
+        <name>Sofía Vergara</name>
+        <role></role>
+        <order>2</order>
+    </actor>
+    <actor>
+        <name>Julie Bowen</name>
+        <role></role>
+        <order>3</order>
+    </actor>
+    <actor>
+        <name>Ty Burrell</name>
+        <role></role>
+        <order>4</order>
+    </actor>
+    <actor>
+        <name>Jesse Tyler Ferguson</name>
+        <role></role>
+        <order>5</order>
+    </actor>
+</tvshow>

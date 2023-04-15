@@ -9,8 +9,7 @@ from unittest.mock import patch
 from movie_pipeline.commands.archive_movies import MoviesArchiver
 
 from ..concerns import (copy_files, create_output_movies_directories,
-                        get_output_movies_directories, lazy_load_config_file,
-                        make_dirs)
+                        get_output_movies_directories, lazy_load_config_file)
 
 output_dir_path, movie_dir_path, serie_dir_path, backup_dir_path = \
     get_output_movies_directories(Path(__file__).parent)

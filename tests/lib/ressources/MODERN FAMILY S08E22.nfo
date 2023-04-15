@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<episodedetails>
+    <title>Les Lauréats</title>
+    <showtitle>Modern Family</showtitle>
+    <ratings>
+        <rating name="themoviedb_tv" max="10">
+            <value>7.786</value>
+        </rating>
+    </ratings>
+    <userrating>0</userrating>
+    <season>8</season>     <!-- Required for multi-episode files only -->
+    <episode>22</episode>  <!-- Required for multi-episode files only -->
+    <plot>La famille entière se prépare à la remise de diplômes de Luke et de Manny. Javier revient à cette occasion et emmène son fils dans un club de strip-tease. Phil et Claire gèrent difficilement l&#39;admission de Luke et de leur côté, Mitchell et Cameron se demandent si Lilly est surdouée.</plot>
+    <thumb spoof="" cache="" aspect="thumb" preview="">https://image.tmdb.org/t/p/w500/3XkAIKJ92y8Lq16XvUisAHWn9PF.jpg</thumb>
+    <mpaa>TV-PG</mpaa>
+    <uniqueid type="imdb">tt1442437</uniqueid>
+    <uniqueid type="themoviedb_tv">1421</uniqueid>
+    <genre>Comédie</genre>
+    <credits>Jeffrey Richman</credits>
+    <credits>Jon Pollack</credits>
+    <director>Steven Levitan</director>
+    <premiered>2009-09-23</premiered> <!-- yyyy-mm-dd -->
+    <year>2017</year>
+    <aired>2017-05-17</aired> <!-- yyyy-mm-dd -->
+    <actor>
+        <name>Ed O&#39;Neill</name>
+        <role></role>
+        <order>1</order>
+    </actor>
+    <actor>
+        <name>Sofía Vergara</name>
+        <role></role>
+        <order>2</order>
+    </actor>
+    <actor>
+        <name>Julie Bowen</name>
+        <role></role>
+        <order>3</order>
+    </actor>
+    <actor>
+        <name>Ty Burrell</name>
+        <role></role>
+        <order>4</order>
+    </actor>
+    <actor>
+        <name>Jesse Tyler Ferguson</name>
+        <role></role>
+        <order>5</order>
+    </actor>
+</episodedetails>

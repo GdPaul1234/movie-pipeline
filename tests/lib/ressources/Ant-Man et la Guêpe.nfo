@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<movie>
+    <title>Ant-Man et la Guêpe</title>
+    <sorttitle>Ant-Man et la Guêpe</sorttitle>
+    <ratings>
+        <rating name="themoviedb" max="10">
+            <value>6.962</value>
+        </rating>
+    </ratings>
+    <userrating>0</userrating>
+    <plot>Après les événements survenus dans Captain America : Civil War, Scott Lang a bien du mal à concilier sa vie de super-héros et ses responsabilités de père. Mais ses réflexions sur les conséquences de ses choix tournent court lorsque Hope van Dyne et le Dr Hank Pym lui confient une nouvelle mission urgente... Scott va devoir renfiler son costume et apprendre à se battre aux côtés de La Guêpe afin de faire la lumière sur des secrets enfouis de longue date...</plot>
+    <tagline>Ant-Man est de retour</tagline>
+    <thumb spoof="" cache="" aspect="poster" preview="">https://image.tmdb.org/t/p/w500/r3Vapr4sdXOhHBThTNtfuijKe5V.jpg</thumb>
+    <fanart>
+        <thumb colors="" preview="">https://image.tmdb.org/t/p/original/iYdgEUE2W2aJkgqfSjf1x3gFfuV.jpg</thumb>
+    </fanart>
+    <mpaa>PG-13</mpaa>
+    <uniqueid type="imdb">tt5095030</uniqueid>
+    <uniqueid type="themoviedb">363088</uniqueid>
+    <genre>Action</genre>
+    <genre>Aventure</genre>
+    <genre>Science-Fiction</genre>
+    <tag></tag>
+    <country></country>
+    <credits>Paul Rudd</credits>
+    <credits>Stan Lee</credits>
+    <credits>Jack Kirby</credits>
+    <credits>Larry Lieber</credits>
+    <credits>Andrew Barrer</credits>
+    <director>Peyton Reed</director>
+    <director>Karen M. Cantley</director>
+    <director>Robin Meyers</director>
+    <director>Hajar Mainl</director>
+    <director>Hannah Myvanwy Driscoll</director>
+    <premiered>2018-07-04</premiered> <!-- yyyy-mm-dd -->
+    <year>2018</year>
+    <actor>
+        <name>Paul Rudd</name>
+        <role></role>
+        <order>1</order>
+    </actor>
+    <actor>
+        <name>Evangeline Lilly</name>
+        <role></role>
+        <order>2</order>
+    </actor>
+    <actor>
+        <name>Michael Peña</name>
+        <role></role>
+        <order>3</order>
+    </actor>
+    <actor>
+        <name>Walton Goggins</name>
+        <role></role>
+        <order>4</order>
+    </actor>
+    <actor>
+        <name>Bobby Cannavale</name>
+        <role></role>
+        <order>5</order>
+    </actor>
+</movie>

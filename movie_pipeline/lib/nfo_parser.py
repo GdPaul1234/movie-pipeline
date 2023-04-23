@@ -3,6 +3,7 @@ from pathlib import Path
 from statistics import mean
 from typing import Any, cast
 from xml.etree.ElementTree import Element
+from abc import ABC
 
 from pydantic import BaseModel
 from pydantic.types import PastDate, PositiveFloat, PositiveInt
@@ -10,7 +11,7 @@ from pydantic.utils import GetterDict
 
 from ..models.movie_file import LegacyMovieFile
 
-class NfoGetter(GetterDict):
+class NfoGetter(ABC, GetterDict):
     def get_xml_field_path(self, field_name: str):
         xml_field_paths = {
             'genres': 'genre',
@@ -37,7 +38,7 @@ class NfoGetter(GetterDict):
         return default
 
 
-class BaseNfo(BaseModel):
+class BaseNfo(BaseModel, ABC):
     title: str
     rating: PositiveFloat
     plot: str

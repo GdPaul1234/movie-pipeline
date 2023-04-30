@@ -16,7 +16,7 @@ movie_path = output_dir_movie_path.joinpath('Ant-Man et la Guêpe', 'Ant-Man et 
 movie_path_nfo = movie_path.with_suffix('.nfo')
 serie_path = output_dir_serie_path.joinpath('MODERN FAMILY', 'Saison 8', 'MODERN FAMILY S08E22.mp4')
 serie_path_nfo = serie_path.with_suffix('.nfo')
-tvshow_nfo_path = serie_path_nfo.parent.parent.with_name('tvshow.nfo')
+tvshow_nfo_path = serie_path_nfo.parent.parent.joinpath('tvshow.nfo')
 
 lazy_config = lazy_load_config_file(Path(__file__).parent)
 
@@ -42,15 +42,15 @@ class TestMediaDatabaseUpdater(unittest.TestCase):
 
         media_database_updater.close()
 
-    # def test_serie_insert(self):
-    #     config = lazy_config()
-    #     media_database_updater = MediaDatabaseUpdater(config.MediaDatabase.db_path) # type:ignore
+    def test_serie_insert(self):
+        config = lazy_config()
+        media_database_updater = MediaDatabaseUpdater(config.MediaDatabase.db_path) # type:ignore
 
-    #     media_database_updater.insert_media(movie_path_nfo, nfo=NfoParser.parse(serie_path_nfo))
-    #     self.assertTrue('Modern Family' in media_database_updater._inserted_series)
-    #     self.assertEqual({serie_path}, media_database_updater.inserted_medias)
+        media_database_updater.insert_media(serie_path_nfo, nfo=NfoParser.parse(serie_path_nfo))
+        self.assertTrue('Modern Family' in media_database_updater._inserted_series)
+        self.assertEqual({serie_path}, media_database_updater.inserted_medias)
 
-    #     media_database_updater.close()
+        media_database_updater.close()
 
     def tearDown(self) -> None:
         shutil.rmtree(output_dir_path)

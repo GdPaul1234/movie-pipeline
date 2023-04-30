@@ -36,7 +36,7 @@ class MediaDatabaseUpdater:
         def insert_genre(genre: str) -> int:
             with self._connection as con:
                 cur = con.execute(
-                    "INSERT OR IGNORE INTO genres(genre) VALUES(:genre) RETURNING id",
+                    "INSERT INTO genres(genre) VALUES(:genre) ON CONFLICT DO UPDATE SET id=id RETURNING id",
                     {"genre": genre}
                 )
                 genre_id, = cur.fetchone()
@@ -46,7 +46,7 @@ class MediaDatabaseUpdater:
         def insert_person(full_name: str) -> int:
             with self._connection as con:
                 cur = con.execute(
-                    "INSERT OR IGNORE INTO people(name) VALUES(:name) RETURNING id",
+                    "INSERT INTO people(name) VALUES(:name) ON CONFLICT DO UPDATE SET id=id RETURNING id",
                     {"name": full_name}
                 )
                 person_id, = cur.fetchone()
@@ -78,18 +78,22 @@ class MediaDatabaseUpdater:
     def _insert_movie(self, nfo: MovieNfo) -> int:
         with self._connection as con:
             cur = con.execute(
-                "INSERT OR IGNORE INTO movies(title,year,rating,mpaa) VALUES(:title,:year,:rating,:mpaa) RETURNING id",
+                "INSERT INTO movies(title,year,rating,mpaa) VALUES(:title,:year,:rating,:mpaa) ON CONFLICT DO UPDATE SET id=id RETURNING id",
                 nfo.dict(include={'title', 'year', 'rating', 'mpaa'})
             )
             movie_id, = cur.fetchone()
             self._insert_common_subfields(nfo, media_id=movie_id, media_type='movie')
         return movie_id
 
-    def _insert_serie(self, nfo: SerieNfo) -> int:
+    def _insert_serie(self, nfo_path: Path, nfo: SerieNfo) -> int:
+        if (not (tvshow_nfo_path := nfo_path.parent.parent.joinpath('tvshow.nfo')).is_file()):
+            raise ValueError(f'Missing tvshow.nfo (checking "{tvshow_nfo_path=}")')
+        tvshow_id = self._inserted_series.get(nfo.showtitle) or self._insert_tvshow(cast(TvShowNfo, NfoParser.parse(tvshow_nfo_path)))
+
         with self._connection as con:
             cur = con.execute(
-                "INSERT OR IGNORE INTO episodes(serie_id,title,season,episode,year,rating,mpaa) VALUES(:serie_id,:title,:season,:episode,:year,:rating,:mpaa) RETURNING id",
-                {'serie_id': self._inserted_series[nfo.showtitle]} | nfo.dict(include={'title', 'season', 'episode', 'year', 'rating', 'mpaa'})
+                "INSERT INTO episodes(serie_id,title,season,episode,year,rating,mpaa) VALUES(:serie_id,:title,:season,:episode,:year,:rating,:mpaa) ON CONFLICT DO UPDATE SET id=id RETURNING id",
+                {'serie_id': tvshow_id} | nfo.dict(include={'title', 'season', 'episode', 'year', 'rating', 'mpaa'})
             )
             serie_id, = cur.fetchone()
             self._insert_common_subfields(nfo, media_id=serie_id, media_type='episode')
@@ -98,11 +102,12 @@ class MediaDatabaseUpdater:
     def _insert_tvshow(self, nfo: TvShowNfo) -> int:
         with self._connection as con:
             cur = con.execute(
-                "INSERT OR IGNORE INTO series(title,year,rating,mpaa) VALUES(:title,:year,:rating,:mpaa) RETURNING id",
+                "INSERT INTO series(title,year,rating,mpaa) VALUES(:title,:year,:rating,:mpaa) ON CONFLICT DO UPDATE SET id=id RETURNING id",
                 nfo.dict(include={'title', 'year', 'rating', 'mpaa'})
             )
             tvshow_id, = cur.fetchone()
             self._insert_common_subfields(nfo, media_id=tvshow_id, media_type='serie')
+            self._inserted_series[nfo.title] = tvshow_id
         return tvshow_id
 
     def insert_media(self, nfo_path: Path, nfo: BaseNfo):
@@ -110,7 +115,7 @@ class MediaDatabaseUpdater:
             self._inserted_series[nfo.title] = self._insert_tvshow(nfo)
         else:
             if isinstance(nfo, SerieNfo):
-                nfo_id = self._insert_serie(nfo)
+                nfo_id = self._insert_serie(nfo_path, nfo)
             else:
                 nfo_id = self._insert_movie(nfo) # type: ignore
 
@@ -119,7 +124,7 @@ class MediaDatabaseUpdater:
 
             with self._connection as con:
                 cur = con.execute(
-                    "INSERT OR IGNORE INTO medias(filepath,duration,created_at,media_type,media_id) VALUES(:filepath,:duration,:created_at,:media_type,:media_id) RETURNING id",
+                    "INSERT INTO medias(filepath,duration,created_at,media_type,media_id) VALUES(:filepath,:duration,:created_at,:media_type,:media_id) ON CONFLICT DO UPDATE SET id=id RETURNING id",
                     {
                         'filepath': str(media_path),
                         'duration': metadata['source_duration_sec'],
@@ -129,7 +134,7 @@ class MediaDatabaseUpdater:
                     }
                 )
                 media_id, = cur.fetchone()
-                logger.debug(f'Insert {media_path=} ({media_id=})')
+                logger.debug(f'Insert "{media_path=}" ({media_id=})')
                 self.inserted_medias.add(media_path)
 
 

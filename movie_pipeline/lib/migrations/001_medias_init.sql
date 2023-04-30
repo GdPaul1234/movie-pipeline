@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS genres (
 CREATE TABLE IF NOT EXISTS people_mediable_relation (
     id INTEGER PRIMARY KEY,
     person_id INTEGER NOT NULL,
-    media_type VARCHAR(8) NOT NULL CHECK(media_id in ('movie', 'serie', 'episode')),
+    media_type VARCHAR(8) NOT NULL CHECK(media_type in ('movie', 'serie', 'episode')),
     media_id INTEGER NOT NULL,
     relation VARCHAR(10) NOT NULL CHECK(relation in ('credit', 'director', 'actor')),
     FOREIGN KEY(person_id) REFERENCES people(id),
@@ -22,11 +22,11 @@ CREATE TABLE IF NOT EXISTS people_mediable_relation (
 
 CREATE TABLE IF NOT EXISTS mediable_genres (
     id INTEGER PRIMARY KEY,
-    media_type VARCHAR(8) NOT NULL CHECK(media_id in ('movie', 'episode')),
+    media_type VARCHAR(8) NOT NULL CHECK(media_type in ('movie', 'episode')),
     media_id INTEGER NOT NULL,
     genre_id INTEGER NOT NULL,
     FOREIGN KEY(genre_id) REFERENCES genres(id),
-    UNIQUE(media_type, media_id)
+    UNIQUE(media_type, media_id, genre_id)
 );
 
 CREATE TABLE IF NOT EXISTS movies (
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS medias (
     filepath TEXT NOT NULL,
     duration  DECIMAL(10,6) NOT NULL,
     created_at INTEGER NOT NULL,
-    media_type VARCHAR(8) NOT NULL CHECK(media_id in ('movie', 'episode')),
+    media_type VARCHAR(8) NOT NULL CHECK(media_type in ('movie', 'episode')),
     media_id INTEGER NOT NULL,
     UNIQUE(media_type, media_id),
     UNIQUE(filepath)

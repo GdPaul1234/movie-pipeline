@@ -7,7 +7,7 @@ import sqlite3
 from deffcode import Sourcer
 from settings import Settings
 
-from ..lib.nfo_parser import BaseNfo, MovieNfo, SerieNfo, TvShowNfo
+from ..lib.nfo_parser import BaseNfo, MovieNfo, NfoParser, SerieNfo, TvShowNfo
 
 logger = logging.getLogger(__name__)
 
@@ -63,12 +63,12 @@ class MediaDatabaseUpdater:
 
         with self._connection as con:
             con.executemany(
-                "INSERT INTO mediable_genres(media_type,media_id,genre_id) VALUES(:media_type,:media_id,:genre_id)",
+                "INSERT OR IGNORE INTO mediable_genres(media_type,media_id,genre_id) VALUES(:media_type,:media_id,:genre_id)",
                 [{'media_type': media_type, 'media_id': media_id, 'genre_id': genre_id} for genre_id in genres_id]
             )
 
             con.executemany(
-                "INSERT OR IGNORE people_mediable_relation(person_id,media_type,media_id,relation) VALUES(:person_id,:media_type,:media_id,:relation)",
+                "INSERT OR IGNORE INTO people_mediable_relation(person_id,media_type,media_id,relation) VALUES(:person_id,:media_type,:media_id,:relation)",
                 [
                     {'person_id': relation_id, 'media_type': media_type, 'media_id': media_id, 'relation': relation_type}
                     for relation_id, relation_type in (actors_relations + credits_relations + directors_relations)
@@ -78,25 +78,27 @@ class MediaDatabaseUpdater:
     def _insert_movie(self, nfo: MovieNfo) -> int:
         with self._connection as con:
             cur = con.execute(
-                "INSERT OR INGNORE movies(title,year,rating,mpaa) VALUES(:title,:year,:rating,:mpaa)",
+                "INSERT OR IGNORE INTO movies(title,year,rating,mpaa) VALUES(:title,:year,:rating,:mpaa) RETURNING id",
                 nfo.dict(include={'title', 'year', 'rating', 'mpaa'})
             )
             movie_id, = cur.fetchone()
+            self._insert_common_subfields(nfo, media_id=movie_id, media_type='movie')
         return movie_id
 
     def _insert_serie(self, nfo: SerieNfo) -> int:
         with self._connection as con:
             cur = con.execute(
-                "INSERT OR IGNORE episodes(serie_id,title,season,episode,year,rating,mpaa) VALUES(:serie_id,:title,:season,:episode,:year,:rating,:mpaa)",
+                "INSERT OR IGNORE INTO episodes(serie_id,title,season,episode,year,rating,mpaa) VALUES(:serie_id,:title,:season,:episode,:year,:rating,:mpaa) RETURNING id",
                 {'serie_id': self._inserted_series[nfo.showtitle]} | nfo.dict(include={'title', 'season', 'episode', 'year', 'rating', 'mpaa'})
             )
             serie_id, = cur.fetchone()
+            self._insert_common_subfields(nfo, media_id=serie_id, media_type='episode')
         return serie_id
 
     def _insert_tvshow(self, nfo: TvShowNfo) -> int:
         with self._connection as con:
             cur = con.execute(
-                "INSERT OR IGNORE INTO series(title,year,rating,mpaa) VALUES(:title,:year,:rating,:mpaa)",
+                "INSERT OR IGNORE INTO series(title,year,rating,mpaa) VALUES(:title,:year,:rating,:mpaa) RETURNING id",
                 nfo.dict(include={'title', 'year', 'rating', 'mpaa'})
             )
             tvshow_id, = cur.fetchone()
@@ -116,17 +118,18 @@ class MediaDatabaseUpdater:
             metadata = cast(dict, Sourcer(str(media_path)).probe_stream().retrieve_metadata())
 
             with self._connection as con:
-                con.execute(
-                    "INSERT OR IGNORE INTO medias(filepath,duration,created_at,media_type,media_id) VALUES(:filepath,:duration,:created_at,:media_type,:media_id)",
+                cur = con.execute(
+                    "INSERT OR IGNORE INTO medias(filepath,duration,created_at,media_type,media_id) VALUES(:filepath,:duration,:created_at,:media_type,:media_id) RETURNING id",
                     {
-                        'filepath': media_path,
+                        'filepath': str(media_path),
                         'duration': metadata['source_duration_sec'],
                         'created_at': int(media_path.stat().st_ctime),
                         'media_type': 'episode' if isinstance(nfo, SerieNfo) else 'movie',
                         'media_id': nfo_id
                     }
                 )
-
+                media_id, = cur.fetchone()
+                logger.debug(f'Insert {media_path=} ({media_id=})')
                 self.inserted_medias.add(media_path)
 
 
@@ -136,4 +139,20 @@ class MediaScanner:
 
 def command(options, config: Settings):
     logger.debug('args: %s', vars(options))
-    db_path = Path(options.db_path)
+
+    if config.MediaDatabase is None:
+        raise ValueError('Missing MediaDatabase configuration in config')
+
+    filepath = Path(options.file)
+    db_path = config.MediaDatabase.db_path
+
+    try:
+        if filepath.is_file() and filepath.suffix == '.nfo':
+            MediaDatabaseUpdater(db_path).insert_media(nfo_path=filepath, nfo=NfoParser.parse(filepath))
+        elif filepath.is_dir():
+            pass # TODO implement media scanner
+        else:
+            raise ValueError('Unknown file type')
+    except Exception as e:
+        logger.exception(e)
+

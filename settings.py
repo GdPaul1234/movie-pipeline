@@ -1,4 +1,5 @@
 from typing import Optional
+from pathlib import Path
 from pydantic import BaseModel, BaseSettings
 from pydantic.types import DirectoryPath, FilePath, PositiveInt
 
@@ -25,6 +26,10 @@ class ProcessorSettings(BaseModel):
     nb_worker: PositiveInt
 
 
+class MediaDatabaseSettings(BaseModel):
+    db_path: Path
+
+
 class LoggerSettings(BaseModel):
     file_path: FilePath
 
@@ -34,6 +39,7 @@ class Settings(BaseSettings):
     Archive: Optional[ArchiveSettings]
     SegmentDetection: Optional[SegmentDetectionSettings]
     Processor: Optional[ProcessorSettings]
+    MediaDatabase: Optional[MediaDatabaseSettings]
     Logger:Optional[LoggerSettings]
 
     class Config:

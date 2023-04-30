@@ -13,7 +13,7 @@ from ..concerns import get_output_movies_directories, create_output_movies_direc
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 
-output_dir_path, output_dir_movie_path, output_dir_serie_path,backup_dir_path = \
+output_dir_path, output_dir_movie_path, output_dir_serie_path, backup_dir_path = \
     get_output_movies_directories(Path(__file__).parent)
 
 lazy_config = lazy_load_config_file(Path(__file__).parent)

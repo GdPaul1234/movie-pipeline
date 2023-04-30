@@ -51,6 +51,10 @@ def main():
     validate_dir_cmd = subparsers.add_parser('validate_dir', help='Validate segments and generate edit decision files in given directory')
     validate_dir_cmd.add_argument('dir', metavar='DIR',help='Movies to be processed directory')
 
+    # update media database
+    update_media_database_cmd = subparsers.add_parser('update_media_database', help='Update media database from NFOs for further analysis')
+    update_media_database_cmd.add_argument('file', metavar='FILE', help='NFO to be scanned')
+
     options = parser.parse_args()
     # the code to dispatch commands could all be in this file. For the purposes
     # of illustration only, we implement each command in a separate module.

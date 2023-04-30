@@ -82,6 +82,14 @@ class MediaDatabaseUpdater:
             for statement in migration_path.read_text(encoding="utf-8").split(";"):
                 con.execute(statement)
 
+    @property
+    def already_inserted_nfos(self):
+        with self._connection as con:
+            cur = con.execute("SELECT filepath from medias")
+            filepaths = cur.fetchall()
+
+        return {Path(filepath).with_suffix('.nfo') for filepath, in filepaths}
+
     def _insert_common_subfields(self, nfo: BaseNfo, media_type: Literal['movie', 'serie', 'episode'], media_id: int):
         self.common_subfields_builder.insert_common_subfields(nfo, media_type, media_id)
 
@@ -97,7 +105,7 @@ class MediaDatabaseUpdater:
 
     def _insert_serie(self, nfo_path: Path, nfo: SerieNfo) -> int:
         if (not (tvshow_nfo_path := nfo_path.parent.parent.joinpath('tvshow.nfo')).is_file()):
-            raise ValueError(f'Missing tvshow.nfo (checking "{tvshow_nfo_path=}")')
+            raise ValueError(f'Missing tvshow.nfo (checking "{str(tvshow_nfo_path)}")')
         tvshow_id = self._inserted_series.get(nfo.showtitle) or self._insert_tvshow(cast(TvShowNfo, NfoParser.parse(tvshow_nfo_path)))
 
         with self._connection as con:
@@ -120,7 +128,9 @@ class MediaDatabaseUpdater:
             self._inserted_series[nfo.title] = tvshow_id
         return tvshow_id
 
-    def insert_media(self, nfo_path: Path, nfo: BaseNfo):
+    def insert_media(self, nfo_path: Path):
+        nfo = NfoParser.parse(nfo_path)
+
         if isinstance(nfo, TvShowNfo):
             self._inserted_series[nfo.title] = self._insert_tvshow(nfo)
         else:
@@ -149,7 +159,28 @@ class MediaDatabaseUpdater:
 
 
 class MediaScanner:
-    pass
+    def __init__(self, dir_path: Path, db_path: Path) -> None:
+        self._media_db_updater = MediaDatabaseUpdater(db_path)
+        self._dir_path = dir_path
+
+    def scan(self):
+        logger.info(f'Scanning "{self._dir_path}"...')
+        nfos = set(self._dir_path.glob('**/*.nfo'))
+        nfo_to_scan = nfos - self._media_db_updater.already_inserted_nfos
+        logger.info(f'Found {len(nfos)} NFOs, {len(nfo_to_scan)} to scan')
+
+        nfo_errors = []
+
+        for nfo_path in nfo_to_scan:
+            try:
+                logger.info(f'Inserting "{str(nfo_path)}"...')
+                self._media_db_updater.insert_media(nfo_path)
+            except Exception as e:
+                logger.exception(e)
+                nfo_errors.append(nfo_path)
+
+        if len(nfo_errors) > 0:
+            logger.warning(f"Errors found in:\n{list(map(str, nfo_errors))}")
 
 
 def command(options, config: Settings):
@@ -163,9 +194,9 @@ def command(options, config: Settings):
 
     try:
         if filepath.is_file() and filepath.suffix == '.nfo':
-            MediaDatabaseUpdater(db_path).insert_media(nfo_path=filepath, nfo=NfoParser.parse(filepath))
+            MediaDatabaseUpdater(db_path).insert_media(nfo_path=filepath)
         elif filepath.is_dir():
-            pass # TODO implement media scanner
+            MediaScanner(filepath, db_path=db_path).scan()
         else:
             raise ValueError('Unknown file type')
     except Exception as e:

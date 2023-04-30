@@ -4,7 +4,6 @@ import unittest
 
 from ..concerns import copy_files, get_output_movies_directories, create_output_movies_directories, lazy_load_config_file
 from movie_pipeline.commands.update_media_database import MediaDatabaseUpdater
-from movie_pipeline.lib.nfo_parser import NfoParser
 
 nfo_ressource_dir_path = Path(__file__).parent.parent.parent.joinpath('lib', 'ressources')
 
@@ -35,18 +34,18 @@ class TestMediaDatabaseUpdater(unittest.TestCase):
 
     def test_movie_insert(self):
         config = lazy_config()
-        media_database_updater = MediaDatabaseUpdater(config.MediaDatabase.db_path) # type:ignore
+        media_database_updater = MediaDatabaseUpdater(config.MediaDatabase.db_path) # type: ignore
 
-        media_database_updater.insert_media(movie_path_nfo, nfo=NfoParser.parse(movie_path_nfo))
+        media_database_updater.insert_media(movie_path_nfo)
         self.assertEqual({movie_path}, media_database_updater.inserted_medias)
 
         media_database_updater.close()
 
     def test_serie_insert(self):
         config = lazy_config()
-        media_database_updater = MediaDatabaseUpdater(config.MediaDatabase.db_path) # type:ignore
+        media_database_updater = MediaDatabaseUpdater(config.MediaDatabase.db_path) # type: ignore
 
-        media_database_updater.insert_media(serie_path_nfo, nfo=NfoParser.parse(serie_path_nfo))
+        media_database_updater.insert_media(serie_path_nfo)
         self.assertTrue('Modern Family' in media_database_updater._inserted_series)
         self.assertEqual({serie_path}, media_database_updater.inserted_medias)
 

@@ -164,3 +164,4 @@ config.ini
 config.env
 title_strategies.yml
 title_re_blacklist.txt
+media.db

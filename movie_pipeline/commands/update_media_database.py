@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 class MediaDatabaseUpdater:
     def __init__(self, db_path: Path) -> None:
         self._connection = sqlite3.connect(db_path)
+        self.common_subfields_builder = MediaDatabaseUpdater.CommonSubfieldsBuilder(self._connection)
         self._inserted_series: dict[str, int] = {}
         self.inserted_medias: set[Path] = set()
         self.init_database()
@@ -22,18 +23,13 @@ class MediaDatabaseUpdater:
     def close(self):
         self._connection.close()
 
-    def init_database(self):
-        with self._connection as con:
-            migration_path = Path(__file__).parent.parent.joinpath('lib', 'migrations', '001_medias_init.sql')
-            for statement in migration_path.read_text(encoding="utf-8").split(";"):
-                con.execute(statement)
-
-    def _insert_common_subfields(self, nfo: BaseNfo, media_type: Literal['movie', 'serie', 'episode'], media_id: int):
-        if media_type not in ('movie', 'serie', 'episode'):
-            raise ValueError(f'Unknown {media_type=}')
+    #region CommonSubfieldsBuilder
+    class CommonSubfieldsBuilder:
+        def __init__(self, connection: sqlite3.Connection) -> None:
+            self._connection = connection
 
         @lru_cache
-        def insert_genre(genre: str) -> int:
+        def _insert_genre(self, genre: str) -> int:
             with self._connection as con:
                 cur = con.execute(
                     "INSERT INTO genres(genre) VALUES(:genre) ON CONFLICT DO UPDATE SET id=id RETURNING id",
@@ -43,7 +39,7 @@ class MediaDatabaseUpdater:
             return genre_id
 
         @lru_cache
-        def insert_person(full_name: str) -> int:
+        def _insert_person(self, full_name: str) -> int:
             with self._connection as con:
                 cur = con.execute(
                     "INSERT INTO people(name) VALUES(:name) ON CONFLICT DO UPDATE SET id=id RETURNING id",
@@ -52,28 +48,42 @@ class MediaDatabaseUpdater:
                 person_id, = cur.fetchone()
             return person_id
 
-        genres_id = [insert_genre(genre) for genre in nfo.genres]
-        actors_relations = [(insert_person(actor), 'actor') for actor in nfo.actors]
-        credits_relations = [(insert_person(credit), 'credit') for credit in getattr(nfo, 'credits', [])]
-        directors_relations = [(insert_person(director), 'director') for director in getattr(nfo, 'directors', [])]
+        def insert_common_subfields(self, nfo: BaseNfo, media_type: Literal['movie', 'serie', 'episode'], media_id: int):
+            if media_type not in ('movie', 'serie', 'episode'):
+                raise ValueError(f'Unknown {media_type=}')
 
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(f'{insert_genre.cache_info()=}')
-            logger.debug(f'{insert_person.cache_info()=}')
+            genres_id = [self._insert_genre(genre) for genre in nfo.genres]
+            actors_relations = [(self._insert_person(actor), 'actor') for actor in nfo.actors]
+            credits_relations = [(self._insert_person(credit), 'credit') for credit in getattr(nfo, 'credits', [])]
+            directors_relations = [(self._insert_person(director), 'director') for director in getattr(nfo, 'directors', [])]
 
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(f'{self._insert_genre.cache_info()=}')
+                logger.debug(f'{self._insert_person.cache_info()=}')
+
+            with self._connection as con:
+                con.executemany(
+                    "INSERT OR IGNORE INTO mediable_genres(media_type,media_id,genre_id) VALUES(:media_type,:media_id,:genre_id)",
+                    [{'media_type': media_type, 'media_id': media_id, 'genre_id': genre_id} for genre_id in genres_id]
+                )
+
+                con.executemany(
+                    "INSERT OR IGNORE INTO people_mediable_relation(person_id,media_type,media_id,relation) VALUES(:person_id,:media_type,:media_id,:relation)",
+                    [
+                        {'person_id': relation_id, 'media_type': media_type, 'media_id': media_id, 'relation': relation_type}
+                        for relation_id, relation_type in (actors_relations + credits_relations + directors_relations)
+                    ]
+                )
+    #endregion CommonSubfieldsBuilder
+
+    def init_database(self):
         with self._connection as con:
-            con.executemany(
-                "INSERT OR IGNORE INTO mediable_genres(media_type,media_id,genre_id) VALUES(:media_type,:media_id,:genre_id)",
-                [{'media_type': media_type, 'media_id': media_id, 'genre_id': genre_id} for genre_id in genres_id]
-            )
+            migration_path = Path(__file__).parent.parent.joinpath('lib', 'migrations', '001_medias_init.sql')
+            for statement in migration_path.read_text(encoding="utf-8").split(";"):
+                con.execute(statement)
 
-            con.executemany(
-                "INSERT OR IGNORE INTO people_mediable_relation(person_id,media_type,media_id,relation) VALUES(:person_id,:media_type,:media_id,:relation)",
-                [
-                    {'person_id': relation_id, 'media_type': media_type, 'media_id': media_id, 'relation': relation_type}
-                    for relation_id, relation_type in (actors_relations + credits_relations + directors_relations)
-                ]
-            )
+    def _insert_common_subfields(self, nfo: BaseNfo, media_type: Literal['movie', 'serie', 'episode'], media_id: int):
+        self.common_subfields_builder.insert_common_subfields(nfo, media_type, media_id)
 
     def _insert_movie(self, nfo: MovieNfo) -> int:
         with self._connection as con:

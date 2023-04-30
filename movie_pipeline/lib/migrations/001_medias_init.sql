@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS movies (
     title TEXT NOT NULL,
     year INTEGER NOT NULL,
     rating DECIMAL(2,6) NOT NULL,
-    mpaa VARCHAR(10) NOT NULL,
+    mpaa VARCHAR(10),
     UNIQUE(title, year)
 );
 
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS series (
     title TEXT NOT NULL,
     year INTEGER NOT NULL,
     rating DECIMAL(2,6) NOT NULL,
-    mpaa VARCHAR(10) NOT NULL,
+    mpaa VARCHAR(10),
     UNIQUE(title, year)
 );
 
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS episodes (
     episode INTEGER NOT NULL,
     year INTEGER NOT NULL,
     rating DECIMAL(2,6) NOT NULL,
-    mpaa VARCHAR(10) NOT NULL,
+    mpaa VARCHAR(10),
     FOREIGN KEY(serie_id) REFERENCES series(id),
     UNIQUE(serie_id, season, episode)
 );

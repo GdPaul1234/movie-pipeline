@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from statistics import mean
-from typing import Any, cast
+from typing import Any, Optional, cast
 from xml.etree.ElementTree import Element
 from abc import ABC
 
@@ -42,7 +42,7 @@ class BaseNfo(BaseModel, ABC):
     title: str
     rating: PositiveFloat
     plot: str
-    mpaa: str
+    mpaa: Optional[str]
     genres: list[str]
     premiered: PastDate
     year: PositiveInt
@@ -54,8 +54,8 @@ class BaseNfo(BaseModel, ABC):
 
 
 class MovieNfo(BaseNfo):
-    sorttitle: str
-    tagline: str
+    sorttitle: Optional[str]
+    tagline: Optional[str]
     credits: list[str]
     directors: list[str]
 

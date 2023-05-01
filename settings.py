@@ -28,6 +28,7 @@ class ProcessorSettings(BaseModel):
 
 class MediaDatabaseSettings(BaseModel):
     db_path: Path
+    clean_after_update = True
 
 
 class LoggerSettings(BaseModel):

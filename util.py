@@ -48,5 +48,8 @@ def timed_run(func, *args, **kwargs):
 
 class ConsoleLoggerFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        return  record.name not in ['movie_pipeline.commands.process_movie', 'movie_pipeline.lib.backup_policy_executor'] \
-            or record.levelno > logging.INFO
+        return record.name not in [
+            'movie_pipeline.commands.process_movie',
+            'movie_pipeline.lib.backup_policy_executor',
+            'movie_pipeline.commands.update_media_database'
+        ] or record.levelno > logging.INFO

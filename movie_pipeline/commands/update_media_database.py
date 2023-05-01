@@ -5,6 +5,8 @@ import logging
 import sqlite3
 
 from deffcode import Sourcer
+from rich.progress import Progress
+
 from settings import Settings
 
 from ..lib.nfo_parser import BaseNfo, MovieNfo, NfoParser, SerieNfo, TvShowNfo
@@ -90,6 +92,16 @@ class MediaDatabaseUpdater:
 
         return {Path(filepath).with_suffix('.nfo') for filepath, in filepaths}
 
+    def clean_media_database(self):
+        with self._connection as con:
+            cur = con.execute("SELECT filepath, id from medias")
+            filepaths = cur.fetchall()
+
+            missing_media_ids = [id for filepath, id in filepaths if not Path(filepath).is_file()]
+            cur = con.execute(f"DELETE FROM medias WHERE id IN ({', '.join('?' * len(missing_media_ids))})", missing_media_ids)
+            logger.info(f'Delete {cur.rowcount} missing medias')
+
+
     def _insert_common_subfields(self, nfo: BaseNfo, media_type: Literal['movie', 'serie', 'episode'], media_id: int):
         self.common_subfields_builder.insert_common_subfields(nfo, media_type, media_id)
 
@@ -159,9 +171,10 @@ class MediaDatabaseUpdater:
 
 
 class MediaScanner:
-    def __init__(self, dir_path: Path, db_path: Path) -> None:
+    def __init__(self, dir_path: Path, db_path: Path, config: Settings) -> None:
         self._media_db_updater = MediaDatabaseUpdater(db_path)
         self._dir_path = dir_path
+        self._config = config
 
     def scan(self):
         logger.info(f'Scanning "{self._dir_path}"...')
@@ -171,13 +184,19 @@ class MediaScanner:
 
         nfo_errors = []
 
-        for nfo_path in nfo_to_scan:
-            try:
-                logger.info(f'Inserting "{str(nfo_path)}"...')
-                self._media_db_updater.insert_media(nfo_path)
-            except Exception as e:
-                logger.exception(e)
-                nfo_errors.append(nfo_path)
+        with Progress() as progress:
+            for nfo_path in progress.track(nfo_to_scan):
+                try:
+                    message = f'Inserting "{str(nfo_path)}"...'
+                    logger.info(message); progress.console.log(message)
+                    self._media_db_updater.insert_media(nfo_path)
+                except Exception as e:
+                    logger.exception(e)
+                    nfo_errors.append(nfo_path)
+
+        if self._config.MediaDatabase.clean_after_update: # type: ignore
+            logger.info('Cleaning database...')
+            self._media_db_updater.clean_media_database()
 
         if len(nfo_errors) > 0:
             logger.warning(f"Errors found in:\n{list(map(str, nfo_errors))}")
@@ -196,7 +215,7 @@ def command(options, config: Settings):
         if filepath.is_file() and filepath.suffix == '.nfo':
             MediaDatabaseUpdater(db_path).insert_media(nfo_path=filepath)
         elif filepath.is_dir():
-            MediaScanner(filepath, db_path=db_path).scan()
+            MediaScanner(filepath, db_path, config).scan()
         else:
             raise ValueError('Unknown file type')
     except Exception as e:

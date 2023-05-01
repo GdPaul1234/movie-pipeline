@@ -75,7 +75,7 @@ class SubtitleTitleExpanderExtractor(NaiveTitleExtractor):
 
 
 class SerieSubTitleAwareTitleExtractor(NaiveTitleExtractor):
-    episode_extractor_params = ('sub_title', re.compile(r'(\d+)/\d+'))
+    episode_extractor_params = ('sub_title', re.compile(r'(\d+)[/-]\d+'))
     season_extractor_params = ('sub_title', re.compile(r'Saison (\d+)'))
 
     def extract_title(self, movie_path: Path) -> str:

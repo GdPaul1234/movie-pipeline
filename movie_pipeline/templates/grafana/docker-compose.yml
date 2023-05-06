@@ -7,8 +7,6 @@ services:
       - ./grafana_config/provisioning/:/etc/grafana/provisioning/
       - ${MOVIE_PIPELINE_MEDIA_DB_PATH:?error}:/app/data.db
     environment:
-      - GF_INSTALL_PLUGINS=frser-sqlite-datasource
-      - MOVIE_PIPELINE_MEDIA_DB_PATH=${MOVIE_PIPELINE_MEDIA_DB_PATH:?error}
+      - GF_INSTALL_PLUGINS=frser-sqlite-datasource # TODO download plugin instead
     ports:
       - "3000:3000"
-

@@ -55,6 +55,9 @@ def main():
     update_media_database_cmd = subparsers.add_parser('update_media_database', help='Update media database from NFOs for further analysis')
     update_media_database_cmd.add_argument('file', metavar='FILE', help='NFO to be scanned')
 
+    # launch media dashboard
+    subparsers.add_parser('launch_media_dashboard', help='Launch grafana dashboard provisioned with media stats dashboard')
+
     options = parser.parse_args()
     # the code to dispatch commands could all be in this file. For the purposes
     # of illustration only, we implement each command in a separate module.

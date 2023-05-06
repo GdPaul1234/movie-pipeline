@@ -949,12 +949,104 @@
       "type": "barchart"
     },
     {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "P226C548E53227224"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 15,
+        "x": 0,
+        "y": 15
+      },
+      "id": 20,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "year",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 100
+      },
+      "pluginVersion": "9.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P226C548E53227224"
+          },
+          "queryText": "SELECT movies.year, COUNT(year) as count \nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY ROUND(movies.year)\nORDER BY movies.year",
+          "queryType": "table",
+          "rawQueryText": "SELECT movies.year, COUNT(year) as count \nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY ROUND(movies.year)\nORDER BY movies.year",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Year",
+      "type": "barchart"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 20
       },
       "id": 3,
       "panels": [],
@@ -988,7 +1080,7 @@
         "h": 5,
         "w": 5,
         "x": 0,
-        "y": 16
+        "y": 21
       },
       "id": 10,
       "options": {
@@ -1084,7 +1176,7 @@
         "h": 5,
         "w": 3,
         "x": 5,
-        "y": 16
+        "y": 21
       },
       "id": 13,
       "options": {
@@ -1181,7 +1273,7 @@
         "h": 5,
         "w": 3,
         "x": 8,
-        "y": 16
+        "y": 21
       },
       "id": 14,
       "options": {
@@ -1266,7 +1358,7 @@
         "h": 5,
         "w": 4,
         "x": 11,
-        "y": 16
+        "y": 21
       },
       "id": 16,
       "options": {
@@ -1309,6 +1401,98 @@
       ],
       "title": "Ratings",
       "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "P226C548E53227224"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 15,
+        "x": 0,
+        "y": 26
+      },
+      "id": 21,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "year",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 100
+      },
+      "pluginVersion": "9.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P226C548E53227224"
+          },
+          "queryText": "SELECT episodes.year, COUNT(year) as count \nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY ROUND(episodes.year)\nORDER BY episodes.year",
+          "queryType": "table",
+          "rawQueryText": "SELECT episodes.year, COUNT(year) as count \nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY ROUND(episodes.year)\nORDER BY episodes.year",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Year",
+      "type": "barchart"
     }
   ],
   "refresh": "",
@@ -1326,6 +1510,6 @@
   "timezone": "",
   "title": "Media Stats",
   "uid": "ddac5331-26b2-4e4d-88f4-b0fbc3067306",
-  "version": 6,
+  "version": 7,
   "weekStart": ""
 }

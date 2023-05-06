@@ -59,7 +59,7 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 5,
+        "w": 6,
         "x": 0,
         "y": 1
       },
@@ -85,12 +85,12 @@
             "type": "frser-sqlite-datasource",
             "uid": "P226C548E53227224"
           },
-          "queryText": "SELECT $__unixEpochGroupSeconds(medias.created_at, 86400) as window, \nCOUNT(movies.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_movies\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "queryText": "SELECT created_at, \nCOUNT(movies.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_movies\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
           "queryType": "time series",
-          "rawQueryText": "SELECT $__unixEpochGroupSeconds(medias.created_at, 86400) as window, \nCOUNT(movies.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_movies\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "rawQueryText": "SELECT created_at, \nCOUNT(movies.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_movies\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
           "refId": "Number of movies",
           "timeColumns": [
-            "window"
+            "created_at"
           ]
         }
       ],
@@ -123,8 +123,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 5,
+        "w": 5,
+        "x": 6,
         "y": 1
       },
       "id": 1,
@@ -150,12 +150,12 @@
             "uid": "P226C548E53227224"
           },
           "hide": false,
-          "queryText": "SELECT $__unixEpochGroupSeconds(created_at, 86400) as window, \r\nSUM(duration) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as cumulative_duration\r\nFROM medias WHERE media_type = 'movie' AND created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "queryText": "SELECT created_at, SUM(duration) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as cumulative_duration\r\nFROM medias WHERE media_type = 'movie' AND created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
           "queryType": "time series",
-          "rawQueryText": "SELECT $__unixEpochGroupSeconds(created_at, 86400) as window, \r\nSUM(duration) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as cumulative_duration\r\nFROM medias WHERE media_type = 'movie' AND created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "rawQueryText": "SELECT created_at, SUM(duration) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as cumulative_duration\r\nFROM medias WHERE media_type = 'movie' AND created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
           "refId": "A",
           "timeColumns": [
-            "window"
+            "created_at"
           ]
         }
       ],
@@ -203,8 +203,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 9,
+        "w": 5,
+        "x": 11,
         "y": 1
       },
       "id": 18,
@@ -230,12 +230,12 @@
             "uid": "P226C548E53227224"
           },
           "hide": false,
-          "queryText": "SELECT $__unixEpochGroupSeconds(created_at, 86400) as window,\r\nAVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\r\n",
+          "queryText": "SELECT created_at, AVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\r\n",
           "queryType": "time series",
-          "rawQueryText": "SELECT $__unixEpochGroupSeconds(created_at, 86400) as window,\r\nAVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\r\n",
+          "rawQueryText": "SELECT created_at, AVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\r\n",
           "refId": "A",
           "timeColumns": [
-            "window"
+            "created_at"
           ]
         }
       ],
@@ -267,8 +267,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 4,
-        "x": 13,
+        "w": 5,
+        "x": 16,
         "y": 1
       },
       "id": 17,
@@ -367,12 +367,12 @@
             "type": "frser-sqlite-datasource",
             "uid": "P226C548E53227224"
           },
-          "queryText": "SELECT $__unixEpochGroupSeconds(medias.created_at, 86400) as window, \nCOUNT(episodes.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_episodes\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "queryText": "SELECT created_at, COUNT(episodes.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_episodes\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
           "queryType": "time series",
-          "rawQueryText": "SELECT $__unixEpochGroupSeconds(medias.created_at, 86400) as window, \nCOUNT(episodes.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_episodes\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "rawQueryText": "SELECT created_at, COUNT(episodes.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_episodes\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
           "refId": "Number of episodes",
           "timeColumns": [
-            "window"
+            "created_at"
           ]
         }
       ],
@@ -404,7 +404,7 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 2,
+        "w": 3,
         "x": 3,
         "y": 5
       },
@@ -430,12 +430,12 @@
             "type": "frser-sqlite-datasource",
             "uid": "P226C548E53227224"
           },
-          "queryText": "SELECT $__unixEpochGroupSeconds(medias.created_at, 86400) as window, \nCOUNT(episodes.serie_id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_series\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nGROUP BY episodes.serie_id\nHAVING created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "queryText": "SELECT created_at, COUNT(episodes.serie_id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_series\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nGROUP BY episodes.serie_id HAVING created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
           "queryType": "time series",
-          "rawQueryText": "SELECT $__unixEpochGroupSeconds(medias.created_at, 86400) as window, \nCOUNT(episodes.serie_id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_series\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nGROUP BY episodes.serie_id\nHAVING created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "rawQueryText": "SELECT created_at, COUNT(episodes.serie_id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_series\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nGROUP BY episodes.serie_id HAVING created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
           "refId": "Number of episodes",
           "timeColumns": [
-            "window"
+            "created_at"
           ]
         }
       ],
@@ -468,8 +468,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 5,
+        "w": 5,
+        "x": 6,
         "y": 5
       },
       "id": 5,
@@ -494,12 +494,12 @@
             "type": "frser-sqlite-datasource",
             "uid": "P226C548E53227224"
           },
-          "queryText": "SELECT $__unixEpochGroupSeconds(created_at, 86400) as window, \nSUM(duration) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as cumulative_duration\nFROM medias WHERE media_type = 'episode' AND created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "queryText": "SELECT created_at, SUM(duration) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as cumulative_duration\nFROM medias WHERE media_type = 'episode' AND created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
           "queryType": "time series",
-          "rawQueryText": "SELECT $__unixEpochGroupSeconds(created_at, 86400) as window, \nSUM(duration) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as cumulative_duration\nFROM medias WHERE media_type = 'episode' AND created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "rawQueryText": "SELECT created_at, SUM(duration) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as cumulative_duration\nFROM medias WHERE media_type = 'episode' AND created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
           "refId": "A",
           "timeColumns": [
-            "window"
+            "created_at"
           ]
         }
       ],
@@ -546,8 +546,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 9,
+        "w": 5,
+        "x": 11,
         "y": 5
       },
       "id": 19,
@@ -573,12 +573,12 @@
             "uid": "P226C548E53227224"
           },
           "hide": false,
-          "queryText": "SELECT $__unixEpochGroupSeconds(created_at, 86400) as window,\r\nAVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\r\n",
+          "queryText": "SELECT created_at, AVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\r\n",
           "queryType": "time series",
-          "rawQueryText": "SELECT $__unixEpochGroupSeconds(created_at, 86400) as window,\r\nAVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\r\n",
+          "rawQueryText": "SELECT created_at, AVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\r\n",
           "refId": "A",
           "timeColumns": [
-            "window"
+            "created_at"
           ]
         }
       ],
@@ -624,7 +624,7 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 5,
+        "w": 6,
         "x": 0,
         "y": 10
       },
@@ -700,7 +700,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 169
+                "value": 216
               }
             ]
           },
@@ -720,8 +720,8 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 4,
-        "x": 5,
+        "w": 5,
+        "x": 6,
         "y": 10
       },
       "id": 11,
@@ -797,7 +797,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 168
+                "value": 214
               }
             ]
           },
@@ -817,8 +817,8 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 4,
-        "x": 9,
+        "w": 5,
+        "x": 11,
         "y": 10
       },
       "id": 12,
@@ -902,8 +902,8 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 4,
-        "x": 13,
+        "w": 5,
+        "x": 16,
         "y": 10
       },
       "id": 15,
@@ -993,7 +993,7 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 13,
+        "w": 16,
         "x": 0,
         "y": 15
       },
@@ -1063,8 +1063,8 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 4,
-        "x": 13,
+        "w": 5,
+        "x": 16,
         "y": 15
       },
       "id": 22,
@@ -1149,7 +1149,7 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 5,
+        "w": 6,
         "x": 0,
         "y": 21
       },
@@ -1245,8 +1245,8 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 4,
-        "x": 5,
+        "w": 5,
+        "x": 6,
         "y": 21
       },
       "id": 13,
@@ -1342,8 +1342,8 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 4,
-        "x": 9,
+        "w": 5,
+        "x": 11,
         "y": 21
       },
       "id": 14,
@@ -1427,8 +1427,8 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 4,
-        "x": 13,
+        "w": 5,
+        "x": 16,
         "y": 21
       },
       "id": 16,
@@ -1518,7 +1518,7 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 13,
+        "w": 16,
         "x": 0,
         "y": 26
       },
@@ -1588,8 +1588,8 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 4,
-        "x": 13,
+        "w": 5,
+        "x": 16,
         "y": 26
       },
       "id": 23,
@@ -1652,6 +1652,6 @@
   "timezone": "",
   "title": "Media Stats",
   "uid": "ddac5331-26b2-4e4d-88f4-b0fbc3067306",
-  "version": 8,
+  "version": 10,
   "weekStart": ""
 }

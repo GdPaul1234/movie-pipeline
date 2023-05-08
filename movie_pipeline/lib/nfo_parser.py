@@ -6,7 +6,7 @@ from xml.etree.ElementTree import Element
 from abc import ABC
 
 from pydantic import BaseModel
-from pydantic.types import PastDate, PositiveFloat, PositiveInt
+from pydantic.types import PastDate, PositiveFloat, PositiveInt, NonNegativeInt
 from pydantic.utils import GetterDict
 
 from ..models.movie_file import LegacyMovieFile
@@ -62,7 +62,7 @@ class MovieNfo(BaseNfo):
 
 class SerieNfo(BaseNfo):
     showtitle: str
-    season: PositiveInt
+    season: NonNegativeInt
     episode: PositiveInt
     aired: PastDate
     credits: list[str]

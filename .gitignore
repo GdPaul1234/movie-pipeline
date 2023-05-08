@@ -162,6 +162,9 @@ cython_debug/
 # Specific application files to ignore
 config.ini
 config.env
+
 title_strategies.yml
 title_re_blacklist.txt
 media.db
+
+movie_pipeline/templates/grafana/grafana_config/tmp/

@@ -22,6 +22,13 @@ class MediaDatabaseUpdater:
         self.inserted_medias: set[Path] = set()
         self.init_database()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+        return False
+
     def close(self):
         self._connection.close()
 
@@ -176,6 +183,13 @@ class MediaScanner:
         self._dir_path = dir_path
         self._config = config
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self._media_db_updater.close()
+        return False
+
     def scan(self):
         logger.info(f'Scanning "{self._dir_path}"...')
         nfos = set(self._dir_path.glob('**/*.nfo'))
@@ -213,9 +227,11 @@ def command(options, config: Settings):
 
     try:
         if filepath.is_file() and filepath.suffix == '.nfo':
-            MediaDatabaseUpdater(db_path).insert_media(nfo_path=filepath)
+            with MediaDatabaseUpdater(db_path) as updater:
+                updater.insert_media(nfo_path=filepath)
         elif filepath.is_dir():
-            MediaScanner(filepath, db_path, config).scan()
+            with MediaScanner(filepath, db_path, config) as scanner:
+                scanner.scan()
         else:
             raise ValueError('Unknown file type')
     except Exception as e:

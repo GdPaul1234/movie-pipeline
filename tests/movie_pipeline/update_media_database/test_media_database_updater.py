@@ -34,22 +34,18 @@ class TestMediaDatabaseUpdater(unittest.TestCase):
 
     def test_movie_insert(self):
         config = lazy_config()
-        media_database_updater = MediaDatabaseUpdater(config.MediaDatabase.db_path) # type: ignore
 
-        media_database_updater.insert_media(movie_path_nfo)
-        self.assertEqual({movie_path}, media_database_updater.inserted_medias)
-
-        media_database_updater.close()
+        with MediaDatabaseUpdater(config.MediaDatabase.db_path) as media_database_updater: # type: ignore
+            media_database_updater.insert_media(movie_path_nfo)
+            self.assertEqual({movie_path}, media_database_updater.inserted_medias)
 
     def test_serie_insert(self):
         config = lazy_config()
-        media_database_updater = MediaDatabaseUpdater(config.MediaDatabase.db_path) # type: ignore
 
-        media_database_updater.insert_media(serie_path_nfo)
-        self.assertTrue('Modern Family' in media_database_updater._inserted_series)
-        self.assertEqual({serie_path}, media_database_updater.inserted_medias)
-
-        media_database_updater.close()
+        with MediaDatabaseUpdater(config.MediaDatabase.db_path) as media_database_updater: # type: ignore
+            media_database_updater.insert_media(serie_path_nfo)
+            self.assertTrue('Modern Family' in media_database_updater._inserted_series)
+            self.assertEqual({serie_path}, media_database_updater.inserted_medias)
 
     def tearDown(self) -> None:
         shutil.rmtree(output_dir_path)

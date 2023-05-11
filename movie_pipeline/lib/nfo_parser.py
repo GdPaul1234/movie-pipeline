@@ -30,7 +30,7 @@ class NfoGetter(ABC, GetterDict):
             return [item.text for item in obj.findall(field_name)]
 
         elif key == 'rating':
-            return mean(float(item.text) for item in obj.findall(field_name)) # type: ignore
+            return mean([float(item.text) for item in obj.findall(field_name)] or [0]) # type: ignore
 
         elif (item := obj.find(field_name)) is not None:
             return item.text
@@ -40,7 +40,7 @@ class NfoGetter(ABC, GetterDict):
 
 class BaseNfo(BaseModel, ABC):
     title: str
-    rating: PositiveFloat
+    rating: NonNegativeInt
     plot: str
     mpaa: Optional[str]
     genres: list[str]

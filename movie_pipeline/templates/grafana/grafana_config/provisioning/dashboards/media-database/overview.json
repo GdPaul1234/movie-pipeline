@@ -1013,7 +1013,7 @@
         "showValue": "auto",
         "stacking": "none",
         "tooltip": {
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         },
         "xField": "year",
@@ -1538,7 +1538,7 @@
         "showValue": "auto",
         "stacking": "none",
         "tooltip": {
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         },
         "xField": "year",
@@ -1652,6 +1652,6 @@
   "timezone": "",
   "title": "Media Stats",
   "uid": "ddac5331-26b2-4e4d-88f4-b0fbc3067306",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }

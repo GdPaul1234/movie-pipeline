@@ -41,7 +41,7 @@ class NfoGetter(ABC, GetterDict):
 class BaseNfo(BaseModel, ABC):
     title: str
     rating: NonNegativeInt
-    plot: str
+    plot: Optional[str]
     mpaa: Optional[str]
     genres: list[str]
     premiered: PastDate

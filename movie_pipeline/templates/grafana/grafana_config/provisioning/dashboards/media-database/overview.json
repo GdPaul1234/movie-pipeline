@@ -85,9 +85,9 @@
             "type": "frser-sqlite-datasource",
             "uid": "P226C548E53227224"
           },
-          "queryText": "SELECT created_at, \nCOUNT(movies.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_movies\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "queryText": "SELECT created_at, COUNT(medias.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_movies\nFROM medias WHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds} AND medias.media_type = 'movie';",
           "queryType": "time series",
-          "rawQueryText": "SELECT created_at, \nCOUNT(movies.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_movies\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "rawQueryText": "SELECT created_at, COUNT(medias.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_movies\nFROM medias WHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds} AND medias.media_type = 'movie';",
           "refId": "Number of movies",
           "timeColumns": [
             "created_at"
@@ -230,9 +230,9 @@
             "uid": "P226C548E53227224"
           },
           "hide": false,
-          "queryText": "SELECT created_at, AVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\r\n",
+          "queryText": "SELECT created_at, AVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};\r\n",
           "queryType": "time series",
-          "rawQueryText": "SELECT created_at, AVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\r\n",
+          "rawQueryText": "SELECT created_at, AVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM movies JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};\r\n",
           "refId": "A",
           "timeColumns": [
             "created_at"
@@ -367,9 +367,9 @@
             "type": "frser-sqlite-datasource",
             "uid": "P226C548E53227224"
           },
-          "queryText": "SELECT created_at, COUNT(episodes.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_episodes\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "queryText": "SELECT created_at, COUNT(medias.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_episodes\nFROM medias WHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds} AND medias.media_type = 'episode';",
           "queryType": "time series",
-          "rawQueryText": "SELECT created_at, COUNT(episodes.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_episodes\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};",
+          "rawQueryText": "SELECT created_at, COUNT(medias.id) OVER (ORDER BY medias.created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as nb_episodes\nFROM medias WHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds} AND medias.media_type = 'episode';",
           "refId": "Number of episodes",
           "timeColumns": [
             "created_at"
@@ -573,9 +573,9 @@
             "uid": "P226C548E53227224"
           },
           "hide": false,
-          "queryText": "SELECT created_at, AVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\r\n",
+          "queryText": "SELECT created_at, AVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};\r\n",
           "queryType": "time series",
-          "rawQueryText": "SELECT created_at, AVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\r\n",
+          "rawQueryText": "SELECT created_at, AVG(rating) OVER (ORDER BY created_at ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as avg_rating\r\nFROM episodes JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\r\nWHERE created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds};\r\n",
           "refId": "A",
           "timeColumns": [
             "created_at"
@@ -1652,6 +1652,6 @@
   "timezone": "",
   "title": "Media Stats",
   "uid": "ddac5331-26b2-4e4d-88f4-b0fbc3067306",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }

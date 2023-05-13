@@ -167,7 +167,7 @@ class MediaDatabaseUpdater:
                     {
                         'filepath': str(media_path),
                         'duration': metadata['source_duration_sec'],
-                        'created_at': int(media_path.stat().st_ctime),
+                        'created_at': int(media_path.stat().st_mtime),
                         'media_type': 'episode' if isinstance(nfo, SerieNfo) else 'movie',
                         'media_id': nfo_id
                     }

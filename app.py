@@ -5,6 +5,7 @@ import importlib
 import logging
 import logging.handlers
 from rich.logging import RichHandler
+from pathlib import Path
 import os
 import sys
 
@@ -17,43 +18,43 @@ def main():
     levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
 
     parser.add_argument('--log-level', default='INFO', choices=levels)
-    parser.add_argument('--config-path', default='config.env', help='Config path')
+    parser.add_argument('--config-path', default='config.env', help='Config path', type=Path)
     subparsers = parser.add_subparsers(dest='command', help='Available commands:')
 
     # move command
     move_cmd = subparsers.add_parser('legacy_move', help='Move converted movies or series to their folder')
-    move_cmd.add_argument('file', metavar='FILE', help='File or folder to move')
+    move_cmd.add_argument('file', metavar='FILE', help='File or folder to move', type=Path)
 
     # process command
     process_cmd = subparsers.add_parser('process_movie', help='Cut and merge movie segments to keep only relevant parts')
-    process_cmd.add_argument('file', metavar='FILE', help='File or folder to process')
+    process_cmd.add_argument('file', metavar='FILE', help='File or folder to process', type=Path)
     process_cmd.add_argument('--custom-ext', help='Extension of processing decision file', default='.yml')
 
     # scaffold command
     scaffold_cmd = subparsers.add_parser('scaffold_dir', help='Scaffold movie edit decision files')
-    scaffold_cmd.add_argument('dir', metavar='DIR',help='Movies to be processed directory')
+    scaffold_cmd.add_argument('dir', metavar='DIR',help='Directory of movies to be processed', type=Path)
 
     # archive movies command
     subparsers.add_parser('archive_movies', help='Archive movies regarding options in config file')
 
     # dump for kodi
     dump_for_kodi_cmd = subparsers.add_parser('dump_for_kodi', help='Dump .vsmeta to .nfo if not exist')
-    dump_for_kodi_cmd.add_argument('file', metavar='FILE', help='File or folder to process')
+    dump_for_kodi_cmd.add_argument('file', metavar='FILE', help='File or folder to process', type=Path)
 
     # detect segments
     detect_segments_cmd = subparsers.add_parser('detect_segments', help='Run best-effort segments detectors')
-    detect_segments_cmd.add_argument('file', metavar='FILE', help='Movie to be processed')
+    detect_segments_cmd.add_argument('file', metavar='FILE', help='Movie to be processed', type=Path)
     detect_segments_cmd.add_argument('--detector',
                                      choices=('axcorrelate_silence', 'match_template', 'crop'),
                                      help='Run detect segments with selected detectors', nargs='+', default=['match_template'])
 
     # validate dir
     validate_dir_cmd = subparsers.add_parser('validate_dir', help='Validate segments and generate edit decision files in given directory')
-    validate_dir_cmd.add_argument('dir', metavar='DIR',help='Movies to be processed directory')
+    validate_dir_cmd.add_argument('dir', metavar='DIR', help='Directory of movies to be processed', type=Path)
 
     # update media database
     update_media_database_cmd = subparsers.add_parser('update_media_database', help='Update media database from NFOs for further analysis')
-    update_media_database_cmd.add_argument('file', metavar='FILE', help='NFO to be scanned')
+    update_media_database_cmd.add_argument('files', metavar='FILES', help='NFO to be scanned', nargs='+', type=Path)
 
     # launch media dashboard
     subparsers.add_parser('launch_media_dashboard', help='Launch grafana dashboard provisioned with media stats dashboard')

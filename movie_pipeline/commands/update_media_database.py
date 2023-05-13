@@ -5,7 +5,7 @@ import logging
 import sqlite3
 
 from deffcode import Sourcer
-from rich.progress import Progress
+from rich.progress import Progress, track
 
 from settings import Settings
 
@@ -47,7 +47,7 @@ class MediaDatabaseUpdater:
                 genre_id, = cur.fetchone()
             return genre_id
 
-        @lru_cache
+        @lru_cache(maxsize=2048)
         def _insert_person(self, full_name: str) -> int:
             with self._connection as con:
                 cur = con.execute(
@@ -104,7 +104,7 @@ class MediaDatabaseUpdater:
             cur = con.execute("SELECT filepath, id from medias")
             filepaths = cur.fetchall()
 
-            missing_media_ids = [id for filepath, id in filepaths if not Path(filepath).is_file()]
+            missing_media_ids = [id for filepath, id in track(filepaths, description='Cleaning...') if not Path(filepath).is_file()]
             cur = con.execute(f"DELETE FROM medias WHERE id IN ({', '.join('?' * len(missing_media_ids))})", missing_media_ids)
             logger.info(f'Delete {cur.rowcount} missing medias')
 
@@ -178,9 +178,8 @@ class MediaDatabaseUpdater:
 
 
 class MediaScanner:
-    def __init__(self, dir_path: Path, db_path: Path, config: Settings) -> None:
+    def __init__(self, db_path: Path, config: Settings) -> None:
         self._media_db_updater = MediaDatabaseUpdater(db_path)
-        self._dir_path = dir_path
         self._config = config
 
     def __enter__(self):
@@ -190,9 +189,11 @@ class MediaScanner:
         self._media_db_updater.close()
         return False
 
-    def scan(self):
-        logger.info(f'Scanning "{self._dir_path}"...')
-        nfos = set(self._dir_path.glob('**/*.nfo'))
+    def _scan_file (self, filepath: Path):
+        self._media_db_updater.insert_media(nfo_path=filepath)
+
+    def _scan_dir (self, dir_path: Path):
+        nfos = set(dir_path.glob('**/*.nfo'))
         nfo_to_scan = nfos - self._media_db_updater.already_inserted_nfos
         logger.info(f'Found {len(nfos)} NFOs, {len(nfo_to_scan)} to scan')
 
@@ -208,12 +209,23 @@ class MediaScanner:
                     logger.exception(e)
                     nfo_errors.append(nfo_path)
 
+        if len(nfo_errors) > 0:
+            logger.warning(f"Errors found in:\n{list(map(str, nfo_errors))}")
+
+    def scan(self, paths: list[Path]):
+        for path in paths:
+            logger.info(f'Scanning "{str(path)}"...')
+
+            if path.is_file() and path.suffix == '.nfo':
+                self._scan_file(path)
+            elif path.is_dir():
+                self._scan_dir(path)
+            else:
+                logger.error('Unknown file type for %s', str(path))
+
         if self._config.MediaDatabase.clean_after_update: # type: ignore
             logger.info('Cleaning database...')
             self._media_db_updater.clean_media_database()
-
-        if len(nfo_errors) > 0:
-            logger.warning(f"Errors found in:\n{list(map(str, nfo_errors))}")
 
 
 def command(options, config: Settings):
@@ -222,18 +234,10 @@ def command(options, config: Settings):
     if config.MediaDatabase is None:
         raise ValueError('Missing MediaDatabase configuration in config')
 
-    filepath = Path(options.file)
     db_path = config.MediaDatabase.db_path
 
     try:
-        if filepath.is_file() and filepath.suffix == '.nfo':
-            with MediaDatabaseUpdater(db_path) as updater:
-                updater.insert_media(nfo_path=filepath)
-        elif filepath.is_dir():
-            with MediaScanner(filepath, db_path, config) as scanner:
-                scanner.scan()
-        else:
-            raise ValueError('Unknown file type')
+        with MediaScanner(db_path, config) as scanner:
+            scanner.scan(options.files)
     except Exception as e:
         logger.exception(e)
-

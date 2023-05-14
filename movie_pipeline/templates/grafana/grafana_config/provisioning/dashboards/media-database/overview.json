@@ -746,9 +746,9 @@
             "type": "frser-sqlite-datasource",
             "uid": "P226C548E53227224"
           },
-          "queryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN movies ON people_mediable_relation.media_id = movies.id AND people_mediable_relation.media_type = 'movie'\n  JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE people_mediable_relation.relation IN ('credit', 'director')\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
+          "queryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN movies ON people_mediable_relation.media_id = movies.id AND people_mediable_relation.media_type = 'movie'\n  JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE people_mediable_relation.relation = 'director'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
           "queryType": "table",
-          "rawQueryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN movies ON people_mediable_relation.media_id = movies.id AND people_mediable_relation.media_type = 'movie'\n  JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE people_mediable_relation.relation IN ('credit', 'director')\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
+          "rawQueryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN movies ON people_mediable_relation.media_id = movies.id AND people_mediable_relation.media_type = 'movie'\n  JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE people_mediable_relation.relation = 'director'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
           "refId": "A",
           "timeColumns": [
             "time",
@@ -797,7 +797,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 214
+                "value": 216
               }
             ]
           },
@@ -821,7 +821,7 @@
         "x": 11,
         "y": 10
       },
-      "id": 12,
+      "id": 24,
       "options": {
         "cellHeight": "sm",
         "footer": {
@@ -843,9 +843,9 @@
             "type": "frser-sqlite-datasource",
             "uid": "P226C548E53227224"
           },
-          "queryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN movies ON people_mediable_relation.media_id = movies.id AND people_mediable_relation.media_type = 'movie'\n  JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE people_mediable_relation.relation = 'actor'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
+          "queryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN movies ON people_mediable_relation.media_id = movies.id AND people_mediable_relation.media_type = 'movie'\n  JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE people_mediable_relation.relation = 'credit'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
           "queryType": "table",
-          "rawQueryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN movies ON people_mediable_relation.media_id = movies.id AND people_mediable_relation.media_type = 'movie'\n  JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE people_mediable_relation.relation = 'actor'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
+          "rawQueryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN movies ON people_mediable_relation.media_id = movies.id AND people_mediable_relation.media_type = 'movie'\n  JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE people_mediable_relation.relation = 'credit'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
           "refId": "A",
           "timeColumns": [
             "time",
@@ -853,7 +853,7 @@
           ]
         }
       ],
-      "title": "Actors",
+      "title": "Credits",
       "type": "table"
     },
     {
@@ -993,7 +993,7 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 16,
+        "w": 11,
         "x": 0,
         "y": 15
       },
@@ -1039,6 +1039,103 @@
       ],
       "title": "Year",
       "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "P226C548E53227224"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 214
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "count"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 55
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 11,
+        "y": 15
+      },
+      "id": 12,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "9.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P226C548E53227224"
+          },
+          "queryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN movies ON people_mediable_relation.media_id = movies.id AND people_mediable_relation.media_type = 'movie'\n  JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE people_mediable_relation.relation = 'actor'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
+          "queryType": "table",
+          "rawQueryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN movies ON people_mediable_relation.media_id = movies.id AND people_mediable_relation.media_type = 'movie'\n  JOIN medias ON medias.media_id = movies.id AND medias.media_type = 'movie'\nWHERE people_mediable_relation.relation = 'actor'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Actors",
+      "type": "table"
     },
     {
       "datasource": {
@@ -1271,9 +1368,9 @@
             "type": "frser-sqlite-datasource",
             "uid": "P226C548E53227224"
           },
-          "queryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN episodes ON people_mediable_relation.media_id = episodes.id AND people_mediable_relation.media_type = 'episode'\n  JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE people_mediable_relation.relation IN ('credit', 'director')\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
+          "queryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN episodes ON people_mediable_relation.media_id = episodes.id AND people_mediable_relation.media_type = 'episode'\n  JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE people_mediable_relation.relation = 'director'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
           "queryType": "table",
-          "rawQueryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN episodes ON people_mediable_relation.media_id = episodes.id AND people_mediable_relation.media_type = 'episode'\n  JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE people_mediable_relation.relation IN ('credit', 'director')\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
+          "rawQueryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN episodes ON people_mediable_relation.media_id = episodes.id AND people_mediable_relation.media_type = 'episode'\n  JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE people_mediable_relation.relation = 'director'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
           "refId": "A",
           "timeColumns": [
             "time",
@@ -1322,7 +1419,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 209
+                "value": 218
               }
             ]
           },
@@ -1334,7 +1431,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 65
+                "value": 55
               }
             ]
           }
@@ -1346,7 +1443,7 @@
         "x": 11,
         "y": 21
       },
-      "id": 14,
+      "id": 25,
       "options": {
         "cellHeight": "sm",
         "footer": {
@@ -1368,9 +1465,9 @@
             "type": "frser-sqlite-datasource",
             "uid": "P226C548E53227224"
           },
-          "queryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN episodes ON people_mediable_relation.media_id = episodes.id AND people_mediable_relation.media_type = 'episode'\n  JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE people_mediable_relation.relation = 'actor'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
+          "queryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN episodes ON people_mediable_relation.media_id = episodes.id AND people_mediable_relation.media_type = 'episode'\n  JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE people_mediable_relation.relation = 'credit'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
           "queryType": "table",
-          "rawQueryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN episodes ON people_mediable_relation.media_id = episodes.id AND people_mediable_relation.media_type = 'episode'\n  JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE people_mediable_relation.relation = 'actor'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
+          "rawQueryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN episodes ON people_mediable_relation.media_id = episodes.id AND people_mediable_relation.media_type = 'episode'\n  JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE people_mediable_relation.relation = 'credit'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
           "refId": "A",
           "timeColumns": [
             "time",
@@ -1378,7 +1475,7 @@
           ]
         }
       ],
-      "title": "Actors",
+      "title": "Credits",
       "type": "table"
     },
     {
@@ -1518,7 +1615,7 @@
       },
       "gridPos": {
         "h": 5,
-        "w": 16,
+        "w": 11,
         "x": 0,
         "y": 26
       },
@@ -1564,6 +1661,103 @@
       ],
       "title": "Year",
       "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "P226C548E53227224"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 209
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "count"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 65
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 11,
+        "y": 26
+      },
+      "id": 14,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "9.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "P226C548E53227224"
+          },
+          "queryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN episodes ON people_mediable_relation.media_id = episodes.id AND people_mediable_relation.media_type = 'episode'\n  JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE people_mediable_relation.relation = 'actor'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
+          "queryType": "table",
+          "rawQueryText": "SELECT people.name, COUNT(people.name) as count\nFROM people \n  JOIN people_mediable_relation ON people_mediable_relation.person_id = people.id\n  JOIN episodes ON people_mediable_relation.media_id = episodes.id AND people_mediable_relation.media_type = 'episode'\n  JOIN medias ON medias.media_id = episodes.id AND medias.media_type = 'episode'\nWHERE people_mediable_relation.relation = 'actor'\n  AND medias.created_at BETWEEN ${__from:date:seconds} AND ${__to:date:seconds}\nGROUP BY people.name\nORDER BY count desc;\n",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Actors",
+      "type": "table"
     },
     {
       "datasource": {
@@ -1652,6 +1846,6 @@
   "timezone": "",
   "title": "Media Stats",
   "uid": "ddac5331-26b2-4e4d-88f4-b0fbc3067306",
-  "version": 3,
+  "version": 4,
   "weekStart": ""
 }

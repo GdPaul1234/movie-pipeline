@@ -87,7 +87,7 @@ class MovieFileProcessor:
                 vcodec='h264_nvenc',
                 **{'preset:v': 'p7', 'tune:v': 'hq', 'rc:v': 'vbr', 'cq:v': 28, 'profile:v': 'high'},
                 acodec='aac', cutoff='20K', audio_bitrate='256K', ac=2,
-                **{f"map_metadata:s:a:{index}": f'0:s:a:{index}' for index in range(nb_audio_streams)},
+                **{f'map_metadata:s:a:{index}': f'0:s:a:{index}' for index in range(nb_audio_streams)},
                 dn=None, sn=None, ignore_unknown=None,
             )
         )

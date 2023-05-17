@@ -93,3 +93,16 @@ class TestTitleExtractor(unittest.TestCase):
             title_extractor = SerieTitleAwareTitleExtractor(default_title_cleaner)
             extracted_title = title_extractor.extract_title(serie_file_path)
             self.assertEqual("Serie Name S01E02", extracted_title)
+
+    def test_serie_title_aware_title_with_season_extractor(self):
+        test_serie_metadata_path = serie_metadata_path.with_name('Channel 1_Serie Name_2022-12-05-2203-20.ts.metadata.json')
+        content = json.dumps({
+            "title": "Serie Name - Saison 2 (4-6) (VM)",
+            "sub_title": "",
+            "description": "Série documentaire (France, 2022, 52 min) Description",
+        }, indent=2)
+
+        with file_path_with_metadata_content(content, test_serie_metadata_path) as serie_file_path:
+            title_extractor = SerieTitleAwareTitleExtractor(default_title_cleaner)
+            extracted_title = title_extractor.extract_title(serie_file_path)
+            self.assertEqual("Serie Name S02E04", extracted_title)

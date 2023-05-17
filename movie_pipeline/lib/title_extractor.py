@@ -9,7 +9,7 @@ from ..lib.title_cleaner import TitleCleaner
 title_pattern = re.compile(r"_([\w&àéèï'!., ()#-]+)_")
 forbidden_char_pattern = re.compile(r'[\/:*?<>|"]')
 
-serie_hints = ['Série', 'Episode', 'Saison']
+serie_hints = ['Série', 'Saison']
 serie_hints_location = ['description', 'title', 'sub_title']
 ExtractorParams = tuple[str, re.Pattern[str]]
 
@@ -23,16 +23,12 @@ def load_metadata(movie_path: Path):
 
 def is_serie_from_supplied_value(supplied_value: str | dict):
     def contains_any_serie_hint(value: str):
-        return any([value.count(serie_hint) for serie_hint in serie_hints])
+        return any(value.count(serie_hint) for serie_hint in serie_hints)
 
     if isinstance(supplied_value, str):
         return contains_any_serie_hint(supplied_value)
+    return any(contains_any_serie_hint(supplied_value[field]) for field in serie_hints_location)
 
-    for field in serie_hints_location:
-        if contains_any_serie_hint(supplied_value[field]):
-            return True
-
-    return False
 
 
 def extract_serie_field(metadata, extractor_params: ExtractorParams):

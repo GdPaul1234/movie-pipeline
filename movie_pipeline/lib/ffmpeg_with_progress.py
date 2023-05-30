@@ -1,3 +1,4 @@
+from collections import deque
 import json
 from pathlib import Path
 from typing import IO, cast, TypedDict
@@ -38,7 +39,7 @@ class FFmpegLineContainer:
     def lines(self) -> list[str]:
         return self._lines
 
-    def update(self, line: str):
+    def append(self, line: str):
         logger.info(line)
         self._lines.append(line)
 
@@ -52,28 +53,36 @@ def ffmpeg_command_with_progress(
     **kwargs
 ):
     with subprocess.Popen(command.compile(cmd=cmd), **kwargs, text=True, stderr=subprocess.PIPE) as process:
+        last_lines: deque[str] = deque([], 10)
+
         for line in cast(IO[str], process.stderr):
+            last_lines.append(line)
+
             try:
                 if (retcode := process.poll()) is not None:
                     if retcode != 0:
-                        raise ffmpeg.Error('ffmpeg', None, line)
+                        raise ffmpeg.Error('ffmpeg', None, '\n'.join(last_lines))
                     break
 
                 if stop_signal.is_set():
                     logger.info('Killing')
                     raise InterruptedError
 
-                if keep_log and line_filter.filter(line):
-                    line_container.update(line)
-                else:
-                    logger.debug(line)
+                line_container.append(line) if keep_log and line_filter.filter(line) else logger.debug(line)
 
                 if items := {key: value
-                            for key, value in progress_pattern.findall(line) if value != 'N/A'}:
+                             for key, value in progress_pattern.findall(line) if value != 'N/A'}:
                     yield cast(ProgressItem, items)
-            except Exception as e:
+
+            except InterruptedError as e:
                 logger.exception(e)
                 process.terminate()
+
+            except Exception as e:
+                logger.error(last_lines)
+                logger.exception(e)
+                process.terminate()
+                raise e
 
         return line_container.lines
 

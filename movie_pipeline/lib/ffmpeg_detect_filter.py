@@ -125,7 +125,7 @@ class FFmpegCropSegmentMergerContainer(FFmpegLineContainer):
 
         return list(map(mapper, self._lines))
 
-    def update(self, line: str):
+    def append(self, line: str):
         mapped_line = {key: value for key, value in self._filter_pattern.findall(line)}
         position = float(mapped_line[' t'])
 

@@ -213,6 +213,10 @@ class MediaScanner:
             logger.warning(f"Errors found in:\n{list(map(str, nfo_errors))}")
 
     def scan(self, paths: list[Path]):
+        if self._config.MediaDatabase.clean_after_update: # type: ignore
+            logger.info('Cleaning database...')
+            self._media_db_updater.clean_media_database()
+
         for path in paths:
             logger.info(f'Scanning "{str(path)}"...')
 
@@ -222,10 +226,6 @@ class MediaScanner:
                 self._scan_dir(path)
             else:
                 logger.error('Unknown file type for %s', str(path))
-
-        if self._config.MediaDatabase.clean_after_update: # type: ignore
-            logger.info('Cleaning database...')
-            self._media_db_updater.clean_media_database()
 
 
 def command(options, config: Settings):

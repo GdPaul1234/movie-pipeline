@@ -1,5 +1,4 @@
 import logging
-from multiprocessing import Process, log_to_stderr
 from pathlib import Path
 
 from gui.segment_validators.main import main as run_gui
@@ -9,17 +8,19 @@ logger = logging.getLogger(__name__)
 
 def command(options, config: Settings):
     logger.debug('args: %s', vars(options))
-    dir_path = Path(options.dir)
+    filepath = Path(options.dir)
 
     try:
-        log_to_stderr(logging.DEBUG)
-
-        for segment_file in dir_path.glob('*.segments.json'):
-            movie_file = segment_file.with_name(segment_file.name.replace('.segments.json', ''))
-
-            task = Process(target=run_gui, args=(movie_file, config))
-            task.start()
-            task.join()
+        if filepath.is_file():
+            run_gui(filepath, config)
+        elif filepath.is_dir():
+            medias_path = [
+                segment_file.with_name(segment_file.name.replace('.segments.json', ''))
+                for segment_file in filepath.glob('*.segments.json')
+            ]
+            run_gui(medias_path, config)
+        else:
+            raise ValueError('Unknown file type')
 
     except Exception as e:
         logger.exception(e)

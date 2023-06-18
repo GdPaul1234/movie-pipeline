@@ -2,19 +2,14 @@ from pathlib import Path
 from typing import cast
 
 import PySimpleGUI as sg
-import yaml
-
 from settings import Settings
 
-from .controllers.edit_decision_file_dumper import ensure_decision_file_template
-from .models.context import SegmentValidatorContext
 
 from .models.events import (
+    APPLICATION_LOADED_EVENT,
     CONFIGURE_EVENT,
     PREFILL_NAME_EVENT,
-    SEGMENT_IMPORTED_EVENT,
-    TOGGLE_MEDIA_SELECTOR_VISIBILITY_EVENT,
-    VIDEO_LOADED_EVENT
+    TOGGLE_MEDIA_SELECTOR_VISIBILITY_EVENT
 )
 
 from .models.keys import (
@@ -24,9 +19,11 @@ from .models.keys import (
     TOGGLE_MEDIA_SELECTOR_VISIBILITY_KEY
 )
 
+from .controllers.media_selector_list_controller import init_metadata, prefill_name
+
 from .views.detector_selector import handle_detector, layout as detector_selector
 from .views.media_control import handle_media_control, layout as media_control
-from .views.media_selector_list import layout as media_selector_list
+from .views.media_selector_list import handle_media_selector_list, layout as media_selector_list
 from .views.segments_list import handle_segments_list, layout as segments_list, render_values
 from .views.segments_timeline import handle_segments_timeline, layout as segments_timeline
 from .views.status_bar import layout as status_bar
@@ -34,8 +31,8 @@ from .views.timeline import handle_timeline, layout as timeline
 from .views.video import handle_video, layout as video
 
 TEXTS = {
-    'movies_to_be_processed': 'Movies to be reviewed'.center(40),
-    'movie_to_be_validated': 'Movie to be validated'.center(40),
+    'movies_to_be_processed': 'Movies to be reviewed',
+    'movie_to_be_validated': 'Movie to be validated',
     'review_segments_description': 'Review the segments in the right, then click on "Validate"'
 }
 
@@ -48,21 +45,7 @@ def create_window():
     return window
 
 
-def init_metadata(window: sg.Window, filepath: Path, config: Settings):
-    window.metadata = SegmentValidatorContext.init_context(filepath, config)
 
-    window.write_event_value(VIDEO_LOADED_EVENT, True)
-    window.write_event_value(SEGMENT_IMPORTED_EVENT, True)
-
-
-def prefill_name(window: sg.Window, filepath: Path, config: Settings):
-    if ensure_decision_file_template(filepath, config):
-        template_path = filepath.with_suffix(f'{filepath.suffix}.yml.txt')
-        template = yaml.safe_load(template_path.read_text(encoding='utf-8'))
-        window.write_event_value(PREFILL_NAME_EVENT, template['filename'])
-    else:
-        sg.popup_auto_close(f'Validated segments already exists for {filepath}', title='Aborting segments validation')
-        window.write_event_value(sg.WIN_CLOSED, True)
 
 
 def main_layout():
@@ -96,7 +79,8 @@ def main_layout():
                     sg.pin(
                         sg.Frame(TEXTS['movies_to_be_processed'], [
                             media_selector_list()
-                        ], key=MEDIA_SELECTOR_CONTAINER_KEY, visible=False, expand_x=True, expand_y=True, pad=0),
+                        ], key=MEDIA_SELECTOR_CONTAINER_KEY, visible=False, expand_y=True, pad=0),
+                        expand_y=True
                     )
                 ],
                 [
@@ -122,6 +106,7 @@ def main_layout():
 
 
 handlers = (
+    handle_media_selector_list,
     handle_detector,
     handle_timeline,
     handle_segments_timeline,
@@ -131,24 +116,31 @@ handlers = (
 )
 
 
-def main(filepath: Path, config: Settings):
+def main(filepath: Path | list[Path], config: Settings):
+    media_paths = [filepath] if isinstance(filepath, Path) else filepath
+    first_media_path = filepath if isinstance(filepath, Path) else filepath[0]
+
     window = create_window()
-    init_metadata(window, filepath, config)
-    prefill_name(window, filepath, config)
+    window.write_event_value(APPLICATION_LOADED_EVENT, [media_paths])
+    init_metadata(window, first_media_path, config)
+    prefill_name(window, first_media_path, config)
 
     window[SEGMENT_TIMELINE_KEY].expand(True, False, False)
     window.bind('<Configure>', CONFIGURE_EVENT)
     render_values(window)
 
     while True:
-        event, values = window.read(timeout=40)  # type: ignore
+        event, values = window.read(timeout=40) # type: ignore
         if event == sg.WIN_CLOSED:
             break
+
+        if event == sg.TIMEOUT_EVENT:
+            continue
 
         if event == PREFILL_NAME_EVENT:
             cast(sg.Input, window[OUTPUT_FILENAME_INPUT_KEY]).update(value=values[PREFILL_NAME_EVENT])
 
-        elif event == TOGGLE_MEDIA_SELECTOR_VISIBILITY_EVENT:
+        if event == TOGGLE_MEDIA_SELECTOR_VISIBILITY_EVENT:
             media_selector_container = cast(sg.Frame, window[MEDIA_SELECTOR_CONTAINER_KEY])
             toggle_media_selector_button = cast(sg.Button, window[TOGGLE_MEDIA_SELECTOR_VISIBILITY_KEY])
 

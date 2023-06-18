@@ -3,7 +3,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from ....settings import Settings
+from settings import Settings
 from ..controllers.import_segments_from_file import SegmentImporter
 from ..lib.simple_video_only_player import SimpleVideoOnlyPlayerConsumer
 from ..lib.video_player import IVideoPlayer
@@ -17,6 +17,9 @@ class SegmentValidatorContext(BaseModel):
     filepath: Path
     imported_segments: dict[str, str]
     config: Settings
+
+    class Config:
+        arbitrary_types_allowed = True
 
     @property
     def position(self) -> float:

@@ -1,9 +1,11 @@
-from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Any
 import PySimpleGUI as sg
 
-from ..controllers.edit_decision_file_dumper import EditDecisionFileDumper
-from ..models.segment_container import SegmentContainer, Segment
+from ..models.keys import SEGMENT_LIST_TABLE_KEY
+from ..models.events import SEGMENT_ADD_EVENT, SEGMENT_DELETE_EVENT, SEGMENT_MERGE_EVENT, SEGMENT_LIST_UPDATED_EVENT, SEGMENT_SET_START_EVENT, SEGMENT_SET_END_EVENT, SEGMENT_TIMELINE_SELECTED_EVENT, SEGMENT_VALIDATE_EVENT
+from ..controllers.segments_list_controller import _render_values, add_segment, delete_segments, edit_segment, merge_segments, focus_timeline_selected_segment, forward_updated_event, validate_segments
+
+render_values = _render_values
 
 
 right_click_menu = [
@@ -26,95 +28,23 @@ def layout():
             auto_size_columns=True,
             expand_y=True,
             pad=0,
-            key='-SEGMENTS-LIST-'
+            key=SEGMENT_LIST_TABLE_KEY
         )
     ]
 
 
-def render_values(window: sg.Window):
-    segments = cast(tuple[Segment], window.metadata['segment_container'].segments)
-
-    def render(segment: Segment):
-        return repr(segment).split(',')
-
-    values = [render(segment) for segment in segments]
-    window['-SEGMENTS-LIST-'].update(values=values)
-    window.write_event_value('-SEGMENTS-UPDATED-', True)
-
-
-def edit_segments(window: sg.Window, event: Literal['Set start', 'Set end'], values: dict[str, Any]):
-    segment_container = cast(SegmentContainer, window.metadata['segment_container'])
-    table = cast(sg.Table, window['-SEGMENTS-LIST-'])
-    selected_segments = [segment_container.segments[row] for row in table.SelectedRows]
-
-    if len(selected_segments) != 1: return
-
-    current_position = window.metadata['position_ms'] / 1000
-
-    try:
-        edited_segment = Segment(current_position, selected_segments[0].end) if event == 'Set start' \
-            else Segment(selected_segments[0].start, current_position)
-    except ValueError as e:
-        sg.popup_error(e)
-    else:
-        segment_container.edit(selected_segments[0], edited_segment)
-        render_values(window)
-
-
-def write_segments(window: sg.Window, values: dict[str, Any]) -> Path|None:
-    segment_container = cast(SegmentContainer, window.metadata['segment_container'])
-    dumper = EditDecisionFileDumper(
-        title=values['-NAME-'],
-        source_path=window.metadata['filepath'],
-        segment_container=segment_container,
-        config=window.metadata['config']
-    )
-
-    return dumper.dump_decision_file()
+handlers = {
+    SEGMENT_ADD_EVENT: add_segment,
+    SEGMENT_DELETE_EVENT: delete_segments,
+    SEGMENT_MERGE_EVENT: merge_segments,
+    SEGMENT_LIST_UPDATED_EVENT: forward_updated_event,
+    SEGMENT_TIMELINE_SELECTED_EVENT: focus_timeline_selected_segment,
+    SEGMENT_SET_START_EVENT: edit_segment,
+    SEGMENT_SET_END_EVENT: edit_segment,
+    SEGMENT_VALIDATE_EVENT: validate_segments
+}
 
 
 def handle_segments_list(window: sg.Window, event: str, values: dict[str, Any]):
-    segment_container = cast(SegmentContainer, window.metadata['segment_container'])
-    table = cast(sg.Table, window['-SEGMENTS-LIST-'])
-
-    selected_segments = [segment_container.segments[row] for row in table.SelectedRows]
-
-    if event == '-SEGMENTS-LIST-':
-        window.metadata['selected_segments'] = selected_segments
-        window.write_event_value('-SEGMENTS-UPDATED-', True)
-
-    elif event == '-SEGMENT-TIMELINE-SELECTED-':
-        if  (row := next(
-            (idx for idx, value in enumerate(table.Values)
-             if ','.join(value) == repr(values['-SEGMENT-TIMELINE-SELECTED-'])),
-            None
-        )) is not None:
-            tree = table.TKTreeview
-            child_id = tree.get_children()[row]
-            tree.focus(child_id)
-            tree.selection_set(child_id)
-
-    elif event == 'Add segment':
-        current_position = window.metadata['position_ms'] / 1000
-        segment_container.add(Segment(current_position, current_position + 1))
-        render_values(window)
-
-    elif event == 'Delete segment(s)':
-        for selected_segment in selected_segments:
-            segment_container.remove(selected_segment)
-        render_values(window)
-
-    elif event == 'Merge segments':
-        if len(selected_segments) >= 2:
-            segment_container.merge(selected_segments)
-            render_values(window)
-
-    elif event in ('Set start', 'Set end'):
-        edit_segments(window, event, values)
-
-    elif event == 'Validate and quit':
-        if edl_path := write_segments(window, values):
-            sg.popup_auto_close(edl_path, title='Segments saved')
-            window.write_event_value(sg.WIN_CLOSED, True)
-        else:
-            sg.popup_auto_close(title='Segments not saved, an error has occured')
+    if event in handlers.keys():
+        handlers[event](window, event, values)

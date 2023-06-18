@@ -1,10 +1,13 @@
 import logging
 from pathlib import Path
 from typing import cast
-from deffcode import Sourcer
-import PySimpleGUI as sg
-import ffmpeg
 
+import ffmpeg
+import PySimpleGUI as sg
+from deffcode import Sourcer
+
+from ..lib.video_player import IVideoPlayer
+from ..models.events import VIDEO_NEW_FRAME_EVENT, VIDEO_POSITION_UPDATED_EVENT
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +21,7 @@ def extract_frame(stream, position_s):
     return out
 
 
-class SimpleVideoOnlyPlayerConsumer:
+class SimpleVideoOnlyPlayerConsumer(IVideoPlayer):
     def __init__(self, source: Path) -> None:
         self._source = source
         self._current_position = 0.
@@ -28,6 +31,14 @@ class SimpleVideoOnlyPlayerConsumer:
         self._duration = self._metadata['source_duration_sec']
         self._size = self._metadata['source_video_resolution']
 
+    @property
+    def position(self):
+        return self._current_position
+
+    @property
+    def duration(self):
+        return self._duration
+
     def set_position(self, position: float, window: sg.Window):
         self._current_position = position
 
@@ -36,13 +47,13 @@ class SimpleVideoOnlyPlayerConsumer:
 
         if self._current_position < 0 or self._current_position >= (self._duration - 1):
             self._current_position = 0.
-            window.write_event_value('-VIDEO-NEW-POSITION-', 0.)
+            window.write_event_value(VIDEO_POSITION_UPDATED_EVENT, 0.)
             return
 
         if frame is not None:
             logger.debug(self._current_position)
-            window.write_event_value('-VIDEO-NEW-FRAME-', (self._size, frame))
-            window.write_event_value('-VIDEO-NEW-POSITION-', self._current_position)
+            window.write_event_value(VIDEO_NEW_FRAME_EVENT, (self._size, frame))
+            window.write_event_value(VIDEO_POSITION_UPDATED_EVENT, self._current_position)
 
     def set_relative_position(self, delta: float, window: sg.Window):
         self.set_position(self._current_position + delta, window)

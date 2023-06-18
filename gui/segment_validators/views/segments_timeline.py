@@ -1,5 +1,10 @@
-from typing import Any, cast
+from typing import Any
 import PySimpleGUI as sg
+
+from ..models.events import CONFIGURE_EVENT, SEGMENT_TIMELINE_UPDATED_EVENT, TIMELINE_POSTION_UPDATED_EVENT, SEGMENTS_UPDATED_EVENT, VIDEO_LOADED_EVENT, VIDEO_POSITION_UPDATED_EVENT
+from ..models.keys import SEGMENT_TIMELINE_KEY
+from ..models.context import TimelineContext
+from ..controllers.segments_timeline_controller import draw_current_position_indicator, draw_segments, resize_timeline, update_current_position_indicator_position, update_selected_segment
 
 GRAPH_SIZE = (480, 30)
 
@@ -24,55 +29,22 @@ def layout():
             right_click_menu=right_click_menu,
             pad=0,
             background_color='#a6b2be',
-            metadata={'position': None, 'segments': []},
-            key='-SEGMENTS-TIMELINE-'
+            metadata=TimelineContext(),
+            key=SEGMENT_TIMELINE_KEY
         )
     ]
 
 
-def draw_segments(window: sg.Window):
-    graph = cast(sg.Graph, window['-SEGMENTS-TIMELINE-'])
-    duration_ms = window.metadata['duration_ms']
-
-    for segment in graph.metadata['segments']:
-        graph.delete_figure(segment['fid'])
-    graph.metadata['segments'].clear()
-
-    for segment in window.metadata['segment_container'].segments:
-        top_left = (1000*segment.start / duration_ms, 1.)
-        bottom_right = (1000*segment.end / duration_ms, 0.)
-        fill_color = '#f0f3f7' if segment in window.metadata['selected_segments'] else '#283b5b'
-
-        rect = graph.draw_rectangle(top_left, bottom_right, fill_color=fill_color)
-        graph.send_figure_to_back(rect)
-        graph.metadata['segments'].append({'fid': rect, 'value': segment})
+handlers = {
+    VIDEO_LOADED_EVENT: draw_current_position_indicator,
+    CONFIGURE_EVENT: resize_timeline,
+    SEGMENTS_UPDATED_EVENT: draw_segments,
+    SEGMENT_TIMELINE_UPDATED_EVENT: update_selected_segment,
+    TIMELINE_POSTION_UPDATED_EVENT: update_current_position_indicator_position,
+    VIDEO_POSITION_UPDATED_EVENT: update_current_position_indicator_position
+}
 
 
 def handle_segments_timeline(window: sg.Window, event: str, values: dict[str, Any]):
-    graph = cast(sg.Graph, window['-SEGMENTS-TIMELINE-'])
-    position_in_percent = window.metadata['position_ms'] / window.metadata['duration_ms']
-
-    if event == '-VIDEO-LOADED-':
-        position_handle = graph.draw_line((0., 0.), (0., 1.), color='red')
-        graph.metadata['position'] = position_handle
-
-    elif event == '-CONFIGURE-':
-        graph.CanvasSize = graph.get_size()
-        graph.relocate_figure(graph.metadata['position'], position_in_percent, 0)
-        draw_segments(window)
-        window.refresh()
-
-    elif event == '-SEGMENTS-UPDATED-':
-        draw_segments(window)
-
-    elif event == '-SEGMENTS-TIMELINE-':
-        if len(figures := graph.get_figures_at_location(values['-SEGMENTS-TIMELINE-'])):
-            selected_timeline_segment = next(
-                (segment['value'] for segment in graph.metadata['segments'] if segment['fid'] == figures[0]),
-                None
-            )
-            window.metadata['selected_segments'] = [selected_timeline_segment]
-            window.write_event_value('-SEGMENT-TIMELINE-SELECTED-', selected_timeline_segment)
-
-    elif event in ('-TIMELINE-', '-VIDEO-NEW-POSITION-'):
-        graph.relocate_figure(graph.metadata['position'], position_in_percent, 0)
+    if event in handlers.keys():
+        handlers[event](window, event, values)

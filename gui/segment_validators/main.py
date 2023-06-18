@@ -1,15 +1,13 @@
 from pathlib import Path
 from typing import cast
 import PySimpleGUI as sg
-from deffcode import Sourcer
 import yaml
 
-from .lib.simple_video_only_player import SimpleVideoOnlyPlayerConsumer
-
-from .controllers.import_segments_from_file import SegmentImporter
 from .controllers.edit_decision_file_dumper import ensure_decision_file_template
 
-from .models.segment_container import SegmentContainer
+from .models.context import SegmentValidatorContext
+from .models.events import CONFIGURE_EVENT, PREFILL_NAME_EVENT, SEGMENT_IMPORTED_EVENT, VIDEO_LOADED_EVENT
+from .models.keys import OUTPUT_FILENAME_INPUT_KEY, SEGMENT_TIMELINE_KEY
 
 from .views.status_bar import layout as status_bar
 from .views.detector_selector import layout as detector_selector, handle_detector
@@ -21,46 +19,26 @@ from .views.video import layout as video, handle_video
 
 from settings import Settings
 
-def make_window():
+def create_window():
     window = sg.Window('Segments Reviewer', main_layout(), finalize=True, resizable=True, use_default_focus=False)
     window.set_min_size(window.size)
     window.bring_to_front()
     window.force_focus()
-
-    window.metadata = {
-        'segment_container': SegmentContainer(),
-        'media_player': None,
-        'selected_segments': [],
-        'filepath': Path(''),
-        'imported_segments': {},
-        'position_ms': 0,
-        'duration_ms': 0,
-        'config': None
-    }
-
     return window
 
 
-def load_media(window: sg.Window, filepath: Path):
-    sourcer = Sourcer(str(filepath)).probe_stream()
-    metadata = cast(dict, sourcer.retrieve_metadata())
+def init_metadata(window: sg.Window, filepath: Path, config: Settings):
+    window.metadata = SegmentValidatorContext.init_context(filepath, config)
 
-    window.metadata['media_player'] = SimpleVideoOnlyPlayerConsumer(filepath)
-    window.metadata['duration_ms'] = 1000 * metadata['source_duration_sec']
-    window.metadata['filepath'] = filepath
-    window.write_event_value('-VIDEO-LOADED-', True)
-
-
-def import_segment(window: sg.Window, filepath: Path):
-    window.metadata['imported_segments'] = SegmentImporter(filepath).import_segments()
-    window.write_event_value('-SEGMENTS-IMPORTED-', True)
+    window.write_event_value(VIDEO_LOADED_EVENT, True)
+    window.write_event_value(SEGMENT_IMPORTED_EVENT, True)
 
 
 def prefill_name(window: sg.Window, filepath: Path, config: Settings):
     if ensure_decision_file_template(filepath, config):
         template_path = filepath.with_suffix(f'{filepath.suffix}.yml.txt')
         template = yaml.safe_load(template_path.read_text(encoding='utf-8'))
-        window.write_event_value('-PREFILL-NAME-', template['filename'])
+        window.write_event_value(PREFILL_NAME_EVENT, template['filename'])
     else:
         sg.popup_auto_close(f'Validated segments already exists for {filepath}', title='Aborting segments validation')
         window.write_event_value(sg.WIN_CLOSED, True)
@@ -80,7 +58,7 @@ def main_layout():
     right_col = [
         detector_selector(),
         segments_list(),
-        [sg.Input('Nom du fichier converti.mp4', size=(36, 0), pad=((0, 0), (5, 0)), key='-NAME-')],
+        [sg.Input('Nom du fichier converti.mp4', size=(36, 0), pad=((0, 0), (5, 0)), key=OUTPUT_FILENAME_INPUT_KEY)],
         [sg.Button('Validate and quit', size=(31, 0), pad=((0, 0), (5, 0)))]
     ]
 
@@ -107,15 +85,12 @@ handlers = (
 
 
 def main(filepath: Path, config: Settings):
-    window = make_window()
-    window.metadata['config'] = config
-
-    load_media(window, filepath)
-    import_segment(window, filepath)
+    window = create_window()
+    init_metadata(window, filepath, config)
     prefill_name(window, filepath, config)
 
-    window['-SEGMENTS-TIMELINE-'].expand(True, False, False)
-    window.bind('<Configure>', '-CONFIGURE-')
+    window[SEGMENT_TIMELINE_KEY].expand(True, False, False)
+    window.bind('<Configure>', CONFIGURE_EVENT)
     render_values(window)
 
     while True:
@@ -123,8 +98,8 @@ def main(filepath: Path, config: Settings):
         if event == sg.WIN_CLOSED:
             break
 
-        if event == '-PREFILL-NAME-':
-            cast(sg.Input, window['-NAME-']).update(value=values['-PREFILL-NAME-'])
+        if event == PREFILL_NAME_EVENT:
+            cast(sg.Input, window[OUTPUT_FILENAME_INPUT_KEY]).update(value=values[PREFILL_NAME_EVENT])
 
         for handler in handlers:
             handler(window, event, values)

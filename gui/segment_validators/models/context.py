@@ -12,10 +12,10 @@ from ..models.segment_container import Segment, SegmentContainer
 
 class SegmentValidatorContext(BaseModel):
     segment_container = SegmentContainer()
-    media_player: IVideoPlayer
     selected_segments: list[Segment] = []
-    filepath: Path
     imported_segments: dict[str, str]
+    media_player: IVideoPlayer
+    filepath: Path
     config: Settings
 
     class Config:

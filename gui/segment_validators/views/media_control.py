@@ -1,10 +1,10 @@
-from typing import Any, cast
+from typing import Any
 import PySimpleGUI as sg
 
-from gui.segment_validators.lib.simple_video_only_player import SimpleVideoOnlyPlayerConsumer
-from gui.segment_validators.models.segment_container import SegmentContainer
+from ..models.events import TIMELINE_POSTION_UPDATED_EVENT, VIDEO_LOADED_EVENT, VIDEO_POSITION_UPDATED_EVENT
+from ..models.keys import VIDEO_DURATION_LABEL_KEY, VIDEO_POSITION_LABEL_KEY
+from ..controllers.media_control_controller import goto_selected_segment, set_relative_position, set_video_information, update_video_position
 
-from util import seconds_to_position
 
 def btn(text, /, *, key=None, size=(6,1), pad=(1,1)):
     return sg.Button(text, key=(key or text), size=size, pad=pad)
@@ -13,10 +13,18 @@ def btn(text, /, *, key=None, size=(6,1), pad=(1,1)):
 def txt(text, key):
     return sg.Column([[sg.Text(text, key=key, pad=0)]], pad=0)
 
+handlers = {
+    VIDEO_LOADED_EVENT: set_video_information,
+    VIDEO_POSITION_UPDATED_EVENT: update_video_position,
+    TIMELINE_POSTION_UPDATED_EVENT: update_video_position,
+    'goto_selected_segment': goto_selected_segment,
+    'set_relative_position': set_relative_position,
+}
+
 
 def layout():
     return [
-        txt('00:00:00', key='-VIDEO-POSITION-'),
+        txt('00:00:00', key=VIDEO_POSITION_LABEL_KEY),
         sg.Push(),
         btn('>[-', key='goto_selected_segment::start', size=(3,1)),
         btn('-]<', key='goto_selected_segment::end', size=(3,1)),
@@ -30,34 +38,10 @@ def layout():
         btn('-15s', key='set_relative_position::-15', size=(4,1)),
         btn('+15s', key='set_relative_position::15', size=(4,1)),
         sg.Push(),
-        txt('00:00:00', key='-VIDEO-DURATION-'),
+        txt('00:00:00', key=VIDEO_DURATION_LABEL_KEY),
     ]
 
 
 def handle_media_control(window: sg.Window, event: str, values: dict[str, Any]):
-    player = cast(SimpleVideoOnlyPlayerConsumer, window.metadata['media_player'])
-
-    if isinstance(event, str) and event.startswith('set_relative_position::'):
-        command, delta = event.split('::')
-        window.perform_long_operation(lambda: getattr(player, command)(float(delta), window), '-TASK-DONE-')
-
-    elif isinstance(event, str) and event.startswith('goto_selected_segment::'):
-        segment_container = cast(SegmentContainer, window.metadata['segment_container'])
-        table = cast(sg.Table, window['-SEGMENTS-LIST-'])
-        selected_segments = [segment_container.segments[row] for row in table.SelectedRows]
-
-        if len(selected_segments) != 1: return
-
-        _, position = event.split('::')
-        window.perform_long_operation(lambda: player.set_position(getattr(selected_segments[0], position), window), '-TASK-DONE-')
-
-    elif event == '-VIDEO-LOADED-':
-        duration_ms = window.metadata['duration_ms']
-        filepath = window.metadata['filepath']
-
-        window['-VIDEO-DURATION-'].update(value=seconds_to_position(duration_ms / 1000).split('.')[0])
-        window['-FILENAME-'].update(value=filepath.name)
-
-    elif event in('-TIMELINE-', '-VIDEO-NEW-POSITION-'):
-        position = window.metadata['position_ms'] / 1000
-        window['-VIDEO-POSITION-'].update(value=seconds_to_position(position).split('.')[0])
+    if isinstance(event, str) and (evt := event.split('::')[0]) in handlers.keys():
+        handlers[evt](window, event, values)

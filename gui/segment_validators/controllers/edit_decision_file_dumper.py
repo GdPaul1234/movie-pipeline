@@ -1,6 +1,8 @@
 from pathlib import Path
 import yaml
 
+from movie_pipeline.commands.scaffold_dir import available_title_strategies, channel_pattern
+
 from ..models.segment_container import SegmentContainer
 from movie_pipeline.commands.process_movie import edl_content_schema
 from movie_pipeline.commands.scaffold_dir import PathScaffolder
@@ -10,6 +12,21 @@ from settings import Settings
 
 def ensure_decision_file_template(source_path: Path, config: Settings):
     return PathScaffolder(source_path, config).scaffold()
+
+
+def extract_title(source_path: Path, config: Settings):
+    path_scaffolder = PathScaffolder(source_path, config)
+
+    matches = channel_pattern.search(source_path.stem)
+
+    if not matches:
+        return 'Nom du fichier  converti.mp4'
+
+    channel = matches.group(1)
+    title_strategy_name = path_scaffolder._titles_strategies.get(channel) or 'NaiveTitleExtractor'
+    title_strategy = available_title_strategies[title_strategy_name](path_scaffolder._title_cleaner)
+
+    return title_strategy.extract_title(source_path)
 
 
 class EditDecisionFileDumper:

@@ -108,6 +108,5 @@ def edit_segment(window: sg.Window, event: str, _values: dict[str, Any]):
 def validate_segments(window: sg.Window, _event: str, values: dict[str, Any]):
     if edl_path := _write_segments(window, values):
         sg.popup_auto_close(edl_path, title='Segments saved')
-        window.write_event_value(sg.WIN_CLOSED, True)
     else:
         sg.popup_auto_close(title='Segments not saved, an error has occured')

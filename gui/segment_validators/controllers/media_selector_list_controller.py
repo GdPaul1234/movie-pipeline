@@ -14,7 +14,7 @@ from ..models.keys import (FLASH_TOP_NOTICE_KEY, MEDIA_SELECTOR_CONTAINER_KEY,
                            TOGGLE_MEDIA_SELECTOR_VISIBILITY_KEY)
 from ..views.texts import TEXTS
 
-from .edit_decision_file_dumper import ensure_decision_file_template
+from .edit_decision_file_dumper import ensure_decision_file_template, extract_title
 
 
 def init_metadata(window: sg.Window, filepath: Path, config: Settings):
@@ -27,10 +27,13 @@ def init_metadata(window: sg.Window, filepath: Path, config: Settings):
 def prefill_name(window: sg.Window, filepath: Path, config: Settings):
     if not ensure_decision_file_template(filepath, config):
         sg.popup_auto_close(f'Validated segments already exists for {filepath}', title='Aborting segments validation')
+        window.write_event_value(PREFILL_NAME_EVENT, f'{extract_title(filepath, config)}.mp4')
 
-    template_path = filepath.with_suffix(f'{filepath.suffix}.yml.txt')
-    template = yaml.safe_load(template_path.read_text(encoding='utf-8'))
-    window.write_event_value(PREFILL_NAME_EVENT, template['filename'])
+        # TODO import last result
+    else:
+        template_path = filepath.with_suffix(f'{filepath.suffix}.yml.txt')
+        template = yaml.safe_load(template_path.read_text(encoding='utf-8'))
+        window.write_event_value(PREFILL_NAME_EVENT, template['filename'])
 
 
 def populate_media_selector(window: sg.Window, _event: str, values: dict[str, Any]):

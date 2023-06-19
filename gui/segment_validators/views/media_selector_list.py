@@ -1,9 +1,9 @@
 import PySimpleGUI as sg
 from typing import Any
 
-from ..models.events import APPLICATION_LOADED_EVENT, MEDIA_SELECTOR_UPDATED_EVENT
+from ..models.events import APPLICATION_LOADED_EVENT, MEDIA_SELECTOR_UPDATED_EVENT, TOGGLE_MEDIA_SELECTOR_VISIBILITY_EVENT
 from ..models.keys import MEDIA_SELECTOR_KEY
-from ..controllers.media_selector_list_controller import load_new_media, populate_media_selector
+from ..controllers.media_selector_list_controller import load_new_media, populate_media_selector, toggle_media_selector_visibility
 
 
 def layout():
@@ -22,7 +22,8 @@ def layout():
 
 handlers = {
     APPLICATION_LOADED_EVENT: populate_media_selector,
-    MEDIA_SELECTOR_UPDATED_EVENT: load_new_media
+    MEDIA_SELECTOR_UPDATED_EVENT: load_new_media,
+    TOGGLE_MEDIA_SELECTOR_VISIBILITY_EVENT: toggle_media_selector_visibility
 }
 
 

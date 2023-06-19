@@ -9,10 +9,10 @@ from .models.events import (
     APPLICATION_LOADED_EVENT,
     CONFIGURE_EVENT,
     PREFILL_NAME_EVENT,
-    TOGGLE_MEDIA_SELECTOR_VISIBILITY_EVENT
 )
 
 from .models.keys import (
+    FLASH_TOP_NOTICE_KEY,
     MEDIA_SELECTOR_CONTAINER_KEY,
     OUTPUT_FILENAME_INPUT_KEY,
     SEGMENT_TIMELINE_KEY,
@@ -30,11 +30,7 @@ from .views.status_bar import layout as status_bar
 from .views.timeline import handle_timeline, layout as timeline
 from .views.video import handle_video, layout as video
 
-TEXTS = {
-    'movies_to_be_processed': 'Movies to be reviewed',
-    'movie_to_be_validated': 'Movie to be validated',
-    'review_segments_description': 'Review the segments in the right, then click on "Validate"'
-}
+from .views.texts import TEXTS
 
 
 def create_window():
@@ -43,9 +39,6 @@ def create_window():
     window.bring_to_front()
     window.force_focus()
     return window
-
-
-
 
 
 def main_layout():
@@ -70,7 +63,7 @@ def main_layout():
         [
             [sg.VPush()],
             sg.Column([
-                [sg.Text(TEXTS['review_segments_description'], font='Any 12'),]
+                [sg.Text(TEXTS['review_segments_description'], key=FLASH_TOP_NOTICE_KEY, font='Any 12'),]
             ], element_justification='c', expand_x=True)
         ],
         [
@@ -139,14 +132,6 @@ def main(filepath: Path | list[Path], config: Settings):
 
         if event == PREFILL_NAME_EVENT:
             cast(sg.Input, window[OUTPUT_FILENAME_INPUT_KEY]).update(value=values[PREFILL_NAME_EVENT])
-
-        if event == TOGGLE_MEDIA_SELECTOR_VISIBILITY_EVENT:
-            media_selector_container = cast(sg.Frame, window[MEDIA_SELECTOR_CONTAINER_KEY])
-            toggle_media_selector_button = cast(sg.Button, window[TOGGLE_MEDIA_SELECTOR_VISIBILITY_KEY])
-
-            media_selector_container_visibility = not media_selector_container.visible
-            toggle_media_selector_button.update(text='<<' if media_selector_container_visibility else '>>')
-            media_selector_container.update(visible=media_selector_container_visibility)
 
         for handler in handlers:
             handler(window, event, values)

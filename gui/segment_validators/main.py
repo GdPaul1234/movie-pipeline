@@ -79,7 +79,7 @@ def main_layout():
                     sg.pin(
                         sg.Frame(TEXTS['movies_to_be_processed'], [
                             media_selector_list()
-                        ], key=MEDIA_SELECTOR_CONTAINER_KEY, visible=False, expand_y=True, pad=0),
+                        ], key=MEDIA_SELECTOR_CONTAINER_KEY, visible=False, size=(250, 1), expand_y=True, pad=0),
                         expand_y=True
                     )
                 ],

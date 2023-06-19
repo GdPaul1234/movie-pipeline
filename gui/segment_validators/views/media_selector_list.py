@@ -13,6 +13,7 @@ def layout():
             key=MEDIA_SELECTOR_KEY,
             enable_events=True,
             auto_size_text=False,
+            horizontal_scroll=True,
             expand_x=True,
             expand_y=True
         )

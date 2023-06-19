@@ -21,12 +21,13 @@ def init_metadata(window: sg.Window, filepath: Path, config: Settings):
 
 
 def prefill_name(window: sg.Window, filepath: Path, config: Settings):
-    if ensure_decision_file_template(filepath, config):
-        template_path = filepath.with_suffix(f'{filepath.suffix}.yml.txt')
-        template = yaml.safe_load(template_path.read_text(encoding='utf-8'))
-        window.write_event_value(PREFILL_NAME_EVENT, template['filename'])
-    else:
+    if not ensure_decision_file_template(filepath, config):
         sg.popup_auto_close(f'Validated segments already exists for {filepath}', title='Aborting segments validation')
+
+    template_path = filepath.with_suffix(f'{filepath.suffix}.yml.txt')
+    template = yaml.safe_load(template_path.read_text(encoding='utf-8'))
+    window.write_event_value(PREFILL_NAME_EVENT, template['filename'])
+
 
 def populate_media_selector(window: sg.Window, _event: str, values: dict[str, Any]):
     selector = cast(sg.Combo, window[MEDIA_SELECTOR_KEY])
@@ -37,12 +38,9 @@ def populate_media_selector(window: sg.Window, _event: str, values: dict[str, An
 
 def load_new_media(window: sg.Window, _event: str, values: dict[str, Any]):
     metadata = cast(SegmentValidatorContext, window.metadata)
-    print(values[MEDIA_SELECTOR_KEY])
     filename = cast(Path, values[MEDIA_SELECTOR_KEY][0])
 
     if filename.is_file():
         init_metadata(window, filename, metadata.config)
         prefill_name(window, filename, metadata.config)
-
-        # TODO disable actions if file is already validated
 

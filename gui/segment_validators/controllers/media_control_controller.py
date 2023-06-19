@@ -6,8 +6,7 @@ from util import seconds_to_position
 
 from ..models.context import SegmentValidatorContext
 from ..models.events import TASK_DONE_EVENT
-from ..models.keys import (FILENAME_LABEL_KEY, SEGMENT_LIST_TABLE_KEY,
-                           VIDEO_DURATION_LABEL_KEY, VIDEO_POSITION_LABEL_KEY)
+from ..models.keys import SEGMENT_LIST_TABLE_KEY, VIDEO_DURATION_LABEL_KEY, VIDEO_POSITION_LABEL_KEY
 
 
 def set_relative_position(window: sg.Window, event: str, _values: dict[str, Any]):
@@ -40,9 +39,7 @@ def goto_selected_segment(window: sg.Window, event: str, _values: dict[str, Any]
 def set_video_information(window: sg.Window, _event: str, _values: dict[str, Any]):
     metadata = cast(SegmentValidatorContext, window.metadata)
 
-    window[VIDEO_DURATION_LABEL_KEY].update(
-        value=seconds_to_position(metadata.duration).split('.')[0])
-    window[FILENAME_LABEL_KEY].update(value=metadata.filepath.name)
+    window[VIDEO_DURATION_LABEL_KEY].update(value=seconds_to_position(metadata.duration).split('.')[0])
 
 
 def update_video_position(window: sg.Window, _event: str, _values: dict[str, Any]):

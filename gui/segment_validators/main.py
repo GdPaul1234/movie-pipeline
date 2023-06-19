@@ -14,19 +14,19 @@ from .models.events import (
 from .models.keys import (
     FLASH_TOP_NOTICE_KEY,
     MEDIA_SELECTOR_CONTAINER_KEY,
+    MEDIA_SELECTOR_KEY,
     OUTPUT_FILENAME_INPUT_KEY,
     SEGMENT_TIMELINE_KEY,
     TOGGLE_MEDIA_SELECTOR_VISIBILITY_KEY
 )
 
-from .controllers.media_selector_list_controller import init_metadata, prefill_name
+from .controllers.media_selector_list_controller import load_new_media
 
 from .views.detector_selector import handle_detector, layout as detector_selector
 from .views.media_control import handle_media_control, layout as media_control
 from .views.media_selector_list import handle_media_selector_list, layout as media_selector_list
 from .views.segments_list import handle_segments_list, layout as segments_list, render_values
 from .views.segments_timeline import handle_segments_timeline, layout as segments_timeline
-from .views.status_bar import layout as status_bar
 from .views.timeline import handle_timeline, layout as timeline
 from .views.video import handle_video, layout as video
 
@@ -48,8 +48,7 @@ def main_layout():
         timeline(), segments_timeline(),
         [sg.Sizer(0, 10)],
         media_control(),
-        [sg.VPush()],
-        status_bar()
+        [sg.VPush()]
     ]
 
     right_col = [
@@ -115,8 +114,7 @@ def main(filepath: Path | list[Path], config: Settings):
 
     window = create_window()
     window.write_event_value(APPLICATION_LOADED_EVENT, [media_paths])
-    init_metadata(window, first_media_path, config)
-    prefill_name(window, first_media_path, config)
+    load_new_media(window, '', { MEDIA_SELECTOR_KEY: [first_media_path], 'config': config })
 
     window[SEGMENT_TIMELINE_KEY].expand(True, False, False)
     window.bind('<Configure>', CONFIGURE_EVENT)

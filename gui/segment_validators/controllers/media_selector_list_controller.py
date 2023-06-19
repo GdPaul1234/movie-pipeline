@@ -42,17 +42,20 @@ def populate_media_selector(window: sg.Window, _event: str, values: dict[str, An
 
 def load_new_media(window: sg.Window, _event: str, values: dict[str, Any]):
     flash_notice_label = cast(sg.Text, window[FLASH_TOP_NOTICE_KEY])
-    metadata = cast(SegmentValidatorContext, window.metadata)
+    metadata = cast(SegmentValidatorContext | None, window.metadata)
     filename = cast(Path, values[MEDIA_SELECTOR_KEY][0])
 
     flash_notice_label.update(value=TEXTS['loading_media'])
     window.refresh()
 
     if filename.is_file():
-        init_metadata(window, filename, metadata.config)
-        prefill_name(window, filename, metadata.config)
+        config = metadata.config if metadata else values['config']
+        init_metadata(window, filename, config)
+        prefill_name(window, filename, config)
 
     flash_notice_label.update(value=TEXTS['review_segments_description'])
+    window.set_title(f'Segments Reviewer - {str(filename)}')
+    window.refresh()
 
 
 def toggle_media_selector_visibility(window: sg.Window, _event: str, _values: dict[str, Any]):

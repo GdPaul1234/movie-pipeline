@@ -1,5 +1,4 @@
 from pathlib import Path
-from tkinter import ttk
 from typing import Any, cast
 
 import PySimpleGUI as sg
@@ -60,10 +59,7 @@ def focus_timeline_selected_segment(window: sg.Window, _event: str, values: dict
              if ','.join(value) == repr(values[SEGMENT_TIMELINE_SELECTED_EVENT])),
             None
         )) is not None:
-            tree = cast(ttk.Treeview, table.TKTreeview)
-            child_id = tree.get_children()[row]
-            tree.focus(child_id)
-            tree.selection_set(child_id)
+            table.update(select_rows=[row])
 
 
 def add_segment(window: sg.Window, _event: str, _values: dict[str, Any]):

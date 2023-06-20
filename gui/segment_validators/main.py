@@ -54,8 +54,8 @@ def main_layout():
     right_col = [
         detector_selector(),
         segments_list(),
-        [sg.Input('Nom du fichier converti.mp4', size=(36, 0), pad=((0, 0), (5, 0)), key=OUTPUT_FILENAME_INPUT_KEY)],
-        [sg.Button('Validate', size=(31, 0), pad=((0, 0), (5, 0)))]
+        [sg.Input('Nom du fichier converti.mp4', expand_x=True, pad=((0, 0), (5, 0)), key=OUTPUT_FILENAME_INPUT_KEY)],
+        [sg.Button('Validate', expand_x=True, pad=((0, 0), (5, 0)))]
     ]
 
     return [
@@ -88,8 +88,8 @@ def main_layout():
                 [
                     sg.Push(),
                     sg.Column(left_col, expand_x=True, expand_y=True, pad=0),
-                    sg.VerticalSeparator(),
-                    sg.Column(right_col, expand_x=True, expand_y=True, pad=0)
+                    sg.VerticalSeparator(pad=((10, 5), (5, 10))),
+                    sg.Column([[sg.Col(right_col, expand_y=True)]], expand_x=True, expand_y=True, pad=0)
                 ]
             ], expand_x=True, expand_y=True),
             sg.Push()

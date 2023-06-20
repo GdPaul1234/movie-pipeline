@@ -26,6 +26,7 @@ def layout():
             enable_events=True,
             enable_click_events=True,
             auto_size_columns=True,
+            expand_x=True,
             expand_y=True,
             pad=0,
             key=SEGMENT_LIST_TABLE_KEY

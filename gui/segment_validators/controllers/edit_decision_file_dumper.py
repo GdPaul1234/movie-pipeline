@@ -1,4 +1,5 @@
 from pathlib import Path
+import contextlib
 import yaml
 
 from movie_pipeline.commands.scaffold_dir import available_title_strategies, channel_pattern
@@ -53,7 +54,7 @@ class EditDecisionFileDumper:
 
         if edl_content_schema.is_valid(decision_file_content):
             decision_file_path.write_text(yaml.safe_dump(decision_file_content), encoding='utf-8')
-            decision_file_path.with_suffix('.yml.txt').unlink()
+            decision_file_path.with_suffix('.yml.txt').unlink(missing_ok=True)
             return decision_file_path
 
         return None

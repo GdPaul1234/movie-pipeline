@@ -40,10 +40,10 @@ def prefill_name(window: sg.Window, filepath: Path, config: Settings):
 
 
 def populate_media_selector(window: sg.Window, _event: str, values: dict[str, Any]):
-    selector = cast(sg.Combo, window[MEDIA_SELECTOR_KEY])
+    selector = cast(sg.Listbox, window[MEDIA_SELECTOR_KEY])
 
     media_paths, = values[APPLICATION_LOADED_EVENT]
-    selector.update(values=media_paths)
+    selector.update(values=media_paths, set_to_index=0)
 
 
 def load_new_media(window: sg.Window, _event: str, values: dict[str, Any]):

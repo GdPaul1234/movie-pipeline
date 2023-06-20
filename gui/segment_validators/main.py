@@ -79,7 +79,7 @@ def main_layout():
                     sg.Button(
                         '>>',
                         key=TOGGLE_MEDIA_SELECTOR_VISIBILITY_KEY,
-                        tooltip='Toogle visibility of media selector',
+                        tooltip='Toggle visibility of media selector',
                         size=(3, 1)
                     )
                 ]

@@ -15,6 +15,7 @@ from ..models.keys import (FLASH_TOP_NOTICE_KEY, MEDIA_SELECTOR_CONTAINER_KEY,
 from ..views.texts import TEXTS
 
 from .edit_decision_file_dumper import ensure_decision_file_template, extract_title
+from .import_segments_from_file import prepend_last_segments_to_segment_file
 
 
 def init_metadata(window: sg.Window, filepath: Path, config: Settings):
@@ -27,9 +28,11 @@ def init_metadata(window: sg.Window, filepath: Path, config: Settings):
 def prefill_name(window: sg.Window, filepath: Path, config: Settings):
     if not ensure_decision_file_template(filepath, config):
         sg.popup_auto_close(f'Validated segments already exists for {filepath}', title='Aborting segments validation')
-        window.write_event_value(PREFILL_NAME_EVENT, f'{extract_title(filepath, config)}.mp4')
 
-        # TODO import last result
+        window.write_event_value(PREFILL_NAME_EVENT, f'{extract_title(filepath, config)}.mp4')
+        prepend_last_segments_to_segment_file(filepath)
+        init_metadata(window, filepath, config)
+
     else:
         template_path = filepath.with_suffix(f'{filepath.suffix}.yml.txt')
         template = yaml.safe_load(template_path.read_text(encoding='utf-8'))
@@ -46,18 +49,18 @@ def populate_media_selector(window: sg.Window, _event: str, values: dict[str, An
 def load_new_media(window: sg.Window, _event: str, values: dict[str, Any]):
     flash_notice_label = cast(sg.Text, window[FLASH_TOP_NOTICE_KEY])
     metadata = cast(SegmentValidatorContext | None, window.metadata)
-    filename = cast(Path, values[MEDIA_SELECTOR_KEY][0])
+    filepath = cast(Path, values[MEDIA_SELECTOR_KEY][0])
 
     flash_notice_label.update(value=TEXTS['loading_media'])
     window.refresh()
 
-    if filename.is_file():
+    if filepath.is_file():
         config = metadata.config if metadata else values['config']
-        init_metadata(window, filename, config)
-        prefill_name(window, filename, config)
+        init_metadata(window, filepath, config)
+        prefill_name(window, filepath, config)
 
     flash_notice_label.update(value=TEXTS['review_segments_description'])
-    window.set_title(f'Segments Reviewer - {str(filename)}')
+    window.set_title(f'Segments Reviewer - {str(filepath)}')
     window.refresh()
 
 

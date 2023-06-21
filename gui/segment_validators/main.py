@@ -17,6 +17,7 @@ from .models.keys import (
     MEDIA_SELECTOR_KEY,
     OUTPUT_FILENAME_INPUT_KEY,
     SEGMENT_TIMELINE_KEY,
+    SKIP_BACKUP_CHECKBOX_KEY,
     TOGGLE_MEDIA_SELECTOR_VISIBILITY_KEY
 )
 
@@ -54,7 +55,10 @@ def main_layout():
     right_col = [
         detector_selector(),
         segments_list(),
-        [sg.Input('Nom du fichier converti.mp4', expand_x=True, pad=((0, 0), (5, 0)), key=OUTPUT_FILENAME_INPUT_KEY)],
+        [
+            sg.Input('Nom du fichier converti.mp4', size=(25, 0), pad=((0, 0), (5, 0)), key=OUTPUT_FILENAME_INPUT_KEY),
+            sg.Checkbox('Skip backup', key=SKIP_BACKUP_CHECKBOX_KEY)
+        ],
         [sg.Button('Validate', expand_x=True, pad=((0, 0), (5, 0)))]
     ]
 

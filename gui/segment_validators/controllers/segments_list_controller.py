@@ -3,13 +3,13 @@ from typing import Any, cast
 
 import PySimpleGUI as sg
 
-from ..controllers.edit_decision_file_dumper import EditDecisionFileDumper
+from ..controllers.edit_decision_file_dumper import dump_decision_file
 from ..models.context import SegmentValidatorContext
 from ..models.events import (SEGMENT_SET_START_EVENT,
                              SEGMENT_TIMELINE_SELECTED_EVENT,
                              SEGMENTS_SAVED_EVENT,
                              SEGMENTS_UPDATED_EVENT)
-from ..models.keys import SEGMENT_LIST_TABLE_KEY
+from ..models.keys import OUTPUT_FILENAME_INPUT_KEY, SEGMENT_LIST_TABLE_KEY, SKIP_BACKUP_CHECKBOX_KEY
 from ..models.segment_container import Segment
 
 
@@ -35,14 +35,13 @@ def _render_values(window: sg.Window):
 def _write_segments(window: sg.Window, values: dict[str, Any]) -> Path|None:
     metadata = cast(SegmentValidatorContext, window.metadata)
 
-    dumper = EditDecisionFileDumper(
-        title=values['-NAME-'],
+    return dump_decision_file(
+        title=values[OUTPUT_FILENAME_INPUT_KEY],
         source_path=metadata.filepath,
         segment_container=metadata.segment_container,
+        skip_backup=values[SKIP_BACKUP_CHECKBOX_KEY],
         config=metadata.config
     )
-
-    return dumper.dump_decision_file()
 
 
 def forward_updated_event(window: sg.Window, _event: str, _values: dict[str, Any]):

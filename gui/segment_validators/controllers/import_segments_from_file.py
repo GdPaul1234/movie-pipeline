@@ -3,18 +3,13 @@ import yaml
 from pathlib import Path
 from datetime import datetime
 
-from ..models.segment_container import SegmentContainer
 
-class SegmentImporter:
-    def __init__(self, source_path: Path) -> None:
-        self._source_path = source_path
-
-    def import_segments(self):
-        segments_path = self._source_path.with_suffix(f'{self._source_path.suffix}.segments.json')
-        try:
-            return json.loads(segments_path.read_text(encoding='utf-8'))
-        except IOError:
-            return {}
+def import_segments(source_path: Path):
+    segments_path = source_path.with_suffix(f'{source_path.suffix}.segments.json')
+    try:
+        return json.loads(segments_path.read_text(encoding='utf-8'))
+    except IOError:
+        return {}
 
 
 def prepend_last_segments_to_segment_file(source_path: Path):

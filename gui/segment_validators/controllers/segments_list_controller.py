@@ -7,6 +7,7 @@ from ..controllers.edit_decision_file_dumper import EditDecisionFileDumper
 from ..models.context import SegmentValidatorContext
 from ..models.events import (SEGMENT_SET_START_EVENT,
                              SEGMENT_TIMELINE_SELECTED_EVENT,
+                             SEGMENTS_SAVED_EVENT,
                              SEGMENTS_UPDATED_EVENT)
 from ..models.keys import SEGMENT_LIST_TABLE_KEY
 from ..models.segment_container import Segment
@@ -104,5 +105,6 @@ def edit_segment(window: sg.Window, event: str, _values: dict[str, Any]):
 def validate_segments(window: sg.Window, _event: str, values: dict[str, Any]):
     if edl_path := _write_segments(window, values):
         sg.popup_auto_close(edl_path, title='Segments saved')
+        window.write_event_value(SEGMENTS_SAVED_EVENT, True)
     else:
         sg.popup_auto_close(title='Segments not saved, an error has occured')

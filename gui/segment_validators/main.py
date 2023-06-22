@@ -1,23 +1,38 @@
 from pathlib import Path
 from typing import cast
+
 import PySimpleGUI as sg
-import yaml
-
-from .controllers.edit_decision_file_dumper import ensure_decision_file_template
-
-from .models.context import SegmentValidatorContext
-from .models.events import CONFIGURE_EVENT, PREFILL_NAME_EVENT, SEGMENT_IMPORTED_EVENT, VIDEO_LOADED_EVENT
-from .models.keys import OUTPUT_FILENAME_INPUT_KEY, SEGMENT_TIMELINE_KEY
-
-from .views.status_bar import layout as status_bar
-from .views.detector_selector import layout as detector_selector, handle_detector
-from .views.media_control import layout as media_control, handle_media_control
-from .views.timeline import layout as timeline, handle_timeline
-from .views.segments_timeline import layout as segments_timeline, handle_segments_timeline
-from .views.segments_list import layout as segments_list, render_values, handle_segments_list
-from .views.video import layout as video, handle_video
-
 from settings import Settings
+
+
+from .models.events import (
+    APPLICATION_LOADED_EVENT,
+    CONFIGURE_EVENT,
+    PREFILL_NAME_EVENT,
+)
+
+from .models.keys import (
+    FLASH_TOP_NOTICE_KEY,
+    MEDIA_SELECTOR_CONTAINER_KEY,
+    MEDIA_SELECTOR_KEY,
+    OUTPUT_FILENAME_INPUT_KEY,
+    SEGMENT_TIMELINE_KEY,
+    SKIP_BACKUP_CHECKBOX_KEY,
+    TOGGLE_MEDIA_SELECTOR_VISIBILITY_KEY
+)
+
+from .controllers.media_selector_list_controller import load_new_media
+
+from .views.detector_selector import handle_detector, layout as detector_selector
+from .views.media_control import handle_media_control, layout as media_control
+from .views.media_selector_list import handle_media_selector_list, layout as media_selector_list
+from .views.segments_list import handle_segments_list, layout as segments_list, render_values
+from .views.segments_timeline import handle_segments_timeline, layout as segments_timeline
+from .views.timeline import handle_timeline, layout as timeline
+from .views.video import handle_video, layout as video
+
+from .views.texts import TEXTS
+
 
 def create_window():
     window = sg.Window('Segments Reviewer', main_layout(), finalize=True, resizable=True, use_default_focus=False)
@@ -27,23 +42,6 @@ def create_window():
     return window
 
 
-def init_metadata(window: sg.Window, filepath: Path, config: Settings):
-    window.metadata = SegmentValidatorContext.init_context(filepath, config)
-
-    window.write_event_value(VIDEO_LOADED_EVENT, True)
-    window.write_event_value(SEGMENT_IMPORTED_EVENT, True)
-
-
-def prefill_name(window: sg.Window, filepath: Path, config: Settings):
-    if ensure_decision_file_template(filepath, config):
-        template_path = filepath.with_suffix(f'{filepath.suffix}.yml.txt')
-        template = yaml.safe_load(template_path.read_text(encoding='utf-8'))
-        window.write_event_value(PREFILL_NAME_EVENT, template['filename'])
-    else:
-        sg.popup_auto_close(f'Validated segments already exists for {filepath}', title='Aborting segments validation')
-        window.write_event_value(sg.WIN_CLOSED, True)
-
-
 def main_layout():
     left_col = [
         [sg.VPush()],
@@ -51,30 +49,60 @@ def main_layout():
         timeline(), segments_timeline(),
         [sg.Sizer(0, 10)],
         media_control(),
-        [sg.VPush()],
-        status_bar()
+        [sg.VPush()]
     ]
 
     right_col = [
         detector_selector(),
         segments_list(),
-        [sg.Input('Nom du fichier converti.mp4', size=(36, 0), pad=((0, 0), (5, 0)), key=OUTPUT_FILENAME_INPUT_KEY)],
-        [sg.Button('Validate and quit', size=(31, 0), pad=((0, 0), (5, 0)))]
+        [
+            sg.Input('Nom du fichier converti.mp4', size=(25, 0), pad=((0, 0), (5, 0)), key=OUTPUT_FILENAME_INPUT_KEY),
+            sg.Checkbox('Skip backup', key=SKIP_BACKUP_CHECKBOX_KEY)
+        ],
+        [sg.Button('Validate', expand_x=True, pad=((0, 0), (5, 0)))]
     ]
 
     return [
-        [sg.Column([[
-            sg.Text('Review the segments in the right, then click on "Validate and quit"', font='Any 12'),
-        ]], element_justification='c', expand_x=True)],
         [
-            sg.Push(),
-            sg.Column(left_col, expand_x=True, expand_y=True, pad=0),
-            sg.VerticalSeparator(),
-            sg.Column(right_col, expand_x=True, expand_y=True, pad=0)
+            [sg.VPush()],
+            sg.Column([
+                [sg.Text(TEXTS['review_segments_description'], key=FLASH_TOP_NOTICE_KEY, font='Any 12'),]
+            ], element_justification='c', expand_x=True)
+        ],
+        [
+            sg.Column([
+                [
+                    sg.pin(
+                        sg.Frame(TEXTS['movies_to_be_processed'], [
+                            media_selector_list()
+                        ], key=MEDIA_SELECTOR_CONTAINER_KEY, visible=False, size=(250, 1), expand_y=True, pad=0),
+                        expand_y=True
+                    )
+                ],
+                [
+                    sg.Button(
+                        '>>',
+                        key=TOGGLE_MEDIA_SELECTOR_VISIBILITY_KEY,
+                        tooltip='Toggle visibility of media selector',
+                        size=(3, 1)
+                    )
+                ]
+            ], element_justification='r', expand_x=True, expand_y=True),
+            sg.Frame(TEXTS['movie_to_be_validated'], [
+                [
+                    sg.Push(),
+                    sg.Column(left_col, expand_x=True, expand_y=True, pad=0),
+                    sg.VerticalSeparator(pad=((10, 5), (5, 10))),
+                    sg.Column([[sg.Col(right_col, expand_y=True)]], expand_x=True, expand_y=True, pad=0)
+                ]
+            ], expand_x=True, expand_y=True),
+            sg.Push()
         ]
     ]
 
+
 handlers = (
+    handle_media_selector_list,
     handle_detector,
     handle_timeline,
     handle_segments_timeline,
@@ -84,19 +112,25 @@ handlers = (
 )
 
 
-def main(filepath: Path, config: Settings):
+def main(filepath: Path | list[Path], config: Settings):
+    media_paths = [filepath] if isinstance(filepath, Path) else filepath
+    first_media_path = filepath if isinstance(filepath, Path) else filepath[0]
+
     window = create_window()
-    init_metadata(window, filepath, config)
-    prefill_name(window, filepath, config)
+    window.write_event_value(APPLICATION_LOADED_EVENT, [media_paths])
+    load_new_media(window, '', { MEDIA_SELECTOR_KEY: [first_media_path], 'config': config })
 
     window[SEGMENT_TIMELINE_KEY].expand(True, False, False)
     window.bind('<Configure>', CONFIGURE_EVENT)
     render_values(window)
 
     while True:
-        event, values = window.read(timeout=500)  # type: ignore
+        event, values = window.read(timeout=40) # type: ignore
         if event == sg.WIN_CLOSED:
             break
+
+        if event == sg.TIMEOUT_EVENT:
+            continue
 
         if event == PREFILL_NAME_EVENT:
             cast(sg.Input, window[OUTPUT_FILENAME_INPUT_KEY]).update(value=values[PREFILL_NAME_EVENT])

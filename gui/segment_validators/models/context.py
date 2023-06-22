@@ -4,7 +4,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from settings import Settings
-from ..controllers.import_segments_from_file import SegmentImporter
+from ..controllers.import_segments_from_file import import_segments
 from ..lib.simple_video_only_player import SimpleVideoOnlyPlayerConsumer
 from ..lib.video_player import IVideoPlayer
 from ..models.segment_container import Segment, SegmentContainer
@@ -12,10 +12,10 @@ from ..models.segment_container import Segment, SegmentContainer
 
 class SegmentValidatorContext(BaseModel):
     segment_container = SegmentContainer()
-    media_player: IVideoPlayer
     selected_segments: list[Segment] = []
-    filepath: Path
     imported_segments: dict[str, str]
+    media_player: IVideoPlayer
+    filepath: Path
     config: Settings
 
     class Config:
@@ -32,7 +32,7 @@ class SegmentValidatorContext(BaseModel):
     @classmethod
     def init_context(cls, filepath: Path, config: Settings):
         media_player = SimpleVideoOnlyPlayerConsumer(filepath)
-        imported_segments = SegmentImporter(filepath).import_segments()
+        imported_segments = import_segments(filepath)
 
         return cls(
             media_player=media_player,

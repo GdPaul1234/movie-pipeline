@@ -36,8 +36,12 @@ def draw_current_position_indicator(window: sg.Window, _event: str, _values: dic
     graph = cast(sg.Graph, window[SEGMENT_TIMELINE_KEY])
     graph_metadata = cast(TimelineContext, graph.metadata)
 
-    position_handle = graph.draw_line((0., 0.), (0., 1.), color='red')
-    graph_metadata.position_handle = position_handle
+    if graph_metadata.position_handle is None:
+        position_handle = graph.draw_line((0., 0.), (0., 1.), color='red')
+        graph_metadata.position_handle = position_handle
+    else:
+        resize_timeline(window, _event, _values)
+
 
 
 def resize_timeline(window: sg.Window, _event: str, _values: dict[str, Any]):

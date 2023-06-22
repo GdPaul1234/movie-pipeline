@@ -17,7 +17,7 @@ def layout():
         sg.Combo(
             [],
             enable_events=True,
-            size=(34, 0),
+            expand_x=True,
             pad=((0, 0), (5, 5)),
             key=DETECTOR_SELECTOR_KEY
         )

@@ -1,15 +1,15 @@
 from pathlib import Path
-from tkinter import ttk
 from typing import Any, cast
 
 import PySimpleGUI as sg
 
-from ..controllers.edit_decision_file_dumper import EditDecisionFileDumper
+from ..controllers.edit_decision_file_dumper import dump_decision_file
 from ..models.context import SegmentValidatorContext
 from ..models.events import (SEGMENT_SET_START_EVENT,
                              SEGMENT_TIMELINE_SELECTED_EVENT,
+                             SEGMENTS_SAVED_EVENT,
                              SEGMENTS_UPDATED_EVENT)
-from ..models.keys import SEGMENT_LIST_TABLE_KEY
+from ..models.keys import OUTPUT_FILENAME_INPUT_KEY, SEGMENT_LIST_TABLE_KEY, SKIP_BACKUP_CHECKBOX_KEY
 from ..models.segment_container import Segment
 
 
@@ -35,14 +35,13 @@ def _render_values(window: sg.Window):
 def _write_segments(window: sg.Window, values: dict[str, Any]) -> Path|None:
     metadata = cast(SegmentValidatorContext, window.metadata)
 
-    dumper = EditDecisionFileDumper(
-        title=values['-NAME-'],
+    return dump_decision_file(
+        title=values[OUTPUT_FILENAME_INPUT_KEY],
         source_path=metadata.filepath,
         segment_container=metadata.segment_container,
+        skip_backup=values[SKIP_BACKUP_CHECKBOX_KEY],
         config=metadata.config
     )
-
-    return dumper.dump_decision_file()
 
 
 def forward_updated_event(window: sg.Window, _event: str, _values: dict[str, Any]):
@@ -60,10 +59,7 @@ def focus_timeline_selected_segment(window: sg.Window, _event: str, values: dict
              if ','.join(value) == repr(values[SEGMENT_TIMELINE_SELECTED_EVENT])),
             None
         )) is not None:
-            tree = cast(ttk.Treeview, table.TKTreeview)
-            child_id = tree.get_children()[row]
-            tree.focus(child_id)
-            tree.selection_set(child_id)
+            table.update(select_rows=[row])
 
 
 def add_segment(window: sg.Window, _event: str, _values: dict[str, Any]):
@@ -108,6 +104,6 @@ def edit_segment(window: sg.Window, event: str, _values: dict[str, Any]):
 def validate_segments(window: sg.Window, _event: str, values: dict[str, Any]):
     if edl_path := _write_segments(window, values):
         sg.popup_auto_close(edl_path, title='Segments saved')
-        window.write_event_value(sg.WIN_CLOSED, True)
+        window.write_event_value(SEGMENTS_SAVED_EVENT, True)
     else:
         sg.popup_auto_close(title='Segments not saved, an error has occured')

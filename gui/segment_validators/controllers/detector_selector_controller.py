@@ -8,6 +8,9 @@ from ..models.context import SegmentValidatorContext
 from ..models.events import SELECTED_DETECTOR_UPDATED_EVENT
 from ..models.keys import DETECTOR_SELECTOR_KEY
 from ..models.segment_container import Segment, SegmentContainer
+
+from ..controllers.segments_list_controller import delete_segments
+
 from ..views.segments_list import render_values
 
 
@@ -28,13 +31,16 @@ def populate_detector_selector(window: sg.Window, _event: str, _values: dict[str
 def import_segments_from_selected_detector(window: sg.Window, _event: str, values: dict[str, Any]):
     metadata = cast(SegmentValidatorContext, window.metadata)
 
-    imported_segments_container = SegmentContainer()
+    metadata.selected_segments = list(metadata.segment_container.segments)
+    delete_segments(window, _event, values)
+
+    metadata.segment_container = SegmentContainer()
+
     imported_detector_segments = MovieSegments(
         raw_segments=metadata.imported_segments[values[DETECTOR_SELECTOR_KEY]]
     )
 
     for segment in imported_detector_segments.segments:
-        imported_segments_container.add(Segment(*segment))
+        metadata.segment_container.add(Segment(*segment))
 
-    metadata.segment_container = imported_segments_container
     render_values(window)

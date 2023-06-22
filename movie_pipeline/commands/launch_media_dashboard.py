@@ -2,8 +2,9 @@ import logging
 import os
 import subprocess
 import sys
-from pathlib import Path
 import textwrap
+import webbrowser
+from pathlib import Path
 
 from settings import Settings
 
@@ -24,10 +25,13 @@ def command(options, config: Settings):
 
     logger.info('Launching grafana...')
     logger.info('Kill this terminal to terminate')
-    logger.info(textwrap.dedent('''
+
+    url = 'http://localhost:3000/d/ddac5331-26b2-4e4d-88f4-b0fbc3067306/media-stats'
+    logger.info(textwrap.dedent(f'''
         Once ready, the dashboard is available at:
-        http://localhost:3000/d/ddac5331-26b2-4e4d-88f4-b0fbc3067306/media-stats
+        {url}
     '''))
+    webbrowser.open_new_tab(url)
 
     try:
         env = os.environ.copy()

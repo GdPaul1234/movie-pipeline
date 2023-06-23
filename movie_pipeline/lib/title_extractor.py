@@ -6,7 +6,7 @@ import re
 
 from ..lib.title_cleaner import TitleCleaner
 
-title_pattern = re.compile(r"_([\w&àéèï'!., ()#-]+)_")
+title_pattern = re.compile(r"_([\w&àéèï'!., ()\[\]#-]+)_")
 forbidden_char_pattern = re.compile(r'[\/:*?<>|"]')
 
 serie_hints = ['Série', 'Saison']

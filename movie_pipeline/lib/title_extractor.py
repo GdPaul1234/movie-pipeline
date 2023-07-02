@@ -84,6 +84,10 @@ class SerieSubTitleAwareTitleExtractor(NaiveTitleExtractor):
         episode = extract_serie_field(metadata, self.episode_extractor_params)
         season = extract_serie_field(metadata, self.season_extractor_params)
         season = '01' if season == 'xx' else season
+
+        if episode == 'xx':
+            return f"{base_title}__{metadata['sub_title'].split('.')[0]}"
+
         return f'{base_title} S{season}E{episode}'
 
 

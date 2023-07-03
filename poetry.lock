@@ -334,7 +334,7 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "f512d7822928c3a5722fa0feb4d94116cb2c7f174a5093c3b2fbc83ab0d4e401"
+content-hash = "9d23228e070c342374be1d42df511d496943ce720de2528b259d556ec0fec649"
 
 [metadata.files]
 binpacking = [

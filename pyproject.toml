@@ -20,6 +20,7 @@ pysimplegui = "^4.60.4"
 decoratoroperations = {git = "https://github.com/salesforce/decorator-operations"}
 pillow = "^9.4.0"
 pydantic = {extras = ["dotenv"], version = "^1.10.7"}
+requests = "^2.31.0"
 
 [build-system]
 requires = ["poetry-core"]

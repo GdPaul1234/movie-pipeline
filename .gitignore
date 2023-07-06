@@ -165,6 +165,7 @@ config.env
 
 title_strategies.yml
 title_re_blacklist.txt
+series_extracted_metadata.json
 media.db
 
 movie_pipeline/templates/grafana/grafana_config/tmp/

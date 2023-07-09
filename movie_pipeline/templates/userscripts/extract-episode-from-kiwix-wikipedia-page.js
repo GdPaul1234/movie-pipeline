@@ -42,7 +42,7 @@ function getEpisodeEntriesFromEpisodeHeaders() {
   const seasonNumber = +RegExp(/Saison (\d+)/).exec(titleContent)[1]
 
   return Array.from(episodeHeaders).map(episodeHeader => {
-    const episodeTitle = episodeHeader.querySelector('i').textContent
+    const episodeTitle = episodeHeader.textContent.split(':')[1].trim()
     const episodeNumber = +episodeHeader.textContent.split(':')[0].replace('Épisode ', '')
     const details = episodeHeader.parentElement.parentElement
 

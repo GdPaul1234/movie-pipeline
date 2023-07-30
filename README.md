@@ -9,10 +9,11 @@ Set of tools that automatize most of movies library maintenance
 ```
 $ python app.py --help
 usage: app.py [-h] [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--config-path CONFIG_PATH]
-              {legacy_move,process_movie,scaffold_dir,archive_movies,dump_for_kodi,detect_segments,validate_dir} ...
+              {legacy_move,process_movie,scaffold_dir,archive_movies,dump_for_kodi,detect_segments,validate_dir,update_media_database,launch_media_dashboard}
+              ...
 
 positional arguments:
-  {legacy_move,process_movie,scaffold_dir,archive_movies,dump_for_kodi,detect_segments,validate_dir}
+  {legacy_move,process_movie,scaffold_dir,archive_movies,dump_for_kodi,detect_segments,validate_dir,update_media_database,launch_media_dashboard}
                         Available commands:
     legacy_move         Move converted movies or series to their folder
     process_movie       Cut and merge movie segments to keep only relevant parts
@@ -21,6 +22,10 @@ positional arguments:
     dump_for_kodi       Dump .vsmeta to .nfo if not exist
     detect_segments     Run best-effort segments detectors
     validate_dir        Validate segments and generate edit decision files in given directory
+    update_media_database
+                        Update media database from NFOs for further analysis
+    launch_media_dashboard
+                        Launch grafana dashboard provisioned with media stats dashboard
 
 options:
   -h, --help            show this help message and exit
@@ -93,38 +98,39 @@ Processor__nb_worker=2
 Logger__file_path=${Paths__base_path}\log-quick.txt
 ```
 
-## Pipelines
+## Main commands
 
-### Main pipeline
+### Basic workflow: detect and trim relevant segments + move to library
 
-After filling the config file and after all recordings are done:
+Once the configuration file has been filled in and all registrations made:
+
+- **RECOMMENDED**. Run sequentially the `detect_segments` command and the `validate_dir` command to pre-fill and validate each edit decision file on the left panel of the Seegment reviewer window.
+
+Alternatively, you can manually populate each edit decision file according to the following rules:
 
 1. Scaffold the recording directory using the command `scaffold_dir`
 
-2. Fill the edit decision file (`.yml.txt` files) by:
+2. Fill in the editing decision file (`.yml.txt` files) by:
     - Correcting the title if necessary, especially for Series.
 
-      For reference, the format of series are: `Serie Name S01E02.mp4`
+      _For reference, the format of the series title is as follows: `Serie Name S01E02.mp4`_
 
-    - Using a third-party software or built-in `detect_segments` command to fill the segments to keep field
+    - Using a third-party software or the built-in `detect_segments` command to fill in the segments to be kept.
 
-      ie. `00:31:53.960-01:00:51.520,01:06:54.480-01:31:40.160,01:37:34.480-02:23:05.560,`.
+      _i.e. `00:31:53.960-01:00:51.520,01:06:54.480-01:31:40.160,01:37:34.480-02:23:05.560,`_
 
       Don't forget to:
         1. Carrefuly review the segments field
-        2. To append the leading comma at the end to validate your result!
-
-      > **Note**
-      > You can use the built-in `validate_dir` commands to validate segments from all completed movies that have been analyzed by the `detect_segments` command
+        2. Append the leading comma at the end to validate your result!
 
     - Add `skip_backup: yes` line if the movie file is too big (more than 10 Go).
 
 3. Process movie (cut, trim, convert movies, backup and move them to the right location) by running the `process_movie` command
 
-  > **Warning**
-  > The current implementation of `backup_policy_executor` deletes the original file if is identified as a **serie**.
-  > Be sure that you have some kind of recycle bin puts in place in your system, so the deleted file is moved inside it
-  > instead of being definitly deleted.
+> **Warning**
+> The current implementation of `backup_policy_executor` deletes the original file if is identified as a **serie**.
+> Be sure that you have some kind of recycle bin puts in place in your system, so the deleted file is moved inside it
+> instead of being definitly deleted.
 
 ### Archive pipeline
 
@@ -133,16 +139,25 @@ If the remaining space of `base_path` is low, use the `archive_movies` command.
 > **Warning**
 > It takes for granted that you periodicaly backup each movies (located in `movies_folder`) to `${base_backup_path}/PVR/Films`.
 
-This command is mainly created for my needs, don't run it if you don't have a movie backup in place because it deletes
+This command is mainly created for my needs, don't run it if you don't have a movie backup in place as it deletes
 the oldest movies in `base_path` and move the corresponding `${base_backup_path}/PVR/Films` to `movies_archive_folder`.
 
-Only movies are supported at the time of writing this document
+Only movies are supported at the time of writing this document.
 
 ### Dump for kodi
 
-This pipeline converts `.vsmeta` dumped metadata to the kodi `.nfo` format.
+This command converts `.vsmeta` dumped metadata to the kodi `.nfo` format.
 
 Useful for quickly set up kodi media library in external storage.
+
+### Basic statistics about media library
+
+You can run the `update_media_database` and the `launch_media_dashboard` to have a nice dashboard that aggregate many
+interesting facts about your media liberay.
+
+You must have docker installed in order to use the `launch_media_dashboard`.
+
+Don't forget to fill in the `MediaDatabase__db_path` field in your `.env`.
 
 ## TODO
 

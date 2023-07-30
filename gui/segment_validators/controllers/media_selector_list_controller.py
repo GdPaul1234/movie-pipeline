@@ -16,6 +16,7 @@ from ..models.keys import (FLASH_TOP_NOTICE_KEY, MEDIA_SELECTOR_CONTAINER_KEY,
                            TOGGLE_MEDIA_SELECTOR_VISIBILITY_KEY)
 from ..views.texts import TEXTS
 from .edit_decision_file_dumper import ensure_decision_file_template
+from .import_segments_from_file import prepend_last_segments_to_segment_file
 
 
 def init_metadata(window: sg.Window, filepath: Path, config: Settings):
@@ -48,6 +49,11 @@ def load_new_media(window: sg.Window, _event: str, values: dict[str, Any]):
     selector = cast(sg.Listbox, window[MEDIA_SELECTOR_KEY])
     metadata = cast(SegmentValidatorContext | None, window.metadata)
     filepath = cast(Path, values[MEDIA_SELECTOR_KEY][0])
+
+    if metadata is not None:
+        old_filepath = metadata.filepath
+        old_segments =metadata.segment_container
+        prepend_last_segments_to_segment_file(old_filepath, old_segments)
 
     flash_notice_label.update(value=TEXTS['loading_media'])
     window.refresh()

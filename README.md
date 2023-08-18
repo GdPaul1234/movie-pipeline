@@ -148,12 +148,12 @@ Only movies are supported at the time of writing this document.
 
 This command converts `.vsmeta` dumped metadata to the kodi `.nfo` format.
 
-Useful for quickly set up kodi media library in external storage.
+It is useful for quickly setting up a kodi media library in an external storage.
 
 ### Basic statistics about media library
 
-You can run the `update_media_database` and the `launch_media_dashboard` to have a nice dashboard that aggregate many
-interesting facts about your media liberay.
+You can run the `update_media_database` and the `launch_media_dashboard` commands to have a nice dashboard that aggregate
+many interesting facts about your media liberay.
 
 You must have docker installed in order to use the `launch_media_dashboard`.
 

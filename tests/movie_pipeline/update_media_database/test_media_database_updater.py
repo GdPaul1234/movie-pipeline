@@ -3,7 +3,7 @@ import shutil
 import unittest
 
 from ..concerns import copy_files, get_output_movies_directories, create_output_movies_directories, lazy_load_config_file
-from movie_pipeline.commands.update_media_database import MediaDatabaseUpdater
+from movie_pipeline.services.media_database_updater import MediaDatabaseUpdater
 
 nfo_ressource_dir_path = Path(__file__).parent.parent.parent.joinpath('lib', 'ressources')
 

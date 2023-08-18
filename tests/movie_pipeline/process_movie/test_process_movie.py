@@ -5,7 +5,7 @@ from pathlib import Path
 
 from rich.progress import Progress
 
-from movie_pipeline.commands.process_movie import MovieFileProcessor
+from movie_pipeline.services.movie_file_processor import MovieFileProcessor
 
 from ..concerns import (copy_files, create_output_movies_directories,
                         get_output_movies_directories, lazy_load_config_file)

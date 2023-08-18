@@ -66,7 +66,7 @@ class MovieFileProcessorFolderRunner:
         for edl in sorted(edls, key=lambda edl: edl.stat().st_size, reverse=True):
             prev_edl_progress = [0.]  # mutable!
 
-            for edl_progress in MovieFileProcessor(edl, job_progress, self._config).process_with_progress():
+            for edl_progress in MovieFileProcessor(edl, self._config).process_with_progress_tui(job_progress):
                 with diff_tracking(prev_edl_progress, edl_progress) as diff_edl_progress:
                     job_progress.advance(task_id, advance=diff_edl_progress)
                     self._progress.overall_progress.advance(self._progress.overall_task, advance=diff_edl_progress / len(edls))

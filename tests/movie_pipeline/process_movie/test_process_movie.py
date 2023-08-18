@@ -38,10 +38,10 @@ class TestProcessMovie(unittest.TestCase):
         '''), encoding='utf-8')
 
         with Progress() as progress:
-            movie_processor = MovieFileProcessor(edl_path, progress, lazy_config())
+            movie_processor = MovieFileProcessor(edl_path, lazy_config())
 
         expected_segments = [(3.37, 5.96), (10.52, 18.2), (20.32, 25.08)]
-        self.assertEqual(expected_segments, movie_processor._segments)
+        self.assertEqual(expected_segments, movie_processor.segments)
 
     def test_segments_total_seconds(self):
         edl_path = video_path.with_suffix('.mp4.yml')
@@ -51,9 +51,9 @@ class TestProcessMovie(unittest.TestCase):
         '''), encoding='utf-8')
 
         with Progress() as progress:
-            movie_processor = MovieFileProcessor(edl_path, progress, lazy_config())
+            movie_processor = MovieFileProcessor(edl_path, lazy_config())
 
-            self.assertAlmostEqual(15.03, movie_processor._movie_segments.total_seconds)
+            self.assertAlmostEqual(15.03, movie_processor.movie_segments.total_seconds)
 
     def test_movie_process(self):
         edl_path = video_path.with_suffix('.mp4.yml')
@@ -63,7 +63,7 @@ class TestProcessMovie(unittest.TestCase):
         '''), encoding='utf-8')
 
         with Progress() as progress:
-            movie_processor = MovieFileProcessor(edl_path, progress, lazy_config())
+            movie_processor = MovieFileProcessor(edl_path, lazy_config())
             movie_processor.process()
 
         self.assertFalse(video_path.exists())
@@ -80,7 +80,7 @@ class TestProcessMovie(unittest.TestCase):
         '''), encoding='utf-8')
 
         with Progress() as progress:
-            movie_processor = MovieFileProcessor(edl_path, progress, lazy_config())
+            movie_processor = MovieFileProcessor(edl_path, lazy_config())
             movie_processor.process()
 
         self.assertTrue(video_path.exists())
@@ -96,7 +96,7 @@ class TestProcessMovie(unittest.TestCase):
         '''), encoding='utf-8')
 
         with Progress() as progress:
-            movie_processor = MovieFileProcessor(edl_path, progress, lazy_config())
+            movie_processor = MovieFileProcessor(edl_path, lazy_config())
             movie_processor.process()
 
         self.assertFalse(serie_path.exists())

@@ -128,19 +128,19 @@ class MovieFileProcessor:
             yield 0.8 * process_progress_percent
 
         for backup_progress_percent in BackupStep(self).handle():
-            yield backup_progress_percent
+            yield 0.8 + 0.2 * backup_progress_percent
 
         logger.info('"%s" processed sucessfully', self.dest_filename)
 
     def process_with_progress_tui(self, progress: Progress):
-        with transient_task_progress(progress, description=self.dest_filename) as task_id:
+        with transient_task_progress(progress, description=self.dest_filename, total=1.0) as task_id:
             for process_progress_percent in ProcessStep(self).handle():
                 yield 0.8 * process_progress_percent
-                progress.update(task_id, completed=process_progress_percent*100)
+                progress.update(task_id, completed=process_progress_percent)
 
         with transient_task_progress(progress, f'Backuping {self.dest_filename}...'):
             for backup_progress_percent in BackupStep(self).handle():
-             yield backup_progress_percent
+             yield 0.8 + 0.2 * backup_progress_percent
 
         logger.info('"%s" processed sucessfully', self.dest_filename)
 

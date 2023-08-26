@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from movie_pipeline.services.kodi_dumper import KodiDumper
+from ..services.kodi_dumper import KodiDumper
 
 from settings import Settings
 

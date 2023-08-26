@@ -1,4 +1,4 @@
-const seasonHeaders = document.querySelectorAll('[id*="Saison_"]')
+const seasonHeaders = document.querySelectorAll('[id*="saison_"]')
 const episodeHeaders = document.querySelectorAll('[id^="Épisode_"]')
 
 function padNumber(number, length) {

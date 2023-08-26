@@ -1,7 +1,8 @@
 import logging
-from movie_pipeline.services.movie_archiver import MoviesArchiver
 
 from settings import Settings
+
+from ..services.movie_archiver import MoviesArchiver
 
 logger = logging.getLogger(__name__)
 

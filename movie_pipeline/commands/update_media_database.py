@@ -1,6 +1,6 @@
 import logging
 
-from movie_pipeline.services.media_scanner import MediaScanner
+from ..services.media_scanner import MediaScanner
 
 from settings import Settings
 

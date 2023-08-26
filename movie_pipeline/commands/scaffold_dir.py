@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from movie_pipeline.services.edl_scaffolder import PathScaffolder
+from ..services.edl_scaffolder import PathScaffolder
 
 from settings import Settings
 

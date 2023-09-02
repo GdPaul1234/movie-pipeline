@@ -6,7 +6,7 @@ from datetime import date
 
 ressource_dir_path = Path(__file__).parent.joinpath('ressources')
 
-class TestNfoTest(unittest.TestCase):
+class TestNfoParser(unittest.TestCase):
     def test_tv_show_nfo_parsing(self):
         nfo_path = ressource_dir_path.joinpath('tvshow.nfo')
         parsed_data = NfoParser.parse(nfo_path)

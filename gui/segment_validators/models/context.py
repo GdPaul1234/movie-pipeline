@@ -11,7 +11,7 @@ from ..models.segment_container import Segment, SegmentContainer
 
 
 class SegmentValidatorContext(BaseModel):
-    segment_container = SegmentContainer()
+    segment_container: SegmentContainer = SegmentContainer()
     selected_segments: list[Segment] = []
     imported_segments: dict[str, str]
     media_player: IVideoPlayer

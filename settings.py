@@ -1,15 +1,16 @@
 from typing import Optional
 from pathlib import Path
-from pydantic import BaseModel, BaseSettings
+from pydantic import BaseModel
 from pydantic.types import DirectoryPath, FilePath, PositiveInt
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class PathSettings(BaseModel):
     movies_folder: DirectoryPath
     series_folder: DirectoryPath
     backup_folder: DirectoryPath
-    title_strategies: Optional[FilePath]
-    title_re_blacklist: Optional[FilePath]
+    title_strategies: Optional[FilePath] = None
+    title_re_blacklist: Optional[FilePath] = None
 
 
 class ArchiveSettings(BaseModel):
@@ -28,7 +29,7 @@ class ProcessorSettings(BaseModel):
 
 class MediaDatabaseSettings(BaseModel):
     db_path: Path
-    clean_after_update = True
+    clean_after_update: bool = True
 
 
 class LoggerSettings(BaseModel):
@@ -37,11 +38,10 @@ class LoggerSettings(BaseModel):
 
 class Settings(BaseSettings):
     Paths: PathSettings
-    Archive: Optional[ArchiveSettings]
-    SegmentDetection: Optional[SegmentDetectionSettings]
-    Processor: Optional[ProcessorSettings]
-    MediaDatabase: Optional[MediaDatabaseSettings]
-    Logger:Optional[LoggerSettings]
+    Archive: Optional[ArchiveSettings] = None
+    SegmentDetection: Optional[SegmentDetectionSettings] = None
+    Processor: Optional[ProcessorSettings] = None
+    MediaDatabase: Optional[MediaDatabaseSettings] = None
+    Logger :Optional[LoggerSettings] = None
 
-    class Config:
-        env_nested_delimiter = '__'
+    model_config = SettingsConfigDict(env_nested_delimiter='__')

@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 from settings import Settings
 from ..controllers.import_segments_from_file import import_segments
@@ -18,8 +18,7 @@ class SegmentValidatorContext(BaseModel):
     filepath: Path
     config: Settings
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @property
     def position(self) -> float:
@@ -43,7 +42,7 @@ class SegmentValidatorContext(BaseModel):
 
 
 class TimelineSegment(BaseModel):
-    fid: Any
+    fid: Any = None
     value: Segment
 
 

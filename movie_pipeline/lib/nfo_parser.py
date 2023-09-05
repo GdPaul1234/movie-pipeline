@@ -1,79 +1,60 @@
-import xml.etree.ElementTree as ET
+from abc import ABC
 from pathlib import Path
 from statistics import mean
-from typing import Any, Optional, cast
+from typing import Optional
 from xml.etree.ElementTree import Element
-from abc import ABC
 
-from pydantic import BaseModel
-from pydantic.types import PastDate, PositiveFloat, PositiveInt, NonNegativeInt
-from pydantic.utils import GetterDict
+from pydantic import computed_field
+from pydantic.types import NonNegativeInt, PastDate, PositiveFloat, PositiveInt
+from pydantic_xml import BaseXmlModel, RootXmlModel, element, wrapped
 
 from ..models.movie_file import LegacyMovieFile
 
-class NfoGetter(ABC, GetterDict):
-    def get_xml_field_path(self, field_name: str):
-        xml_field_paths = {
-            'genres': 'genre',
-            'directors': 'director',
-            'actors': 'actor/name',
-            'rating': 'ratings/rating/value'
-        }
 
-        return xml_field_paths.get(field_name) or field_name
-
-    def get(self, key: Any, default: Any = None) -> Any:
-        obj = cast(Element, self._obj)
-        field_name = self.get_xml_field_path(key)
-
-        if key in {'genres', 'directors', 'credits', 'actors'}:
-            return [item.text for item in obj.findall(field_name)]
-
-        elif key == 'rating':
-            return mean([float(item.text) for item in obj.findall(field_name)] or [0]) # type: ignore
-
-        elif (item := obj.find(field_name)) is not None:
-            return item.text
-
-        return default
+class Actor(RootXmlModel):
+    root: str = element(tag='name')
 
 
-class BaseNfo(BaseModel, ABC):
-    title: str
-    rating: PositiveFloat
-    plot: Optional[str]
-    mpaa: Optional[str]
-    genres: list[str]
-    premiered: PastDate
-    year: PositiveInt
-    actors: list[str]
-
-    class Config:
-        orm_mode = True
-        getter_dict = NfoGetter
+class Rating(RootXmlModel):
+    root: PositiveFloat = wrapped('rating', element(tag='value'))
 
 
-class MovieNfo(BaseNfo):
-    sorttitle: Optional[str]
-    tagline: Optional[str]
-    credits: list[str]
-    directors: list[str]
+class BaseNfo(BaseXmlModel, ABC, search_mode='unordered'):
+    title: str = element()
+    ratings: list[Rating] = element('ratings')
+    plot: Optional[str] = element()
+    mpaa: Optional[str] = element()
+    genres:list[str] = element(tag='genre')
+    premiered: PastDate = element()
+    year: PositiveInt = element()
+    actors: list[Actor] = element(tag='actor')
+
+    @computed_field
+    def rating(self) -> PositiveFloat:
+        return mean([float(rating.root) for rating in self.ratings] or [0])
 
 
-class SerieNfo(BaseNfo):
-    showtitle: str
-    season: NonNegativeInt
-    episode: PositiveInt
-    aired: PastDate
-    credits: list[str]
-    directors: list[str]
+class MovieNfo(BaseNfo, tag='movie'):
+    sorttitle: Optional[str] = element()
+    tagline: Optional[str] = element()
+    credits: list[str] = element()
+    directors: list[str] = element(tag='director')
 
 
-class TvShowNfo(BaseNfo):
+class SerieNfo(BaseNfo, tag='episodedetails'):
+    showtitle: str = element()
+    season: NonNegativeInt = element()
+    episode: PositiveInt = element()
+    aired: PastDate = element()
+    credits: list[str] = element()
+    directors: list[str] = element(tag='director')
+
+
+class TvShowNfo(BaseNfo, tag='tvshow'):
     pass
 
 
-class NfoParser:
+class NfoParser():
     @staticmethod
     def get_nfo_parser(path: Path):
         if path.name == 'tvshow.nfo':
@@ -85,6 +66,5 @@ class NfoParser:
 
     @staticmethod
     def parse(path: Path):
-        tree = ET.parse(path)
         parser = __class__.get_nfo_parser(path)
-        return parser.from_orm(tree.getroot())
+        return parser.from_xml(path.read_text(encoding='utf-8'))

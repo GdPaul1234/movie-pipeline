@@ -13,14 +13,17 @@ ffmpeg-python = "^0.2.0"
 schema = "^0.7.5"
 binpacking = "^1.5.2"
 jinja2 = "^3.1.2"
-rich = "^12.6.0"
-deffcode = "^0.2.4"
+rich = "^13.5.2"
+deffcode = "^0.2.5"
 opencv-contrib-python = "^4.7.0.68"
-pysimplegui = "^4.60.4"
+pysimplegui = "^4.60.5"
 decoratoroperations = {git = "https://github.com/salesforce/decorator-operations"}
-pillow = "^9.4.0"
-pydantic = {extras = ["dotenv"], version = "^1.10.7"}
+pillow = "^10.0.0"
+pydantic = {extras = ["dotenv"], version = "^2.0.3"}
+pydantic-settings = "^2.0.3"
+pydantic-xml = "^2.1.0"
 requests = "^2.31.0"
+mpire = {extras = ["dashboard"], version = "^2.8.0"}
 
 [build-system]
 requires = ["poetry-core"]

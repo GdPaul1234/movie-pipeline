@@ -13,6 +13,7 @@ class TestNfoParser(unittest.TestCase):
 
         expected_parsed_data = TvShowNfo(
             title='Modern Family',
+            ratings=[7.7],
             rating=7.7,
             plot='Quand les familles Pritchett, Delgado et Dunphy acceptent qu\'un documentaire soit tourné sur leurs '
                  'vies, elles étaient loin d\'imaginer qu\'elles allaient tant en révéler... Jay Pritchett a rencontré '
@@ -38,6 +39,7 @@ class TestNfoParser(unittest.TestCase):
         expect_parsed_data = SerieNfo(
             title='Les Lauréats',
             showtitle='Modern Family',
+            ratings=[7.786],
             rating=7.786,
             season=8,
             episode=22,
@@ -64,6 +66,7 @@ class TestNfoParser(unittest.TestCase):
         expect_parsed_data = MovieNfo(
             title='Ant-Man et la Guêpe',
             sorttitle='Ant-Man et la Guêpe',
+            ratings=[6.962],
             rating=6.962,
             plot='Après les événements survenus dans Captain America : Civil War, Scott Lang a bien du mal à concilier '
                  'sa vie de super-héros et ses responsabilités de père. Mais ses réflexions sur les conséquences de ses '

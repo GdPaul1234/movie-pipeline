@@ -61,7 +61,7 @@ class MediaDatabaseUpdater:
                 raise ValueError(f'Unknown {media_type=}')
 
             genres_id = [self._insert_genre(genre) for genre in nfo.genres]
-            actors_relations = [(self._insert_person(actor), 'actor') for actor in nfo.actors]
+            actors_relations = [(self._insert_person(actor.root), 'actor') for actor in nfo.actors]
             credits_relations = [(self._insert_person(credit), 'credit') for credit in getattr(nfo, 'credits', [])]
             directors_relations = [(self._insert_person(director), 'director') for director in getattr(nfo, 'directors', [])]
 

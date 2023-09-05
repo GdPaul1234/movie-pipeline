@@ -3,8 +3,6 @@ import textwrap
 import unittest
 from pathlib import Path
 
-from rich.progress import Progress
-
 from movie_pipeline.services.movie_file_processor import MovieFileProcessor
 
 from ..concerns import (copy_files, create_output_movies_directories,
@@ -37,8 +35,7 @@ class TestProcessMovie(unittest.TestCase):
             segments: 00:00:03.370-00:00:05.960,00:00:10.520-00:00:18.200,00:00:20.320-00:00:25.080,
         '''), encoding='utf-8')
 
-        with Progress() as progress:
-            movie_processor = MovieFileProcessor(edl_path, lazy_config())
+        movie_processor = MovieFileProcessor(edl_path, lazy_config())
 
         expected_segments = [(3.37, 5.96), (10.52, 18.2), (20.32, 25.08)]
         self.assertEqual(expected_segments, movie_processor.segments)
@@ -50,10 +47,8 @@ class TestProcessMovie(unittest.TestCase):
             segments: 00:00:03.370-00:00:05.960,00:00:10.520-00:00:18.200,00:00:20.320-00:00:25.080,
         '''), encoding='utf-8')
 
-        with Progress() as progress:
-            movie_processor = MovieFileProcessor(edl_path, lazy_config())
-
-            self.assertAlmostEqual(15.03, movie_processor.movie_segments.total_seconds)
+        movie_processor = MovieFileProcessor(edl_path, lazy_config())
+        self.assertAlmostEqual(15.03, movie_processor.movie_segments.total_seconds)
 
     def test_movie_process(self):
         edl_path = video_path.with_suffix('.mp4.yml')
@@ -62,9 +57,8 @@ class TestProcessMovie(unittest.TestCase):
             segments: 00:00:03.370-00:00:05.960,00:00:10.520-00:00:18.200,00:00:20.320-00:00:25.080,
         '''), encoding='utf-8')
 
-        with Progress() as progress:
-            movie_processor = MovieFileProcessor(edl_path, lazy_config())
-            movie_processor.process()
+        movie_processor = MovieFileProcessor(edl_path, lazy_config())
+        movie_processor.process()
 
         self.assertFalse(video_path.exists())
         self.assertTrue(output_dir_movie_path.joinpath('Movie Name', 'Movie Name.mp4').exists())
@@ -79,9 +73,8 @@ class TestProcessMovie(unittest.TestCase):
             skip_backup: yes
         '''), encoding='utf-8')
 
-        with Progress() as progress:
-            movie_processor = MovieFileProcessor(edl_path, lazy_config())
-            movie_processor.process()
+        movie_processor = MovieFileProcessor(edl_path, lazy_config())
+        movie_processor.process()
 
         self.assertTrue(video_path.exists())
         self.assertTrue(edl_path.with_suffix('.yml.done').exists())
@@ -95,9 +88,8 @@ class TestProcessMovie(unittest.TestCase):
             segments: 00:00:03.370-00:00:05.960,00:00:10.520-00:00:18.200,00:00:20.320-00:00:25.080,
         '''), encoding='utf-8')
 
-        with Progress() as progress:
-            movie_processor = MovieFileProcessor(edl_path, lazy_config())
-            movie_processor.process()
+        movie_processor = MovieFileProcessor(edl_path, lazy_config())
+        movie_processor.process()
 
         self.assertFalse(serie_path.exists())
         self.assertFalse(edl_path.exists())

@@ -79,7 +79,7 @@ class ProcessStep(MovieFileProcessorStep):
             total_seconds = self._context.movie_segments.total_seconds
             for item in ffmpeg_command_with_progress(command, cmd=['ffmpeg', '-hwaccel', 'cuda']):
                 if item.get('time'):
-                    processed_time = position_in_seconds(item['time'])
+                    processed_time = max(position_in_seconds(item['time']), 0)
                     yield processed_time / total_seconds
 
         except ffmpeg.Error as e:

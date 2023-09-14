@@ -42,7 +42,15 @@ class MovieFileProcessorMpireRunner:
         return edls
 
     def _execute_processing(self, worker_id, edl: Path):
+        import logging
+        import logging.handlers
+
         from .movie_file_processor import MovieFileProcessor
+
+        fh = logging.handlers.TimedRotatingFileHandler(filename=self._config.Logger.file_path if self._config.Logger else 'log.txt')
+        fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+
+        logging.basicConfig(level='INFO', handlers=(fh,))
 
         with WorkerPool(n_jobs=1, daemon=False, start_method='spawn', enable_insights=True) as p:
             movie_file_processor = MovieFileProcessor(edl_path=edl, config=self._config)

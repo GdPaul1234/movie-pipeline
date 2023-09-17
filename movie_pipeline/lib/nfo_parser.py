@@ -2,7 +2,6 @@ from abc import ABC
 from pathlib import Path
 from statistics import mean
 from typing import Optional
-from xml.etree.ElementTree import Element
 
 from pydantic import computed_field
 from pydantic.types import NonNegativeInt, PastDate, PositiveFloat, PositiveInt
@@ -22,12 +21,12 @@ class Rating(RootXmlModel):
 class BaseNfo(BaseXmlModel, ABC, search_mode='unordered'):
     title: str = element()
     ratings: list[Rating] = element('ratings')
-    plot: Optional[str] = element()
-    mpaa: Optional[str] = element()
+    plot: Optional[str] = element(default=None)
+    mpaa: Optional[str] = element(default=None)
     genres:list[str] = element(tag='genre')
     premiered: PastDate = element()
     year: PositiveInt = element()
-    actors: list[Actor] = element(tag='actor')
+    actors: list[Actor] = element(tag='actor', default=[])
 
     @computed_field
     def rating(self) -> PositiveFloat:
@@ -35,19 +34,19 @@ class BaseNfo(BaseXmlModel, ABC, search_mode='unordered'):
 
 
 class MovieNfo(BaseNfo, tag='movie'):
-    sorttitle: Optional[str] = element()
-    tagline: Optional[str] = element()
-    credits: list[str] = element()
-    directors: list[str] = element(tag='director')
+    sorttitle: Optional[str] = element(default=None)
+    tagline: Optional[str] = element(default=None)
+    credits: list[str] = element(default=[])
+    directors: list[str] = element(tag='director', default=[])
 
 
 class SerieNfo(BaseNfo, tag='episodedetails'):
     showtitle: str = element()
     season: NonNegativeInt = element()
     episode: PositiveInt = element()
-    aired: PastDate = element()
-    credits: list[str] = element()
-    directors: list[str] = element(tag='director')
+    aired: Optional[PastDate] = element(default=None)
+    credits: list[str] = element(default=[])
+    directors: list[str] = element(tag='director', default=[])
 
 
 class TvShowNfo(BaseNfo, tag='tvshow'):

@@ -2,9 +2,10 @@ import shutil
 import unittest
 from pathlib import Path
 
-from movie_pipeline.commands.scaffold_dir import MovieProcessedFileGenerator, PathScaffolder
+from movie_pipeline.services.edl_scaffolder import PathScaffolder
 from movie_pipeline.lib.title_cleaner import TitleCleaner
 from movie_pipeline.lib.title_extractor import NaiveTitleExtractor
+from movie_pipeline.services.edl_scaffolder import MovieProcessedFileGenerator
 
 from ..concerns import get_output_movies_directories, create_output_movies_directories, lazy_load_config_file
 

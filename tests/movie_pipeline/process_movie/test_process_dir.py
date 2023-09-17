@@ -3,7 +3,7 @@ import textwrap
 import unittest
 from pathlib import Path
 
-from movie_pipeline.commands.process_movie import \
+from movie_pipeline.services.movie_file_processor_folder_runner import \
     MovieFileProcessorFolderRunner
 from movie_pipeline.lib.ui_factory import ProgressUIFactory
 

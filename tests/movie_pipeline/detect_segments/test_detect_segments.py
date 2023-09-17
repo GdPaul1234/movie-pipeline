@@ -1,7 +1,7 @@
 from typing import cast
 import unittest
 
-from movie_pipeline.commands.detect_segments import DetectedSegment, humanize_segments, merge_adjacent_segments
+from movie_pipeline.models.detected_segments import DetectedSegment, humanize_segments, merge_adjacent_segments
 
 
 class TestDetectSegments(unittest.TestCase):

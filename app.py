@@ -29,6 +29,7 @@ def main():
     process_cmd = subparsers.add_parser('process_movie', help='Cut and merge movie segments to keep only relevant parts')
     process_cmd.add_argument('file', metavar='FILE', help='File or folder to process', type=Path)
     process_cmd.add_argument('--custom-ext', help='Extension of processing decision file', default='.yml')
+    process_cmd.add_argument('--web', help='Use the new folder movie file processor and launch the web dashboard', action='store_true')
 
     # scaffold command
     scaffold_cmd = subparsers.add_parser('scaffold_dir', help='Scaffold movie edit decision files')

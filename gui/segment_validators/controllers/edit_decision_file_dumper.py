@@ -2,11 +2,12 @@ from pathlib import Path
 import contextlib
 import yaml
 
-from movie_pipeline.commands.scaffold_dir import available_title_strategies, channel_pattern
+from movie_pipeline.services.edl_scaffolder import available_title_strategies
+from movie_pipeline.services.edl_scaffolder import channel_pattern
 
 from ..models.segment_container import SegmentContainer
-from movie_pipeline.commands.process_movie import edl_content_schema
-from movie_pipeline.commands.scaffold_dir import PathScaffolder
+from movie_pipeline.services.movie_file_processor import edl_content_schema
+from movie_pipeline.services.edl_scaffolder import PathScaffolder
 
 from settings import Settings
 

@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 from settings import Settings
 from ..controllers.import_segments_from_file import import_segments
@@ -11,15 +11,14 @@ from ..models.segment_container import Segment, SegmentContainer
 
 
 class SegmentValidatorContext(BaseModel):
-    segment_container = SegmentContainer()
+    segment_container: SegmentContainer = SegmentContainer()
     selected_segments: list[Segment] = []
     imported_segments: dict[str, str]
     media_player: IVideoPlayer
     filepath: Path
     config: Settings
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @property
     def position(self) -> float:
@@ -43,7 +42,7 @@ class SegmentValidatorContext(BaseModel):
 
 
 class TimelineSegment(BaseModel):
-    fid: Any
+    fid: Any = None
     value: Segment
 
 

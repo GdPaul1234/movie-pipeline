@@ -6,7 +6,7 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
-from movie_pipeline.commands.archive_movies import MoviesArchiver
+from movie_pipeline.services.movie_archiver import MoviesArchiver
 
 from ..concerns import (copy_files, create_output_movies_directories,
                         get_output_movies_directories, lazy_load_config_file)

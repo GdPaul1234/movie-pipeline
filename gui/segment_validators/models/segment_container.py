@@ -1,4 +1,5 @@
-from dataclasses import asdict, dataclass
+from pydantic import TypeAdapter
+from pydantic.dataclasses import dataclass
 
 from util import seconds_to_position
 from movie_pipeline.models.detected_segments import humanize_segments
@@ -42,7 +43,7 @@ class SegmentContainer:
         return not any(segment.is_overlapping(new_segment) for segment in segments)
 
     def __repr__(self) -> str:
-        return humanize_segments(list(map(asdict, self.segments))) # type: ignore
+        return humanize_segments(list(map(TypeAdapter(Segment).dump_python, self.segments)))
 
     def add(self, segment: Segment):
         if self.check_validity(self._segments, segment):

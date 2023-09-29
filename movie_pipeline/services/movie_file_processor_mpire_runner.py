@@ -13,8 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 def noop(x):
-    import time
-    time.sleep(0.1) # to be able to show progress
     return x
 
 
@@ -54,12 +52,13 @@ class MovieFileProcessorMpireRunner:
 
         with WorkerPool(n_jobs=1, daemon=False, start_method='spawn', enable_insights=True) as p:
             movie_file_processor = MovieFileProcessor(edl_path=edl, config=self._config)
+            iterable_len = 100
 
             try:
                 p.map(
                     noop,
-                    progress_to_task_iterator(movie_file_processor.process_with_progress(), count=100),
-                    iterable_len=100,
+                    progress_to_task_iterator(movie_file_processor.process_with_progress(), count=iterable_len),
+                    iterable_len=iterable_len,
                     progress_bar=True,
                     progress_bar_options={'desc': f'Processing {edl.stem}...', 'position': worker_id + 1}
                 )

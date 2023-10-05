@@ -38,10 +38,6 @@ def main():
     # archive movies command
     subparsers.add_parser('archive_movies', help='Archive movies regarding options in config file')
 
-    # dump for kodi
-    dump_for_kodi_cmd = subparsers.add_parser('dump_for_kodi', help='Dump .vsmeta to .nfo if not exist')
-    dump_for_kodi_cmd.add_argument('file', metavar='FILE', help='File or folder to process', type=Path)
-
     # detect segments
     detect_segments_cmd = subparsers.add_parser('detect_segments', help='Run best-effort segments detectors')
     detect_segments_cmd.add_argument('file', metavar='FILE', help='Movie to be processed', type=Path)
@@ -52,13 +48,6 @@ def main():
     # validate dir
     validate_dir_cmd = subparsers.add_parser('validate_dir', help='Validate segments and generate edit decision files in given directory')
     validate_dir_cmd.add_argument('dir', metavar='DIR', help='Directory of movies to be processed', type=Path)
-
-    # update media database
-    update_media_database_cmd = subparsers.add_parser('update_media_database', help='Update media database from NFOs for further analysis')
-    update_media_database_cmd.add_argument('files', metavar='FILES', help='NFO to be scanned', nargs='+', type=Path)
-
-    # launch media dashboard
-    subparsers.add_parser('launch_media_dashboard', help='Launch grafana dashboard provisioned with media stats dashboard')
 
     options = parser.parse_args()
     # the code to dispatch commands could all be in this file. For the purposes

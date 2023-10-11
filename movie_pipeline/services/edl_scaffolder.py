@@ -5,9 +5,9 @@ from pathlib import Path
 import yaml
 from schema import Schema
 
-from ..lib.title_cleaner import TitleCleaner
+from ..lib.title_extractor.title_cleaner import TitleCleaner
 
-from..lib.title_extractor import (
+from..lib.title_extractor.title_extractor import (
     NaiveTitleExtractor, SerieSubTitleAwareTitleExtractor,
     SerieTitleAwareTitleExtractor, SubtitleTitleExpanderExtractor)
 from settings import Settings

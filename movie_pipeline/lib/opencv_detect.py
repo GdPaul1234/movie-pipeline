@@ -12,7 +12,7 @@ from settings import Settings
 
 from ..lib.ffmpeg_with_progress import ffmpeg_frame_producer
 from ..lib.opencv_annotator import draw_detection_box
-from ..lib.title_extractor import load_metadata
+from .title_extractor.title_extractor import load_metadata
 from ..lib.ui_factory import transient_task_progress
 from ..models.detected_segments import DetectedSegment
 from util import timed_run

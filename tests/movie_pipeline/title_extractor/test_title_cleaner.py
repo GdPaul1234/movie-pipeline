@@ -1,7 +1,7 @@
 from pathlib import Path
 import unittest
 
-from movie_pipeline.lib.title_cleaner import TitleCleaner
+from movie_pipeline.lib.title_extractor.title_cleaner import TitleCleaner
 
 blacklist_path = Path(__file__).parent.parent.joinpath('ressources', 'test_title_re_blacklist.txt')
 

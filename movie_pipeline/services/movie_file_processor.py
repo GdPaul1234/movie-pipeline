@@ -13,7 +13,7 @@ from settings import Settings
 from util import position_in_seconds
 
 from ..lib.backup_policy_executor import BackupPolicyExecutor, EdlFile
-from ..lib.ffmpeg_with_progress import ffmpeg_command_with_progress
+from ..lib.ffmpeg.ffmpeg_with_progress import ffmpeg_command_with_progress
 from ..lib.movie_path_destination_finder import MoviePathDestinationFinder
 from ..lib.ui_factory import transient_task_progress
 from ..models.movie_file import LegacyMovieFile

@@ -2,7 +2,7 @@ import json
 import logging
 import cv2
 
-from ..models.detected_segments import DetectedSegment
+from ...models.detected_segments import DetectedSegment
 from util import seconds_to_position
 
 

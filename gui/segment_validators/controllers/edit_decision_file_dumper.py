@@ -1,9 +1,8 @@
+import importlib
 from pathlib import Path
-import contextlib
 import yaml
 
-from movie_pipeline.services.edl_scaffolder import available_title_strategies
-from movie_pipeline.services.edl_scaffolder import channel_pattern
+from movie_pipeline.services.edl_scaffolder import MovieProcessedFileGenerator, channel_pattern
 
 from ..models.segment_container import SegmentContainer
 from movie_pipeline.services.movie_file_processor import edl_content_schema
@@ -26,9 +25,10 @@ def extract_title(source_path: Path, config: Settings):
 
     channel = matches.group(1)
     title_strategy_name = path_scaffolder._titles_strategies.get(channel) or 'NaiveTitleExtractor'
-    title_strategy = available_title_strategies[title_strategy_name](path_scaffolder._title_cleaner)
+    mod = importlib.import_module('movie_pipeline.lib.title_extractor.title_extractor')
+    title_strategy = getattr(mod, title_strategy_name)(path_scaffolder._title_cleaner)
 
-    return title_strategy.extract_title(source_path)
+    return MovieProcessedFileGenerator(source_path, title_strategy, path_scaffolder._series_extracted_metadata).extract_title()
 
 
 def dump_decision_file(title: str, source_path: Path, segment_container: SegmentContainer, skip_backup: bool, config: Settings):

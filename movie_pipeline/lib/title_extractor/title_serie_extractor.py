@@ -19,3 +19,17 @@ def is_serie_from_supplied_value(supplied_value: str | dict):
     if isinstance(supplied_value, str):
         return contains_any_serie_hint(supplied_value)
     return any(contains_any_serie_hint(supplied_value[field]) for field in serie_hints_location)
+
+
+def extract_title_serie_episode_from_metadata(series_extracted_metadata: dict[str, dict[str, dict[str, str]]], extracted_title: str):
+    if re.search(r'S\d{2}E\d{2,3}', extracted_title) is not None:
+        return extracted_title
+
+    m = re.match(r'(?P<showtitle>^[^_]+)__(?P<title>.+)', extracted_title) \
+        or re.match(r"(?P<showtitle>[\w&àéèï'!., ()\[\]#-]+) '(?P<title>.+)'", extracted_title)
+
+    if m is not None:
+        formatted_episode = series_extracted_metadata.get(m.group('showtitle'), {}).get(m.group('title'), {}).get('formattedEpisode')
+        return f"{m.group('showtitle')} {formatted_episode}"
+    else:
+        return extracted_title

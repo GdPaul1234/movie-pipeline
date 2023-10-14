@@ -11,6 +11,7 @@ from ..concerns import get_output_movies_directories, create_output_movies_direc
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 video_path = input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')
+serie_file_path = Path(__file__).parent.joinpath("Channel 1_Serie Name 'Episode Name'_2022-12-05-2203-20.ts")
 
 sample_video_path = Path(__file__).parent.parent.joinpath('ressources', 'counter-30s.mp4')
 
@@ -31,11 +32,22 @@ class TestScaffoldDir(unittest.TestCase):
         create_output_movies_directories(Path(__file__).parent)
 
     def test_extract_title(self):
-        edl_template = MovieProcessedFileGenerator(video_path, default_title_extractor)
+        edl_template = MovieProcessedFileGenerator(video_path, default_title_extractor, {})
         self.assertEqual('Movie Name', edl_template.extract_title())
 
+    def test_extract_serie_title_from_series_extracted_metadata(self):
+        series_extracted_metadata = {
+            'Serie Name': {
+                'Episode Name': {
+                    'formattedEpisode': 'S03E42'
+                }
+            }
+        }
+        edl_template = MovieProcessedFileGenerator(serie_file_path, default_title_extractor, series_extracted_metadata)
+        self.assertEqual('Serie Name S03E42', edl_template.extract_title())
+
     def test_generate_edl_file(self):
-        edl_template = MovieProcessedFileGenerator(video_path, default_title_extractor)
+        edl_template = MovieProcessedFileGenerator(video_path, default_title_extractor, {})
 
         edl_template.generate()
 

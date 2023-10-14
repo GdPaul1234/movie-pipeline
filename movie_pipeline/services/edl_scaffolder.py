@@ -1,47 +1,42 @@
+import importlib
 import logging
+import json
 import re
 from pathlib import Path
 
 import yaml
 from schema import Schema
 
-from ..lib.title_cleaner import TitleCleaner
-
-from..lib.title_extractor import (
-    NaiveTitleExtractor, SerieSubTitleAwareTitleExtractor,
-    SerieTitleAwareTitleExtractor, SubtitleTitleExpanderExtractor)
+from ..lib.title_extractor.title_cleaner import TitleCleaner
+from ..lib.title_extractor.title_serie_extractor import extract_title_serie_episode_from_metadata
+from ..lib.title_extractor.title_extractor import ITitleExtractor
 from settings import Settings
 
 logger = logging.getLogger(__name__)
 
 
 class MovieProcessedFileGenerator:
-    def __init__(self, movie_file_path: Path, title_extractor: NaiveTitleExtractor) -> None:
+    def __init__(self, movie_file_path: Path, title_extractor: ITitleExtractor, series_extracted_metadata) -> None:
         self._movie_file_path = movie_file_path
         self._title_extractor = title_extractor
+        self._series_extracted_metadata = series_extracted_metadata
 
     def extract_title(self) -> str:
-        return self._title_extractor.extract_title(self._movie_file_path)
+        extracted_title = self._title_extractor.extract_title(self._movie_file_path)
+        return extract_title_serie_episode_from_metadata(self._series_extracted_metadata, extracted_title)
 
     def generate(self):
         movie_file_suffix = self._movie_file_path.suffix
         processed_file = self._movie_file_path.with_suffix(f'{movie_file_suffix}.yml.txt')
 
         logger.info('Generate "%s"', processed_file)
-        processed_file.write_text(
-            f"filename: {self.extract_title()}.mp4\n"
-            "segments: INSERT_SEGMENTS_HERE\n", encoding='utf-8')
+        content = yaml.dump({'filename': f'{self.extract_title()}.mp4', 'segments': 'INSERT_SEGMENTS_HERE'})
+        processed_file.write_text(content, encoding='utf-8')
 
 
 channel_pattern = re.compile(r'^([^_]+)_')
-available_title_strategies = {
-    'NaiveTitleExtractor': NaiveTitleExtractor,
-    'SubtitleTitleExpanderExtractor': SubtitleTitleExpanderExtractor,
-    'SerieSubTitleAwareTitleExtractor': SerieSubTitleAwareTitleExtractor,
-    'SerieTitleAwareTitleExtractor': SerieTitleAwareTitleExtractor
-}
 title_strategies_schema = Schema({
-    str: lambda strategy: strategy in available_title_strategies.keys()
+    str: lambda strategy: strategy in ('NaiveTitleExtractor', 'SubtitleTitleExpanderExtractor', 'SerieSubTitleAwareTitleExtractor', 'SerieTitleAwareTitleExtractor')
 })
 
 
@@ -51,12 +46,18 @@ class PathScaffolder:
         self._config = config
 
         title_strategies_path = config.Paths.title_strategies
+        series_extracted_metadata_path = config.Paths.series_extracted_metadata
 
         if title_strategies_path is not None:
             titles_strategies = yaml.safe_load(title_strategies_path.read_text('utf-8'))
             self._titles_strategies = title_strategies_schema.validate(titles_strategies)
         else:
             self._titles_strategies = {}
+
+        if series_extracted_metadata_path is not None:
+            self._series_extracted_metadata = json.loads(series_extracted_metadata_path.read_text(encoding='utf-8'))
+        else:
+            self._series_extracted_metadata = {}
 
         if (blacklist_path := config.Paths.title_re_blacklist) is not None:
             self._title_cleaner = TitleCleaner(blacklist_path)
@@ -73,10 +74,11 @@ class PathScaffolder:
             return False
 
         channel = matches.group(1)
-        title_strategy_name = self._titles_strategies.get(channel) or 'NaiveTitleExtractor'
-        title_strategy = available_title_strategies[title_strategy_name](self._title_cleaner)
+        title_strategy_name = self._titles_strategies.get(channel, 'NaiveTitleExtractor')
+        mod = importlib.import_module('movie_pipeline.lib.title_extractor.title_extractor')
+        title_strategy = getattr(mod, title_strategy_name)(self._title_cleaner)
 
-        MovieProcessedFileGenerator(file, title_strategy).generate()
+        MovieProcessedFileGenerator(file, title_strategy, self._series_extracted_metadata).generate()
         return True
 
     def _scaffold_dir(self) -> bool:

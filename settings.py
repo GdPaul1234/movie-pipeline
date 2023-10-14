@@ -11,6 +11,7 @@ class PathSettings(BaseModel):
     backup_folder: DirectoryPath
     title_strategies: Optional[FilePath] = None
     title_re_blacklist: Optional[FilePath] = None
+    series_extracted_metadata: Optional[FilePath] = None
 
 
 class ArchiveSettings(BaseModel):

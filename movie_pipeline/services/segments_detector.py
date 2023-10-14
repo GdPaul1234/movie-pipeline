@@ -5,8 +5,8 @@ from typing import cast
 
 from settings import Settings
 
-from ..lib.ffmpeg_detect_filter import AudioCrossCorrelationDetect, CropDetect
-from ..lib.opencv_detect import OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect
+from ..lib.ffmpeg.ffmpeg_detect_filter import AudioCrossCorrelationDetect, CropDetect
+from ..lib.opencv.opencv_detect import OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect
 from ..models.detected_segments import DetectedSegment, humanize_segments, merge_adjacent_segments
 
 logger = logging.getLogger(__name__)

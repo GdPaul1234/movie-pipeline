@@ -3,8 +3,8 @@ from pathlib import Path
 import json
 import unittest
 
-from movie_pipeline.lib.title_cleaner import TitleCleaner
-from movie_pipeline.lib.title_extractor import (
+from movie_pipeline.lib.title_extractor.title_cleaner import TitleCleaner
+from movie_pipeline.lib.title_extractor.title_extractor import (
     NaiveTitleExtractor,
     SerieSubTitleAwareTitleExtractor,
     SerieTitleAwareTitleExtractor,

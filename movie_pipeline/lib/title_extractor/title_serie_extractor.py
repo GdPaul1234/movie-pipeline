@@ -28,8 +28,7 @@ def extract_title_serie_episode_from_metadata(series_extracted_metadata: dict[st
     m = re.match(r'(?P<showtitle>^[^_]+)__(?P<title>.+)', extracted_title) \
         or re.match(r"(?P<showtitle>[\w&àéèï'!., ()\[\]#-]+) '(?P<title>.+)'", extracted_title)
 
-    if m is not None:
-        formatted_episode = series_extracted_metadata.get(m.group('showtitle'), {}).get(m.group('title'), {}).get('formattedEpisode')
+    if m is not None and (formatted_episode := series_extracted_metadata.get(m.group('showtitle'), {}).get(m.group('title'), {}).get('formattedEpisode')) is not None:
         return f"{m.group('showtitle')} {formatted_episode}"
     else:
         return extracted_title

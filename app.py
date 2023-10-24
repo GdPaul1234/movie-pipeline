@@ -37,10 +37,6 @@ def main():
                                      choices=('axcorrelate_silence', 'match_template', 'crop'),
                                      help='Run detect segments with selected detectors', nargs='+', default=['match_template'])
 
-    # validate dir
-    validate_dir_cmd = subparsers.add_parser('validate_dir', help='Validate segments and generate edit decision files in given directory')
-    validate_dir_cmd.add_argument('dir', metavar='DIR', help='Directory of movies to be processed', type=Path)
-
     options = parser.parse_args()
     # the code to dispatch commands could all be in this file. For the purposes
     # of illustration only, we implement each command in a separate module.

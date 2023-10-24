@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Any, cast
 
 import PySimpleGUI as sg
-import yaml
 
 from settings import Settings
 
@@ -15,8 +14,14 @@ from ..models.keys import (FLASH_TOP_NOTICE_KEY, MEDIA_SELECTOR_CONTAINER_KEY,
                            MEDIA_SELECTOR_KEY,
                            TOGGLE_MEDIA_SELECTOR_VISIBILITY_KEY)
 from ..views.texts import TEXTS
-from .edit_decision_file_dumper import ensure_decision_file_template
+from .edit_decision_file_dumper import extract_title
 from .import_segments_from_file import prepend_last_segments_to_segment_file
+
+
+def has_any_edl(media_path: Path) -> bool:
+    segment_file_path = media_path.with_suffix(f'{media_path.suffix}.segments.json')
+    return len(list(segment_file_edl for segment_file_edl in segment_file_path.parent.glob(f'{media_path.name}*.*yml*') if segment_file_edl.suffix != '.txt')) > 0 \
+        or media_path.with_suffix('.yml.done').is_file()
 
 
 def init_metadata(window: sg.Window, filepath: Path, config: Settings):
@@ -27,14 +32,13 @@ def init_metadata(window: sg.Window, filepath: Path, config: Settings):
 
 
 def prefill_name(window: sg.Window, filepath: Path, config: Settings):
-    if not ensure_decision_file_template(filepath, config):
+    if has_any_edl(filepath):
         sg.popup_auto_close(f'Validated segments already exists for {filepath}', title='Aborting segments validation')
         window.write_event_value(SEGMENTS_SAVED_EVENT, True)
 
     else:
-        template_path = filepath.with_suffix(f'{filepath.suffix}.yml.txt')
-        template = yaml.safe_load(template_path.read_text(encoding='utf-8'))
-        window.write_event_value(PREFILL_NAME_EVENT, template['filename'])
+        filename = extract_title(filepath, config)
+        window.write_event_value(PREFILL_NAME_EVENT, f'{filename}.mp4')
 
 
 def populate_media_selector(window: sg.Window, _event: str, values: dict[str, Any]):

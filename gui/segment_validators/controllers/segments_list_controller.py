@@ -39,8 +39,7 @@ def _write_segments(window: sg.Window, values: dict[str, Any]) -> Path|None:
         title=values[OUTPUT_FILENAME_INPUT_KEY],
         source_path=metadata.filepath,
         segment_container=metadata.segment_container,
-        skip_backup=values[SKIP_BACKUP_CHECKBOX_KEY],
-        config=metadata.config
+        skip_backup=values[SKIP_BACKUP_CHECKBOX_KEY]
     )
 
 

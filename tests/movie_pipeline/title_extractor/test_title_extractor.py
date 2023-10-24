@@ -10,6 +10,7 @@ from movie_pipeline.lib.title_extractor.title_extractor import (
     SerieTitleAwareTitleExtractor,
     SubtitleTitleExpanderExtractor
 )
+from movie_pipeline.services.edl_scaffolder import MovieProcessedFileGenerator
 
 movie_metadata_path = Path(__file__).parent.joinpath('Channel 1_Movie Name_2022-12-05-2203-20.ts.metadata.json')
 serie_metadata_path = Path(__file__).parent.joinpath("Channel 1_Serie Name. 'Title..._2022-12-05-2203-20.ts.metadata.json")
@@ -106,3 +107,18 @@ class TestTitleExtractor(unittest.TestCase):
             title_extractor = SerieTitleAwareTitleExtractor(default_title_cleaner)
             extracted_title = title_extractor.extract_title(serie_file_path)
             self.assertEqual("Serie Name S02E04", extracted_title)
+
+    def test_extract_serie_title_from_series_extracted_metadata(self):
+        serie_file_path = Path(__file__).parent.joinpath("Channel 1_Serie Name 'Episode Name'_2022-12-05-2203-20.ts")
+        default_title_extractor = NaiveTitleExtractor(default_title_cleaner)
+
+        series_extracted_metadata = {
+            'Serie Name': {
+                'Episode Name': {
+                    'formattedEpisode': 'S03E42'
+                }
+            }
+        }
+
+        edl_template = MovieProcessedFileGenerator(serie_file_path, default_title_extractor, series_extracted_metadata)
+        self.assertEqual('Serie Name S03E42', edl_template.extract_title())

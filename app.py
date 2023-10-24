@@ -27,10 +27,6 @@ def main():
     process_cmd.add_argument('--custom-ext', help='Extension of processing decision file', default='.yml')
     process_cmd.add_argument('--web', help='Use the new folder movie file processor and launch the web dashboard', action='store_true')
 
-    # scaffold command
-    scaffold_cmd = subparsers.add_parser('scaffold_dir', help='Scaffold movie edit decision files')
-    scaffold_cmd.add_argument('dir', metavar='DIR',help='Directory of movies to be processed', type=Path)
-
     # archive movies command
     subparsers.add_parser('archive_movies', help='Archive movies regarding options in config file')
 

@@ -21,10 +21,6 @@ def main():
     parser.add_argument('--config-path', default='config.env', help='Config path', type=Path)
     subparsers = parser.add_subparsers(dest='command', help='Available commands:')
 
-    # move command
-    move_cmd = subparsers.add_parser('legacy_move', help='Move converted movies or series to their folder')
-    move_cmd.add_argument('file', metavar='FILE', help='File or folder to move', type=Path)
-
     # process command
     process_cmd = subparsers.add_parser('process_movie', help='Cut and merge movie segments to keep only relevant parts')
     process_cmd.add_argument('file', metavar='FILE', help='File or folder to process', type=Path)

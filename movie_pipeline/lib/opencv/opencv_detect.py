@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import json
 import logging
 from abc import ABC
 from pathlib import Path
@@ -13,7 +14,6 @@ from settings import Settings
 from ...lib.ffmpeg.ffmpeg_with_progress import ffmpeg_frame_producer
 from ...lib.ui_factory import transient_task_progress
 from ...models.detected_segments import DetectedSegment
-from ..title_extractor.title_extractor import load_metadata
 from .opencv_annotator import draw_detection_box
 from util import timed_run
 
@@ -41,6 +41,14 @@ class ProgressTask:
 class RealTimeDetectResult:
     value: float
     location: tuple[int, int]
+
+
+def load_metadata(movie_path: Path):
+    movie_metadata_path = movie_path.with_suffix(f'{movie_path.suffix}.metadata.json')
+
+    if movie_metadata_path.exists():
+        return json.loads(movie_metadata_path.read_text(encoding='utf-8'))
+
 
 def OpenCVDetectWithInjectedTemplate(detector: type['OpenCVBaseDetect'], movie_path: Path, config: Settings):
     if config.SegmentDetection is None:

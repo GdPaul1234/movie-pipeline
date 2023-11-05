@@ -5,8 +5,7 @@ from pathlib import Path
 
 from rich.tree import Tree
 
-from movie_pipeline.services.movie_file_processor_folder_runner import \
-    MovieFileProcessorFolderRunner
+from movie_pipeline.services.movie_file_processor.folder_runner import MovieFileProcessorFolderRunner
 from movie_pipeline.lib.ui_factory import ProgressUIFactory
 
 from ..concerns import get_output_movies_directories, create_output_movies_directories, lazy_load_config_file

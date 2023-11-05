@@ -12,8 +12,8 @@ from rich.tree import Tree
 from settings import Settings
 from util import diff_tracking
 
-from ..lib.ui_factory import ProgressListener, ProgressUIFactory
-from .movie_file_processor import MovieFileProcessor
+from ...lib.ui_factory import ProgressListener, ProgressUIFactory
+from .core import MovieFileProcessor
 
 logger = logging.getLogger(__name__)
 

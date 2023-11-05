@@ -104,13 +104,16 @@ Logger__file_path=${Paths__base_path}\log-quick.txt
 
 Once the configuration file has been filled in and all registrations made:
 
-- **RECOMMENDED**. Run sequentially the `detect_segments` command and the `validate_dir` command to pre-fill and validate each edit decision file on the left panel of the Seegment reviewer window.
+- **RECOMMENDED**. Run sequentially :
+  1. The `detect_segments` command to prefill the relevant segments to be kept for a given movie
+
+  2. `python segment_validator` after downloading and installing the
+     [movie_pipeline_segments_validator](https://github.com/GdPaul1234/movie-pipeline-segments-validator) tool.
+     It will create an edit decision file after you review and validate the releant segments to be kept.
 
 Alternatively, you can manually populate each edit decision file according to the following rules:
 
-1. Scaffold the recording directory using the command `scaffold_dir`
-
-2. Fill in the editing decision file (`.yml.txt` files) by:
+1. Scaffold the recording. For each media, fill in the editing decision file (`.yml.txt` files) by:
     - Correcting the title if necessary, especially for Series.
 
       _For reference, the format of the series title is as follows: `Serie Name S01E02.mp4`_
@@ -125,7 +128,7 @@ Alternatively, you can manually populate each edit decision file according to th
 
     - Add `skip_backup: yes` line if the movie file is too big (more than 10 Go).
 
-3. Process movie (cut, trim, convert movies, backup and move them to the right location) by running the `process_movie` command
+2. Process movie (cut, trim, convert movies, backup and move them to the right location) by running the `process_movie` command
 
 > **Warning**
 > The current implementation of `backup_policy_executor` deletes the original file if is identified as a **serie**.

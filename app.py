@@ -21,19 +21,11 @@ def main():
     parser.add_argument('--config-path', default='config.env', help='Config path', type=Path)
     subparsers = parser.add_subparsers(dest='command', help='Available commands:')
 
-    # move command
-    move_cmd = subparsers.add_parser('legacy_move', help='Move converted movies or series to their folder')
-    move_cmd.add_argument('file', metavar='FILE', help='File or folder to move', type=Path)
-
     # process command
     process_cmd = subparsers.add_parser('process_movie', help='Cut and merge movie segments to keep only relevant parts')
     process_cmd.add_argument('file', metavar='FILE', help='File or folder to process', type=Path)
     process_cmd.add_argument('--custom-ext', help='Extension of processing decision file', default='.yml')
     process_cmd.add_argument('--web', help='Use the new folder movie file processor and launch the web dashboard', action='store_true')
-
-    # scaffold command
-    scaffold_cmd = subparsers.add_parser('scaffold_dir', help='Scaffold movie edit decision files')
-    scaffold_cmd.add_argument('dir', metavar='DIR',help='Directory of movies to be processed', type=Path)
 
     # archive movies command
     subparsers.add_parser('archive_movies', help='Archive movies regarding options in config file')
@@ -44,10 +36,6 @@ def main():
     detect_segments_cmd.add_argument('--detector',
                                      choices=('axcorrelate_silence', 'match_template', 'crop'),
                                      help='Run detect segments with selected detectors', nargs='+', default=['match_template'])
-
-    # validate dir
-    validate_dir_cmd = subparsers.add_parser('validate_dir', help='Validate segments and generate edit decision files in given directory')
-    validate_dir_cmd.add_argument('dir', metavar='DIR', help='Directory of movies to be processed', type=Path)
 
     options = parser.parse_args()
     # the code to dispatch commands could all be in this file. For the purposes

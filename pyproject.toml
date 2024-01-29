@@ -20,6 +20,7 @@ decoratoroperations = {git = "https://github.com/salesforce/decorator-operations
 pillow = "^10.0.0"
 pydantic = {extras = ["dotenv"], version = "^2.0.3"}
 pydantic-settings = "^2.0.3"
+mpire = {extras = ["dashboard"], version = "^2.9.0"}
 
 [build-system]
 requires = ["poetry-core"]

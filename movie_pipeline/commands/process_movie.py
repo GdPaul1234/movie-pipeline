@@ -7,9 +7,9 @@ from rich.progress import Progress
 from settings import Settings
 
 from ..lib.ui_factory import ProgressUIFactory
-from ..services.movie_file_processor import MovieFileProcessor
-from ..services.movie_file_processor_folder_runner import MovieFileProcessorFolderRunner
-from ..services.movie_file_processor_mpire_runner import MovieFileProcessorMpireRunner
+from ..services.movie_file_processor.core import MovieFileProcessor
+from ..services.movie_file_processor.folder_runner import MovieFileProcessorFolderRunner
+from ..services.movie_file_processor.mpire_runner import MovieFileProcessorMpireRunner
 
 logger = logging.getLogger(__name__)
 

@@ -43,7 +43,7 @@ class MovieFileProcessorMpireRunner:
         import logging
         import logging.handlers
 
-        from .movie_file_processor import MovieFileProcessor
+        from .core import MovieFileProcessor
 
         fh = logging.handlers.TimedRotatingFileHandler(filename=self._config.Logger.file_path if self._config.Logger else 'log.txt')
         fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))

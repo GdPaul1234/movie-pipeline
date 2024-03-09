@@ -6,21 +6,23 @@ authors = ["GdPaul1234 <paul.godin1234@outlook.fr>"]
 readme = "README.md"
 packages = [{include = "movie_pipeline"}]
 
+[tool.poetry.scripts]
+rick-portal-gun = "movie_pipeline.app:app"
+
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 PyYAML = "^6.0"
 ffmpeg-python = "^0.2.0"
 schema = "^0.7.5"
 binpacking = "^1.5.2"
-rich = "^13.5.2"
+rich = "^13.7.1"
 deffcode = "^0.2.5"
-opencv-contrib-python = "^4.7.0.68"
-pysimplegui = "^4.60.5"
+opencv-contrib-python = "^4.9.0.80"
 decoratoroperations = {git = "https://github.com/salesforce/decorator-operations"}
-pillow = "^10.0.0"
-pydantic = {extras = ["dotenv"], version = "^2.0.3"}
-pydantic-settings = "^2.0.3"
-mpire = {extras = ["dashboard"], version = "^2.9.0"}
+pydantic = {extras = ["dotenv"], version = "^2.6.3"}
+pydantic-settings = "^2.2.1"
+mpire = {extras = ["dashboard"], version = "^2.10.0"}
+typer = {extras = ["all"], version = "^0.9.0"}
 
 [build-system]
 requires = ["poetry-core"]

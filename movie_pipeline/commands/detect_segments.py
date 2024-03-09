@@ -1,20 +1,19 @@
 import logging
 from pathlib import Path
 
-from ..services.segments_detector import dump_segments_to_file, run_segment_detectors
 from settings import Settings
+from util import debug
+
+from ..services.segments_detector import dump_segments_to_file, run_segment_detectors
 
 logger = logging.getLogger(__name__)
 
-def command(options, config: Settings):
-    logger.debug('args: %s', vars(options))
 
-    filepath = Path(options.file)
-    selected_detectors_key = options.detector
-
+@debug(logger)
+def command(filepath: Path, selected_detectors_keys: list[str], config: Settings):
     try:
         if filepath.is_file():
-            detectors_result = run_segment_detectors(filepath, selected_detectors_key, config)
+            detectors_result = run_segment_detectors(filepath, selected_detectors_keys, config)
             dump_segments_to_file(detectors_result, movie_path=filepath)
         elif filepath.is_dir():
             for metadata_path in filepath.glob('*.metadata.json'):
@@ -22,7 +21,7 @@ def command(options, config: Settings):
                 logger.info('Search segments in "%s"...', movie_path)
 
                 if not movie_path.with_suffix(f'{movie_path.suffix}.segments.json').exists():
-                    detectors_result = run_segment_detectors(movie_path, selected_detectors_key, config)
+                    detectors_result = run_segment_detectors(movie_path, selected_detectors_keys, config)
                     dump_segments_to_file(detectors_result, movie_path)
                 else:
                     logger.warning('Segments already exist, skipping "%s"', movie_path)

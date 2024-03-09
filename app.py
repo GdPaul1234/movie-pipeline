@@ -1,66 +1,77 @@
-# https://docs.python.org/3/howto/logging-cookbook.html#a-cli-application-starter-template
-
-import argparse
-import importlib
 import logging
 import logging.handlers
-from rich.logging import RichHandler
+from enum import StrEnum
 from pathlib import Path
-import os
-import sys
+from typing import Annotated, Optional
+
+import typer
+from rich.logging import RichHandler
 
 from settings import Settings
 from util import ConsoleLoggerFilter
 
-def main():
-    scriptname = os.path.basename(__file__)
-    parser = argparse.ArgumentParser(scriptname)
-    levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+app = typer.Typer()
 
-    parser.add_argument('--log-level', default='INFO', choices=levels)
-    parser.add_argument('--config-path', default='config.env', help='Config path', type=Path)
-    subparsers = parser.add_subparsers(dest='command', help='Available commands:')
+LogLevel = StrEnum('LogLevel', ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
+DetectorKey = StrEnum('DetectorKey', ['axcorrelate_silence', 'match_template', 'crop'])
 
-    # process command
-    process_cmd = subparsers.add_parser('process_movie', help='Cut and merge movie segments to keep only relevant parts')
-    process_cmd.add_argument('file', metavar='FILE', help='File or folder to process', type=Path)
-    process_cmd.add_argument('--custom-ext', help='Extension of processing decision file', default='.yml')
-    process_cmd.add_argument('--web', help='Use the new folder movie file processor and launch the web dashboard', action='store_true')
 
-    # archive movies command
-    subparsers.add_parser('archive_movies', help='Archive movies regarding options in config file')
+config: Optional[Settings] = None
 
-    # detect segments
-    detect_segments_cmd = subparsers.add_parser('detect_segments', help='Run best-effort segments detectors')
-    detect_segments_cmd.add_argument('file', metavar='FILE', help='Movie to be processed', type=Path)
-    detect_segments_cmd.add_argument('--detector',
-                                     choices=('axcorrelate_silence', 'match_template', 'crop'),
-                                     help='Run detect segments with selected detectors', nargs='+', default=['match_template'])
 
-    options = parser.parse_args()
-    # the code to dispatch commands could all be in this file. For the purposes
-    # of illustration only, we implement each command in a separate module.
-    try:
-        mod = importlib.import_module(f'movie_pipeline.commands.{options.command}')
-        cmd = getattr(mod, 'command')
-    except (ImportError, AttributeError):
-        print('Unable to find the code for command \'%s\'' % options.command)
-        return 1
+@app.command('archive_movies')
+def archive_movies():
+    """Archive movies regarding options in config file"""
+    from movie_pipeline.commands.archive_movies import command
+    if config is not None:
+        command(config)
 
-    config = Settings(_env_file=options.config_path, _env_file_encoding='utf-8') # type: ignore
+
+@app.command('detect_segments')
+def detect_segments(
+    filepath: Annotated[Path, typer.Argument(help='File or folder to process')],
+    detector: Annotated[list[DetectorKey],typer.Option(help='Run detect segments with selected detectors')] = [DetectorKey.match_template]
+):
+    """Run best-effort segments detectors"""
+    from movie_pipeline.commands.detect_segments import command
+    if config is not None:
+        selected_detectors_keys = [key.name for key in detector]
+        command(filepath, selected_detectors_keys, config)
+
+
+@app.command('process_movie')
+def process_movie(
+    filepath: Annotated[Path, typer.Argument(help='File or folder to process')],
+    custom_ext: Annotated[str, typer.Option(help='Extension of Processing decision files')] = '.yml',
+    web: Annotated[bool, typer.Option(help='Use the new folder movie file processor and launch the web dashboard')] = False
+):
+    """Cut and merge movie segments to keep only relevant part"""
+    from movie_pipeline.commands.process_movie import command
+    if config is not None:
+        command(filepath, custom_ext, config, web)
+
+
+@app.callback()
+def main(
+    log_level: Annotated[LogLevel, typer.Option()] = LogLevel.INFO,
+    config_path: Annotated[Path, typer.Option(readable=True, help='Config path')] = Path('config.env')
+):
+    """Available commands:"""
+    global config
+    config = Settings(_env_file=config_path,  _env_file_encoding='utf-8')  # type: ignore
 
     # Could get fancy here and load configuration from file or dictionary
-    fh = logging.handlers.TimedRotatingFileHandler( filename=config.Logger.file_path if config.Logger else 'log.txt')
-    fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    fh = logging.handlers.TimedRotatingFileHandler(
+        filename=config.Logger.file_path if config.Logger else 'log.txt')
+    fh.setFormatter(logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 
     ch = RichHandler(rich_tracebacks=True)
     ch.setFormatter(logging.Formatter('%(message)s'))
     ch.addFilter(ConsoleLoggerFilter())
 
-    logging.basicConfig(level=options.log_level, handlers=(fh, ch,))
-
-    cmd(options, config)
+    logging.basicConfig(level=log_level.name, handlers=(fh, ch,))
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    app()

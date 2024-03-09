@@ -1,5 +1,6 @@
 import logging
 import time
+import functools
 from contextlib import contextmanager
 from datetime import timedelta
 from pathlib import Path
@@ -24,13 +25,10 @@ def seconds_to_position(seconds: float) -> str:
     return f"{formatted_time}{formatted_decimal_part}"
 
 
-def total_movie_duration(movie_file_path: Path|str) -> float:
-        probe = ffmpeg.probe(str(movie_file_path))
-
-        video_streams = [stream for stream in probe['streams']
-                         if stream.get('codec_type', 'N/A') == 'video']
-
-        return float(video_streams[0]['duration'])
+def total_movie_duration(movie_file_path: Path | str) -> float:
+    probe = ffmpeg.probe(str(movie_file_path))
+    video_streams = [stream for stream in probe['streams'] if stream.get('codec_type', 'N/A') == 'video']
+    return float(video_streams[0]['duration'])
 
 
 @contextmanager
@@ -66,17 +64,38 @@ def progress_to_task_iterator(progress_iterator: Iterator[float], count=100) -> 
     task_number, task_reminder = divmod(0, count)
 
     for progress in progress_iterator:
-        if progress == 1.0:
+        if progress == 1:
             for x in range(task_number, count + 1):
                 yield x
         else:
-            current_task_number, current_task_reminder = divmod(int(count*progress), count)
+            current_task_number, current_task_reminder = divmod(
+                int(count*progress), count)
             current_task_number += task_reminder
 
             for x in range(task_number, current_task_number):
                 yield x
 
             task_number, task_reminder = current_task_number, current_task_reminder
+
+
+def debug(logger: logging.Logger):
+    """Log  the function signature and return value"""
+    # adapted from https://realpython.com/primer-on-python-decorators/#debugging-code
+
+    def decorator_debug(func):
+        @functools.wraps(func)
+        def wrapper_debug(*args, **kwargs):
+            args_repr = [repr(a) for a in args]
+            kwargs_repr = [f"{k}={repr(v)}" for k, v in kwargs.items()]
+            signature = ", ".join(args_repr + kwargs_repr)
+
+            logger.debug(f"Calling {func.__name__}({signature})")
+            value = func(*args, **kwargs)
+            logger.debug(f"{func.__name__}() returned {repr(value)}")
+
+            return value
+        return wrapper_debug
+    return decorator_debug
 
 
 class ConsoleLoggerFilter(logging.Filter):

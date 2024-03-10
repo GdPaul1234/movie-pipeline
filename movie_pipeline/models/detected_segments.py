@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from util import seconds_to_position
+from ..lib.util import seconds_to_position
 
 
 class SimpleSegment(TypedDict):

@@ -10,7 +10,7 @@ import ffmpeg
 
 from .ffmpeg_with_progress import FFmpegLineContainer, FFmpegLineFilter, ffmpeg_command_with_progress
 from ...lib.ui_factory import transient_task_progress
-from util import position_in_seconds, total_movie_duration
+from ...lib.util import position_in_seconds, total_movie_duration
 
 
 logger = logging.getLogger(__name__)

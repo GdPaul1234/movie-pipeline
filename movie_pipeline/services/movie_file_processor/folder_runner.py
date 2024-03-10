@@ -9,10 +9,9 @@ from rich import print
 from rich.live import Live
 from rich.tree import Tree
 
-from settings import Settings
-from util import diff_tracking
-
 from ...lib.ui_factory import ProgressListener, ProgressUIFactory
+from ...lib.util import diff_tracking
+from ...settings import Settings
 from .core import MovieFileProcessor
 
 logger = logging.getLogger(__name__)

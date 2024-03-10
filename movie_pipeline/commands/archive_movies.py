@@ -1,9 +1,8 @@
 import logging
 
-from settings import Settings
-from util import debug
-
+from ..lib.util import debug
 from ..services.movie_archiver import MoviesArchiver
+from ..settings import Settings
 
 logger = logging.getLogger(__name__)
 

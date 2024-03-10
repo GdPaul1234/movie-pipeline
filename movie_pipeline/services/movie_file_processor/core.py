@@ -6,10 +6,9 @@ import yaml
 from rich.progress import Progress
 from schema import Optional, Regex, Schema
 
-from settings import Settings
-
 from ...lib.backup_policy_executor import BackupPolicyExecutor, EdlFile
 from ...models.movie_segments import MovieSegments
+from ...settings import Settings
 from .movie_file_processor_step import BackupStep, MovieFileProcessorContext, ProcessStep
 from .rich_all_steps_interactive_progress_display import process_with_progress_tui
 

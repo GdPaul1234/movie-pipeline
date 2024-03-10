@@ -1,6 +1,6 @@
 import unittest
 
-from util import progress_to_task_iterator
+from movie_pipeline.lib.util import progress_to_task_iterator
 
 class TestUtil(unittest.TestCase):
     def test_progress_to_task_iterator(self):

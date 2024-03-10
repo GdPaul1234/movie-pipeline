@@ -1,7 +1,9 @@
+import shutil
 from pathlib import Path
 from typing import Callable, NotRequired, TypedDict
-from settings import Settings
-import shutil
+
+from movie_pipeline.settings import Settings
+
 
 def get_output_movies_directories(base_path_folder: Path):
     output_dir_path = base_path_folder / 'out'

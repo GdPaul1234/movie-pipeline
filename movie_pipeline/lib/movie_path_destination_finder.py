@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 from ..models.movie_file import LegacyMovieFile
-from settings import Settings
+from ..settings import Settings
 
 class MoviePathDestinationFinder:
     def __init__(self, movie_file: LegacyMovieFile, config: Settings) -> None:

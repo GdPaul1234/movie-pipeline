@@ -1,16 +1,15 @@
-from collections import deque
 import logging
+from collections import deque
 from pathlib import Path
 
 from rich.progress import Progress
 
-from settings import Settings
-from util import debug
-
 from ..lib.ui_factory import ProgressUIFactory
+from ..lib.util import debug
 from ..services.movie_file_processor.core import MovieFileProcessor
 from ..services.movie_file_processor.folder_runner import MovieFileProcessorFolderRunner
 from ..services.movie_file_processor.mpire_runner import MovieFileProcessorMpireRunner
+from ..settings import Settings
 
 logger = logging.getLogger(__name__)
 

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import itertools
 from typing import cast
 
-from util import position_in_seconds
+from ..lib.util import position_in_seconds
 
 
 segment_t = tuple[float, float]

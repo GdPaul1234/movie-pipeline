@@ -1,18 +1,18 @@
-from dataclasses import dataclass
 import logging
+from abc import ABC
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator, Optional
 
 import ffmpeg
-from abc import ABC
-from movie_pipeline.lib.backup_policy_executor import BackupPolicyExecutor
-from movie_pipeline.models.movie_segments import MovieSegments
-from settings import Settings
-from util import position_in_seconds
 
+from ...lib.backup_policy_executor import BackupPolicyExecutor
 from ...lib.ffmpeg.ffmpeg_with_progress import ffmpeg_command_with_progress
 from ...lib.movie_path_destination_finder import MoviePathDestinationFinder
+from ...lib.util import position_in_seconds
 from ...models.movie_file import LegacyMovieFile
+from ...models.movie_segments import MovieSegments
+from ...settings import Settings
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from settings import Settings
+from ..settings import Settings
 
 logger = logging.getLogger(__name__)
 

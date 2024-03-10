@@ -1,21 +1,22 @@
-from dataclasses import dataclass
 import json
 import logging
 from abc import ABC
+from configparser import ConfigParser
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
-from rich.progress import Progress, TaskID
-from deffcode import Sourcer
-import cv2
 
-from configparser import ConfigParser
-from settings import Settings
+import cv2
+from deffcode import Sourcer
+from rich.progress import Progress, TaskID
+
 
 from ...lib.ffmpeg.ffmpeg_with_progress import ffmpeg_frame_producer
 from ...lib.ui_factory import transient_task_progress
+from ...lib.util import timed_run
 from ...models.detected_segments import DetectedSegment
+from ...settings import Settings
 from .opencv_annotator import draw_detection_box
-from util import timed_run
 
 logger = logging.getLogger(__name__)
 

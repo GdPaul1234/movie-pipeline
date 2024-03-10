@@ -6,8 +6,8 @@ from pathlib import Path
 from mpire import WorkerPool
 from mpire.dashboard import start_dashboard
 
-from settings import Settings
-from util import progress_to_task_iterator
+from ...lib.util import progress_to_task_iterator
+from ...settings import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class MovieFileProcessorMpireRunner:
 
         logging.basicConfig(level='INFO', handlers=(fh,))
 
-        with WorkerPool(n_jobs=1, daemon=False, start_method='spawn', enable_insights=True) as p:
+        with WorkerPool(n_jobs=1, daemon=False, start_method='threading', enable_insights=True) as p:
             movie_file_processor = MovieFileProcessor(edl_path=edl, config=self._config)
             iterable_len = 100
 

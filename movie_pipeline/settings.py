@@ -25,11 +25,6 @@ class ProcessorSettings(BaseModel):
     nb_worker: PositiveInt
 
 
-class MediaDatabaseSettings(BaseModel):
-    db_path: Path
-    clean_after_update: bool = True
-
-
 class LoggerSettings(BaseModel):
     file_path: FilePath
 
@@ -39,7 +34,6 @@ class Settings(BaseSettings):
     Archive: Optional[ArchiveSettings] = None
     SegmentDetection: Optional[SegmentDetectionSettings] = None
     Processor: Optional[ProcessorSettings] = None
-    MediaDatabase: Optional[MediaDatabaseSettings] = None
     Logger :Optional[LoggerSettings] = None
 
     model_config = SettingsConfigDict(env_nested_delimiter='__')

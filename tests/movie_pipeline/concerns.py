@@ -1,3 +1,4 @@
+import os
 import shutil
 from pathlib import Path
 from typing import Callable, NotRequired, TypedDict
@@ -17,6 +18,7 @@ def get_output_movies_directories(base_path_folder: Path):
 
 def lazy_load_config_file(base_path_folder: Path):
     config_path = base_path_folder / 'test_config.env'
+    os.chdir(config_path.parent)
 
     return lambda: Settings(_env_file=config_path, _env_file_encoding='utf-8') # type: ignore
 

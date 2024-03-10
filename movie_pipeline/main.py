@@ -1,6 +1,7 @@
 import logging
 import logging.handlers
 from enum import StrEnum
+import os
 from pathlib import Path
 from typing import Annotated, Optional
 
@@ -54,17 +55,20 @@ def process_movie(
 @app.callback()
 def main(
     log_level: Annotated[LogLevel, typer.Option()] = LogLevel.INFO,
-    config_path: Annotated[Path, typer.Option(readable=True, help='Config path')] = Path('config.env')
+    config_path: Annotated[Path, typer.Option(readable=True, help='Config path')] = Path.home() / '.movie_pipeline' / 'config.env'
 ):
     """Available commands:"""
     global config
+
+    if not config_path.is_file():
+        config_path.write_text('')
+
+    os.chdir(config_path.parent)
     config = Settings(_env_file=config_path,  _env_file_encoding='utf-8')  # type: ignore
 
     # Could get fancy here and load configuration from file or dictionary
-    fh = logging.handlers.TimedRotatingFileHandler(
-        filename=config.Logger.file_path if config.Logger else 'log.txt')
-    fh.setFormatter(logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    fh = logging.handlers.TimedRotatingFileHandler(filename=config.Logger.file_path if config.Logger else 'log.txt')
+    fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 
     ch = RichHandler(rich_tracebacks=True)
     ch.setFormatter(logging.Formatter('%(message)s'))

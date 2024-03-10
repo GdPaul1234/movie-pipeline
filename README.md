@@ -8,30 +8,26 @@ Set of tools that automatize most of movies library maintenance
 
 ```
 $ python app.py --help
-usage: app.py [-h] [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--config-path CONFIG_PATH]
-              {legacy_move,process_movie,scaffold_dir,archive_movies,dump_for_kodi,detect_segments,validate_dir,update_media_database,launch_media_dashboard}
-              ...
 
-positional arguments:
-  {legacy_move,process_movie,scaffold_dir,archive_movies,dump_for_kodi,detect_segments,validate_dir,update_media_database,launch_media_dashboard}
-                        Available commands:
-    legacy_move         Move converted movies or series to their folder
-    process_movie       Cut and merge movie segments to keep only relevant parts
-    scaffold_dir        Scaffold movie edit decision files
-    archive_movies      Archive movies regarding options in config file
-    dump_for_kodi       Dump .vsmeta to .nfo if not exist
-    detect_segments     Run best-effort segments detectors
-    validate_dir        Validate segments and generate edit decision files in given directory
-    update_media_database
-                        Update media database from NFOs for further analysis
-    launch_media_dashboard
-                        Launch grafana dashboard provisioned with media stats dashboard
+ Usage: app.py [OPTIONS] COMMAND [ARGS]...
 
-options:
-  -h, --help            show this help message and exit
-  --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
-  --config-path CONFIG_PATH
-                        Config path
+ Available commands:
+
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --log-level                 [debug|info|warning|error|critical]  [default: info]                                     │
+│ --config-path               PATH                                 Config path                                         │
+│                                                                  [default:                                           │
+│                                                                  C:\Users\paulg\.movie_pipeline\config.env]          │
+│ --install-completion                                             Install completion for the current shell.           │
+│ --show-completion                                                Show completion for the current shell, to copy it   │
+│                                                                  or customize the installation.                      │
+│ --help                                                           Show this message and exit.                         │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ archive_movies             Archive movies regarding options in config file                                           │
+│ detect_segments            Run best-effort segments detectors                                                        │
+│ process_movie              Cut and merge movie segments to keep only relevant part                                   │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
 ## Configuration
@@ -40,7 +36,10 @@ Before using this program, you must provide a valid config file.
 
 You can find many of them in the `tests` directory.
 
-If no `--config-path` is empty, the app will fallback to `config.env` file in the current directory.
+If no `--config-path` is empty, the app will fallback to `~/.movie_pipeline/config.env` file.
+
+> **Note**
+> Relative path is resolved from the config folder. Older config MIGHT break.
 
 > **Warning**
 > There is a breaking change with the configuration format to ensure runtime validation with Pydantic and python-dotenv

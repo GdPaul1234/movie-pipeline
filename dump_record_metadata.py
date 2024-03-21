@@ -9,7 +9,7 @@ import sys
 def main():
     """
     Dump TVHeadEnd metadata to #{basename}.metadata.json file
-    v0.2
+    v0.3
 
     usage: python dump_record_metadata.py "%f" --basename "%b" \
          --title "%t" --sub-title "%s" --description "%d" \
@@ -26,10 +26,10 @@ def main():
     parser.add_argument('--title', required=True, help='Program title')
     parser.add_argument('--sub-title', required=True, help='Program subtitle or summary')
     parser.add_argument('--description', required=True, help='Program description')
-    parser.add_argument('--start-real', help='Start time stamp of recording, UNIX epoch')
-    parser.add_argument('--stop-real', help='Stop time stamp of recording, UNIX epoch')
+    parser.add_argument('--start-real', help='Start time stamp of recording, UNIX epoch', type=int)
+    parser.add_argument('--stop-real', help='Stop time stamp of recording, UNIX epoch', type=int)
     parser.add_argument('--error-message', help='Error message')
-    parser.add_argument('--nb-data-errors', help='Number of data errors during recording')
+    parser.add_argument('--nb-data-errors', help='Number of data errors during recording', type=int)
     parser.add_argument('--recording-id', help='Unique ID of recording')
 
     options = vars(parser.parse_args())

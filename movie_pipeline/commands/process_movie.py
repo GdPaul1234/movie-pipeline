@@ -4,6 +4,8 @@ from pathlib import Path
 
 from rich.progress import Progress
 
+from movie_pipeline.services.movie_file_processor.rich_all_steps_interactive_progress_display import process_with_progress_tui
+
 from ..lib.ui_factory import ProgressUIFactory
 from ..lib.util import debug
 from ..services.movie_file_processor.core import MovieFileProcessor
@@ -18,7 +20,8 @@ def command(filepath: Path, edl_ext: str, config: Settings, use_web_runner=False
     try:
         if filepath.is_file() and filepath.suffix == edl_ext:
             with Progress() as progress:
-                deque(MovieFileProcessor(filepath, config).process_with_progress_tui(progress))
+                deque(process_with_progress_tui(progress, MovieFileProcessor(filepath, config).movie_file_processor_root_step))
+                logger.info('"%s" processed successfully', filepath)
         elif filepath.is_dir():
             if use_web_runner:
                 MovieFileProcessorMpireRunner(filepath, edl_ext, config).process_directory()

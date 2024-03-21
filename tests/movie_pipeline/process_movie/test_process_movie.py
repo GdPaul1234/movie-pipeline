@@ -1,3 +1,4 @@
+from collections import deque
 import shutil
 import textwrap
 import unittest
@@ -58,7 +59,7 @@ class TestProcessMovie(unittest.TestCase):
         '''), encoding='utf-8')
 
         movie_processor = MovieFileProcessor(edl_path, lazy_config())
-        movie_processor.process()
+        deque(movie_processor.process_with_progress(), maxlen=0)
 
         self.assertFalse(video_path.exists())
         self.assertTrue(output_dir_movie_path.joinpath('Movie Name', 'Movie Name.mp4').exists())
@@ -74,7 +75,7 @@ class TestProcessMovie(unittest.TestCase):
         '''), encoding='utf-8')
 
         movie_processor = MovieFileProcessor(edl_path, lazy_config())
-        movie_processor.process()
+        deque(movie_processor.process_with_progress(), maxlen=0)
 
         self.assertTrue(video_path.exists())
         self.assertTrue(edl_path.with_suffix('.yml.done').exists())
@@ -89,7 +90,7 @@ class TestProcessMovie(unittest.TestCase):
         '''), encoding='utf-8')
 
         movie_processor = MovieFileProcessor(edl_path, lazy_config())
-        movie_processor.process()
+        deque(movie_processor.process_with_progress(), maxlen=0)
 
         self.assertFalse(serie_path.exists())
         self.assertFalse(edl_path.exists())

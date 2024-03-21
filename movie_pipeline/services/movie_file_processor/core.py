@@ -9,7 +9,7 @@ from schema import Optional, Regex, Schema
 from ...lib.backup_policy_executor import BackupPolicyExecutor, EdlFile
 from ...models.movie_segments import MovieSegments
 from ...settings import Settings
-from .movie_file_processor_step import BackupStep, MovieFileProcessorContext, ProcessStep
+from .movie_file_processor_step import BackupStep,  MovieFileProcessorContext, ProcessStep
 from .rich_all_steps_interactive_progress_display import process_with_progress_tui
 
 logger = logging.getLogger(__name__)
@@ -36,6 +36,7 @@ class MovieFileProcessor:
         edl_file = EdlFile(edl_path, edl_content)
 
         context = MovieFileProcessorContext(
+            edl_file=edl_file,
             backup_policy_executor=backup_policy_executor(edl_file, config),
             movie_segments=MovieSegments(raw_segments=edl_file.content['segments']),
             config=config,

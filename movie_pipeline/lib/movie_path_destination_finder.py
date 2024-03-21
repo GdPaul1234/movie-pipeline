@@ -17,14 +17,14 @@ class MoviePathDestinationFinder:
         matches_series = [p for p in series_path.iterdir()
                           if p.is_dir() and p.name.lower().startswith(serie_file_name.lower())]
         if not len(matches_series):
-            created_serie_folder = series_path.joinpath(serie_file_name, season_folder_name)
-            created_serie_folder.mkdir(parents=True)
+            created_serie_folder = series_path / serie_file_name / season_folder_name
+            created_serie_folder.mkdir(parents=True, exist_ok=True)
             return created_serie_folder
         else:
             serie_folder = matches_series[0]
-            season_folder = serie_folder.joinpath(season_folder_name)
+            season_folder = serie_folder/ season_folder_name
             if not season_folder.is_dir():
-                season_folder.mkdir()
+                season_folder.mkdir(exist_ok=True)
             return season_folder
 
     def resolve_destination(self):
@@ -33,6 +33,6 @@ class MoviePathDestinationFinder:
             return self._find_or_create_serie_folder(series_folder_path, self._movie_file)
         else:
             movies_folder_path = self._paths.movies_folder
-            dest_path = movies_folder_path.joinpath(self._movie_file.title)
-            dest_path.mkdir()
+            dest_path = movies_folder_path / self._movie_file.title
+            dest_path.mkdir(exist_ok=True)
             return dest_path

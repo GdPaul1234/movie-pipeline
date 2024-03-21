@@ -53,7 +53,7 @@ def ffmpeg_command_with_progress(
     **kwargs
 ):
     with subprocess.Popen(command.compile(cmd=cmd), **kwargs, text=True, stderr=subprocess.PIPE) as process:
-        last_lines: deque[str] = deque([], 10)
+        last_lines: deque[str] = deque([], 50)
 
         for line in cast(IO[str], process.stderr):
             last_lines.append(line)

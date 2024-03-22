@@ -38,10 +38,10 @@ You can find many of them in the `tests` directory.
 
 If no `--config-path` is empty, the app will fallback to `~/.movie_pipeline/config.env` file.
 
-> **Note**
+> [!NOTE]
 > Relative path is resolved from the config folder. Older config MIGHT break.
 
-> **Warning**
+> [!WARNING]
 > There is a breaking change with the configuration format to ensure runtime validation with Pydantic and python-dotenv
 
 You can find bellow an example of the old format:
@@ -94,7 +94,7 @@ SegmentDetection__templates_path=V:\PVR\autres\scripts\common-ressources\logo
 
 Processor__nb_worker=2
 
-Logger__file_path=${Paths__base_path}\log-quick.txt
+Logger__file_path=${Paths__base_path}\log.txt
 ```
 
 ## Main commands
@@ -129,7 +129,7 @@ Alternatively, you can manually populate each edit decision file according to th
 
 2. Process movie (cut, trim, convert movies, backup and move them to the right location) by running the `process_movie` command
 
-> **Warning**
+> [!WARNING]
 > The current implementation of `backup_policy_executor` deletes the original file if is identified as a **serie**.
 > Be sure that you have some kind of recycle bin puts in place in your system, so the deleted file is moved inside it
 > instead of being definitly deleted.
@@ -138,7 +138,7 @@ Alternatively, you can manually populate each edit decision file according to th
 
 If the remaining space of `base_path` is low, use the `archive_movies` command.
 
-> **Warning**
+> [!WARNING]
 > It takes for granted that you periodicaly backup each movies (located in `movies_folder`) to `${base_backup_path}/PVR/Films`.
 
 This command is mainly created for my needs, don't run it if you don't have a movie backup in place as it deletes
@@ -149,4 +149,4 @@ Only movies are supported at the time of writing this document.
 ## TODO
 
 - Improve segments detection, auto selection of the best strategies
-- Add tests for GUI and segment detections
+- Add tests for segment detections

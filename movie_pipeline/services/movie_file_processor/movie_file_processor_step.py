@@ -117,10 +117,10 @@ class ProcessStep(BaseStep):
         self._dest_path = MoviePathDestinationFinder(LegacyMovieFile(self.context.dest_filename), self.context.config).resolve_destination()
         self._dest_filepath = self._dest_path / self.context.dest_filename
 
-        if (self._dest_path.is_dir() and not any(self._dest_path.iterdir())):
+        if self._dest_path.is_dir() and not any(self._dest_path.iterdir()):
             return
 
-        if (self._dest_filepath.is_file()):
+        if self._dest_filepath.is_file():
             if self.context.validate_dest_file(self._dest_path):
                 self.context.edl_file.path.rename(self.context.edl_file.path.with_suffix('.yml.done'))
                 raise StopIteration()
@@ -128,9 +128,10 @@ class ProcessStep(BaseStep):
                 logger.info('"%s" does not conform to processing decision file, deleting it...', self._dest_filepath)
                 self._dest_filepath.unlink()
 
-        logger.info('"%s" is not empty, recreating it it...', self._dest_path)
-        shutil.rmtree(self._dest_path)
-        self._dest_path.mkdir(parents=True)
+        if not LegacyMovieFile(self.context.dest_filename).is_serie:
+            logger.info('"%s" is not empty, recreating it it...', self._dest_path)
+            shutil.rmtree(self._dest_path)
+            self._dest_path.mkdir(parents=True)
 
     def _perform(self) -> Iterator[float]:
         logger.info('Processing "%s" from "%s"...', self._dest_filepath, self.context.in_file_path)

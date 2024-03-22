@@ -43,7 +43,7 @@ class MovieFileProcessorContext:
             video_metadata = cast(dict[str, Any], sourcer.retrieve_metadata())
             return math.isclose(video_metadata['source_duration_sec'], self.movie_segments.total_seconds, abs_tol=1)
 
-        except ffmpeg.Error:
+        except ValueError:
             return False
 
 
@@ -107,7 +107,11 @@ class BaseStep(ABC):
             current_step = current_step.next_step
 
 
-class ProcessStepError(Exception):
+class BaseStepError(Exception):
+    pass
+
+
+class BaseStepInterruptedError(Exception):
     pass
 
 
@@ -123,7 +127,7 @@ class ProcessStep(BaseStep):
         if self._dest_filepath.is_file():
             if self.context.validate_dest_file(self._dest_path):
                 self.context.edl_file.path.rename(self.context.edl_file.path.with_suffix('.yml.done'))
-                raise StopIteration()
+                raise BaseStepInterruptedError('Valid "%s" already exists')
             else:
                 logger.info('"%s" does not conform to processing decision file, deleting it...', self._dest_filepath)
                 self._dest_filepath.unlink()
@@ -173,7 +177,7 @@ class ProcessStep(BaseStep):
 
     def _after_perform(self) -> None:
         if not self.context.validate_dest_file(self._dest_path):
-            raise ProcessStepError(f'"{self._dest_filepath}" does not conform to processing decision file')
+            raise BaseStepError(f'"{self._dest_filepath}" does not conform to processing decision file')
 
 
 class BackupStep(BaseStep):

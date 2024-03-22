@@ -1,16 +1,13 @@
 import logging
-from collections import deque
 from pathlib import Path
 
 import yaml
-from rich.progress import Progress
 from schema import Optional, Regex, Schema
 
 from ...lib.backup_policy_executor import BackupPolicyExecutor, EdlFile
 from ...models.movie_segments import MovieSegments
 from ...settings import Settings
-from .movie_file_processor_step import BackupStep, MovieFileProcessorContext, ProcessStep
-from .rich_all_steps_interactive_progress_display import process_with_progress_tui
+from .movie_file_processor_step import BackupStep,  MovieFileProcessorContext, ProcessStep
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +33,7 @@ class MovieFileProcessor:
         edl_file = EdlFile(edl_path, edl_content)
 
         context = MovieFileProcessorContext(
+            edl_file=edl_file,
             backup_policy_executor=backup_policy_executor(edl_file, config),
             movie_segments=MovieSegments(raw_segments=edl_file.content['segments']),
             config=config,
@@ -47,7 +45,7 @@ class MovieFileProcessor:
         self.segments = context.movie_segments.segments
         self.dest_filename = context.dest_filename
 
-        self._movie_file_processor_root_step = ProcessStep(
+        self.movie_file_processor_root_step = ProcessStep(
             context=context,
             description=self.dest_filename,
             cost=0.8,
@@ -59,19 +57,10 @@ class MovieFileProcessor:
             )
         )
 
-    def process(self):
-        deque(self.process_with_progress(), maxlen=0)
-
     def process_with_progress(self):
         logger.info(self.dest_filename)
 
-        for step_progress_result in self._movie_file_processor_root_step.process_all():
+        for step_progress_result in self.movie_file_processor_root_step.process_all():
             yield step_progress_result.total_percent
-
-        logger.info('"%s" processed successfully', self.dest_filename)
-
-    def process_with_progress_tui(self, progress: Progress):
-        for progress_percent in process_with_progress_tui(progress, self._movie_file_processor_root_step):
-            yield progress_percent
 
         logger.info('"%s" processed successfully', self.dest_filename)

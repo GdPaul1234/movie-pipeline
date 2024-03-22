@@ -13,6 +13,7 @@ from ...lib.ui_factory import ProgressListener, ProgressUIFactory
 from ...lib.util import diff_tracking
 from ...settings import Settings
 from .core import MovieFileProcessor
+from .rich_all_steps_interactive_progress_display import process_with_progress_tui
 
 logger = logging.getLogger(__name__)
 
@@ -63,12 +64,15 @@ class MovieFileProcessorFolderRunner:
         task_id = job_progress.add_task(f'{edl_ext}...', total=len(edls))
 
         for edl in sorted(edls, key=lambda edl: edl.stat().st_size, reverse=True):
+            movie_file_processor = MovieFileProcessor(edl, self._config)
             prev_edl_progress = [0.]  # mutable!
 
-            for edl_progress in MovieFileProcessor(edl, self._config).process_with_progress_tui(job_progress):
+            for edl_progress in process_with_progress_tui(job_progress, movie_file_processor.movie_file_processor_root_step):
                 with diff_tracking(prev_edl_progress, edl_progress) as diff_edl_progress:
                     job_progress.advance(task_id, advance=diff_edl_progress)
                     self._progress.overall_progress.advance(self._progress.overall_task, advance=diff_edl_progress / len(edls))
+
+            logger.info('"%s" processed successfully', edl)
 
     def process_directory(self):
         logger.info('Processing: "%s"', self._folder_path)

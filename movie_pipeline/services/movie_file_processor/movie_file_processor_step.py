@@ -127,7 +127,7 @@ class ProcessStep(BaseStep):
         if self._dest_filepath.is_file():
             if self.context.validate_dest_file(self._dest_path):
                 self.context.edl_file.path.rename(self.context.edl_file.path.with_suffix('.yml.done'))
-                raise BaseStepInterruptedError('Valid "%s" already exists')
+                raise BaseStepInterruptedError('Valid "%s" already exists', self.context.dest_filename)
             else:
                 logger.info('"%s" does not conform to processing decision file, deleting it...', self._dest_filepath)
                 self._dest_filepath.unlink()

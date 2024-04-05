@@ -1,5 +1,6 @@
+import shutil
 from typing import Optional
-from pathlib import Path
+
 from pydantic import BaseModel
 from pydantic.types import DirectoryPath, FilePath, PositiveInt
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -34,6 +35,8 @@ class Settings(BaseSettings):
     Archive: Optional[ArchiveSettings] = None
     SegmentDetection: Optional[SegmentDetectionSettings] = None
     Processor: Optional[ProcessorSettings] = None
-    Logger :Optional[LoggerSettings] = None
+    Logger: Optional[LoggerSettings] = None
+
+    ffmpeg_path: FilePath = shutil.which('ffmpeg') # type: ignore
 
     model_config = SettingsConfigDict(env_nested_delimiter='__')

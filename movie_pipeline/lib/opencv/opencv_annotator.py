@@ -10,9 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 def draw_detection_box(result_window_name: str,
-                       image: cv2.Mat,
-                       template_shape: tuple[int, int],
-                       result: tuple[float, tuple[int, int]],
+                       image: cv2.typing.MatLike,
+                       template_shape: cv2.typing.Point,
+                       result: tuple[float, cv2.typing.Point],
                        threshold: float,
                        stats):
     w, h = template_shape
@@ -41,7 +41,7 @@ def draw_detection_box(result_window_name: str,
     return False
 
 
-def resize_with_pad(image: cv2.Mat, new_shape: tuple[int, int], color=(255, 255, 255)):
+def resize_with_pad(image: cv2.typing.MatLike, new_shape: cv2.typing.Point, color=(255, 255, 255)):
     """Maintains aspect ratio and resizes with padding.
 
     source: https://gist.github.com/IdeaKing/11cf5e146d23c5bb219ba3508cca89ec
@@ -66,7 +66,7 @@ def resize_with_pad(image: cv2.Mat, new_shape: tuple[int, int], color=(255, 255,
     return image
 
 
-def draw_segments(image: cv2.Mat, segments: list[DetectedSegment], duration: float, position: float):
+def draw_segments(image: cv2.typing.MatLike, segments: list[DetectedSegment], duration: float, position: float):
     i_width, i_height = (image.shape[1], image.shape[0])
 
     x, y = 0, round(0.9 * i_height)

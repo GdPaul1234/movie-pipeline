@@ -8,6 +8,8 @@ import re
 import subprocess
 import ffmpeg
 
+from ...settings import Settings
+
 logger = logging.getLogger(__name__)
 
 # reference: https://github.com/jonghwanhyeon/python-ffmpeg/blob/main/ffmpeg/utils.py#L12-L14
@@ -72,7 +74,7 @@ def ffmpeg_command_with_progress(
 
                 if items := {key: value
                              for key, value in progress_pattern.findall(line) if value != 'N/A'}:
-                    yield cast(ProgressItem, items)
+                    yield ProgressItem(**items)
 
             except InterruptedError as e:
                 logger.exception(e)
@@ -87,7 +89,7 @@ def ffmpeg_command_with_progress(
         return line_container.lines
 
 
-def ffmpeg_frame_producer(input: Path, target_fps: int, other_video_filter=''):
+def ffmpeg_frame_producer(input: Path, target_fps: int, config: Settings, other_video_filter=''):
     from deffcode import FFdecoder
 
     ffparams = {
@@ -99,7 +101,7 @@ def ffmpeg_frame_producer(input: Path, target_fps: int, other_video_filter=''):
         "-vf":  ','.join(filter(bool, [f"fps={target_fps}", other_video_filter]))
     }
 
-    with FFdecoder(str(input), frame_format='gray', **ffparams) as decoder:
+    with FFdecoder(str(input), frame_format='gray', **ffparams, custom_ffmpeg=str(config.ffmpeg_path)) as decoder:
         metadata = json.loads(decoder.metadata)
 
         frame_pos = 0

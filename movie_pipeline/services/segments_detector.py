@@ -1,45 +1,39 @@
+from enum import Enum
+from functools import partial
 import json
 import logging
 from pathlib import Path
-from typing import cast
 
 from ..lib.ffmpeg.ffmpeg_detect_filter import AudioCrossCorrelationDetect, CropDetect
 from ..lib.opencv.opencv_detect import OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect
-from ..models.detected_segments import DetectedSegment, humanize_segments, merge_adjacent_segments
+from ..models.detected_segments import humanize_segments, merge_adjacent_segments
 from ..settings import Settings
 
 logger = logging.getLogger(__name__)
+
+class RegisteredSegmentDetector(Enum):
+    axcorrelate_silence = AudioCrossCorrelationDetect
+    match_template = partial(OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect)
+    crop = CropDetect
 
 
 def run_segment_detectors(movie_path: Path, selected_detectors_key, config: Settings):
     detected_segments = {}
 
-    def try_match_template(movie_path):
-        try:
-            return OpenCVDetectWithInjectedTemplate(OpenCVTemplateDetect, movie_path, config)(movie_path)
-        except Exception as e:
-            logger.exception(e)
-
     try:
-        detectors = {
-            'axcorrelate_silence': AudioCrossCorrelationDetect,
-            'match_template': try_match_template,
-            'crop': CropDetect
-        }
-
-        selected_detectors = { key: detectors[key] for key in selected_detectors_key }
+        selected_detectors = { key: RegisteredSegmentDetector[key].value for key in selected_detectors_key }
 
         for detector_key, detector_value in selected_detectors.items():
             logger.info('Running %s detection...', detector_key)
 
-            detector_instance = detector_value(movie_path)
-            detector_result = cast(list[DetectedSegment], detector_instance.detect())
+            detector_instance = detector_value(movie_path, config)
+            detector_result = detector_instance.detect()
             detector_result = merge_adjacent_segments(detector_result)
             detected_segments[detector_key] = humanize_segments(detector_result)
 
     except Exception as e:
         logger.exception(e)
-        logger.warning('Skipping " %s"', movie_path)
+        logger.warning('Skipping "%s"', movie_path)
 
     return detected_segments
 

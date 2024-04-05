@@ -1,17 +1,19 @@
 import logging
 import math
-from typing import Literal
-from pathlib import Path
-from abc import ABC
-from rich.progress import Progress
 import multiprocessing
 import re
+from abc import ABC
+from pathlib import Path
+from typing import Literal
+
 import ffmpeg
+from rich.progress import Progress
 
-from .ffmpeg_with_progress import FFmpegLineContainer, FFmpegLineFilter, ffmpeg_command_with_progress
-from ...lib.ui_factory import transient_task_progress
+from ..ui_factory import transient_task_progress
 from ...lib.util import position_in_seconds, total_movie_duration
-
+from ...models.detected_segments import DetectedSegment
+from ...settings import Settings
+from .ffmpeg_with_progress import FFmpegLineContainer, FFmpegLineFilter, ffmpeg_command_with_progress
 
 logger = logging.getLogger(__name__)
 
@@ -22,13 +24,14 @@ class BaseDetect(ABC):
     line_container = FFmpegLineContainer()
     args = {}
 
-    def __init__(self, movie_path: Path) -> None:
+    def __init__(self, movie_path: Path, config: Settings) -> None:
         self._movie_path = movie_path
 
-    def _map_out(self, output: list[str]):
-        return [{key.split('_')[1]: float(value)
-                 for key, value in self.filter_pattern.findall(line)}
-                for line in output or []]
+    def _map_out(self, output: list[str]) -> list[DetectedSegment]:
+        return [
+            DetectedSegment(**{key.split('_')[1]: float(value) for key, value in self.filter_pattern.findall(line)})
+            for line in output or []
+        ]
 
     def _build_command(self, in_file_path: Path):
         in_file = ffmpeg.input(str(in_file_path))
@@ -39,7 +42,7 @@ class BaseDetect(ABC):
 
         return command.output('-', format='null')
 
-    def detect(self):
+    def detect(self) -> list[DetectedSegment]:
         total_duration = total_movie_duration(self._movie_path)
 
         command = self._build_command(self._movie_path)

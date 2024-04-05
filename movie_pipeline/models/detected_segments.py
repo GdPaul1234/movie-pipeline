@@ -3,17 +3,13 @@ from typing import TypedDict
 from ..lib.util import seconds_to_position
 
 
-class SimpleSegment(TypedDict):
-    start: float
-    end: float
-
 class DetectedSegment(TypedDict):
     start: float
     end: float
     duration: float
 
 
-def humanize_segments(segments: list[SimpleSegment]) -> str:
+def humanize_segments(segments: list[DetectedSegment]) -> str:
     return ','.join([
         '-'.join(map(seconds_to_position, [segment['start'], segment['end']]))
         for segment in segments

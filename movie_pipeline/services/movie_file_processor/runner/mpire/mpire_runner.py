@@ -6,8 +6,8 @@ from pathlib import Path
 from mpire import WorkerPool
 from mpire.dashboard import start_dashboard
 
-from ...lib.util import progress_to_task_iterator
-from ...settings import Settings
+from .....lib.util import progress_to_task_iterator
+from .....settings import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class MovieFileProcessorMpireRunner:
         import logging
         import logging.handlers
 
-        from .core import MovieFileProcessor
+        from ...core import MovieFileProcessor
 
         fh = logging.handlers.TimedRotatingFileHandler(filename=self._config.Logger.file_path if self._config.Logger else 'log.txt')
         fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))

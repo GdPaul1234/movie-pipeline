@@ -36,10 +36,10 @@ class MovieFileProcessorContext:
     in_file_path: Path
     dest_filename: str
 
-    def validate_dest_file(self, dest_path: Path):
+    def validate_dest_file(self, dest_path: Path, config: Settings):
         try:
             dest_filepath = dest_path / self.dest_filename
-            sourcer = Sourcer(str(dest_filepath)).probe_stream()
+            sourcer = Sourcer(str(dest_filepath), custom_ffmpeg=str(config.ffmpeg_path)).probe_stream()
             video_metadata = cast(dict[str, Any], sourcer.retrieve_metadata())
             return math.isclose(video_metadata['source_duration_sec'], self.movie_segments.total_seconds, abs_tol=1)
 
@@ -125,7 +125,7 @@ class ProcessStep(BaseStep):
             return
 
         if self._dest_filepath.is_file():
-            if self.context.validate_dest_file(self._dest_path):
+            if self.context.validate_dest_file(self._dest_path, self.context.config):
                 self.context.edl_file.path.rename(self.context.edl_file.path.with_suffix('.yml.done'))
                 raise BaseStepInterruptedError('Valid "%s" already exists', self.context.dest_filename)
             else:
@@ -176,7 +176,7 @@ class ProcessStep(BaseStep):
             raise e
 
     def _after_perform(self) -> None:
-        if not self.context.validate_dest_file(self._dest_path):
+        if not self.context.validate_dest_file(self._dest_path, self.context.config):
             raise BaseStepError(f'"{self._dest_filepath}" does not conform to processing decision file')
 
 

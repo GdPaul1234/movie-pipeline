@@ -6,14 +6,14 @@ from movie_pipeline.models.detected_segments import DetectedSegment, humanize_se
 
 class TestDetectSegments(unittest.TestCase):
     def test_humanize_segments(self):
-        segments = [
+        segments: list[DetectedSegment] = [
             {'start': 44.4012, 'end': 368.355, 'duration': 323.954},
             {'start': 612.856, 'end': 1098.44, 'duration': 485.588},
             {'start': 2053.96, 'end': 2519.26, 'duration': 465.3}
         ]
         expected = '00:00:44.401-00:06:08.355,00:10:12.856-00:18:18.440,00:34:13.960-00:41:59.260'
 
-        actual = humanize_segments(cast(list[DetectedSegment], segments))
+        actual = humanize_segments(segments)
 
         self.assertEqual(expected, actual)
 
@@ -21,7 +21,7 @@ class TestDetectSegments(unittest.TestCase):
     def test_merge_adjacent_segments(self):
         self.maxDiff = None
 
-        segments = [
+        segments: list[DetectedSegment] = [
             {'start': 44.4012, 'end': 368.355, 'duration': 323.954},
             {'start': 612.856, 'end': 1098.44, 'duration': 485.588},
             {'start': 2053.96, 'end': 2519.26, 'duration': 465.3},
@@ -37,7 +37,7 @@ class TestDetectSegments(unittest.TestCase):
             {'start': 9021.17, 'end': 9362.86, 'duration': 341.694},
             {'start': 9362.86, 'end': 10799.9, 'duration': 1437.04}
         ]
-        expected = [
+        expected: list[DetectedSegment] = [
             {'start': 44.4012, 'end': 368.355, 'duration': 323.95},
             {'start': 612.856, 'end': 1098.44, 'duration': 485.59},
             {'start': 2053.96, 'end': 4596.66,'duration': 2542.7},
@@ -46,6 +46,6 @@ class TestDetectSegments(unittest.TestCase):
             {'start': 9362.86, 'end': 10799.9, 'duration': 1437.04}
         ]
 
-        actual = merge_adjacent_segments(cast(list[DetectedSegment], segments))
+        actual = merge_adjacent_segments(segments)
 
         self.assertEqual(expected, actual)

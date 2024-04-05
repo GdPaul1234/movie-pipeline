@@ -11,7 +11,7 @@ from deffcode import Sourcer
 from rich.progress import Progress, TaskID
 
 from ...lib.ffmpeg.ffmpeg_with_progress import ffmpeg_frame_producer
-from ...lib.ui_factory import transient_task_progress
+from ..ui_factory import transient_task_progress
 from ...lib.util import timed_run
 from ...models.detected_segments import DetectedSegment
 from ...settings import Settings

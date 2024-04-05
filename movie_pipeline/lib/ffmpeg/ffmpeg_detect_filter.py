@@ -9,7 +9,7 @@ from typing import Literal
 import ffmpeg
 from rich.progress import Progress
 
-from ...lib.ui_factory import transient_task_progress
+from ..ui_factory import transient_task_progress
 from ...lib.util import position_in_seconds, total_movie_duration
 from ...models.detected_segments import DetectedSegment
 from ...settings import Settings

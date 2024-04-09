@@ -1,4 +1,4 @@
-const seasonHeaders = document.querySelectorAll('[id*="saison_"]')
+const seasonHeaders = document.querySelectorAll('[id*="Saison_"]')
 const episodeHeaders = document.querySelectorAll('[id^="Épisode_"]')
 
 function padNumber(number, length) {
@@ -38,10 +38,14 @@ function getEpisodeEntriesFromSeasonHeaders() {
 }
 
 function getEpisodeEntriesFromEpisodeHeaders() {
+  const seasonRegExp = RegExp(/Saison (\d+)/)
+
   const titleContent = document.querySelector('#title_0').textContent
-  const seasonNumber = +RegExp(/Saison (\d+)/).exec(titleContent)[1]
+  const titleSeasonNumber = +seasonRegExp.exec(titleContent)?.at(1)
 
   return Array.from(episodeHeaders).map(episodeHeader => {
+    const getEpisodeSeasonHeader = () => episodeHeader.parentElement.parentElement.parentElement.querySelector('[id*="Saison_"]').textContent
+    const seasonNumber = titleSeasonNumber || +seasonRegExp.exec(getEpisodeSeasonHeader())[1]
     const episodeTitle = episodeHeader.textContent.split(':')[1].trim()
     const episodeNumber = +episodeHeader.textContent.split(':')[0].replace('Épisode ', '')
     const details = episodeHeader.parentElement.parentElement
@@ -58,11 +62,16 @@ function getEpisodeEntriesFromEpisodeHeaders() {
 }
 
 function getEpisodeEntries() {
-  if (seasonHeaders.length) return getEpisodeEntriesFromSeasonHeaders()
-  if (episodeHeaders.length) return getEpisodeEntriesFromEpisodeHeaders()
-  return []
+  const entries = []
+  if (seasonHeaders.length) entries.push(...getEpisodeEntriesFromSeasonHeaders())
+  if (episodeHeaders.length) entries.push(...getEpisodeEntriesFromEpisodeHeaders())
+
+  return entries
+    .filter(Boolean)
+    .flatMap(_ => Object.entries(_))
+    .sort((a, b) => a[1].formattedEpisode.localeCompare(b[1].formattedEpisode))
 }
 
-const episodes = getEpisodeEntries().reduce((acc, val) => ({ ...acc, ...val }), {})
+const episodes = Object.fromEntries(getEpisodeEntries())
 
 console.log(JSON.stringify(episodes))

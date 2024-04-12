@@ -1,15 +1,16 @@
 import logging
+import math
+import shutil
 from abc import ABC
 from dataclasses import dataclass
-import math
 from pathlib import Path
-import shutil
 from typing import Any, Iterator, Optional, cast
 
-from deffcode import Sourcer
 import ffmpeg
+from deffcode import Sourcer
 
 from ...lib.backup_policy_executor import BackupPolicyExecutor, EdlFile
+from ...lib.ffmpeg.ffmpeg_cli_presets import get_ffencode_audio_params, get_ffencode_video_params, get_ffprefixes
 from ...lib.ffmpeg.ffmpeg_with_progress import ffmpeg_command_with_progress
 from ...lib.movie_path_destination_finder import MoviePathDestinationFinder
 from ...lib.util import position_in_seconds
@@ -153,9 +154,8 @@ class ProcessStep(BaseStep):
             )
             .output(
                 str(self._dest_filepath),
-                vcodec='h264_nvenc',
-                **{'preset:v': 'p7', 'tune:v': 'hq', 'rc:v': 'vbr', 'cq:v': 28, 'profile:v': 'high'},
-                acodec='aac', cutoff='20K', audio_bitrate='256K', ac=2,
+                **get_ffencode_video_params(self.context.config.ffmpeg_hwaccel),
+                **get_ffencode_audio_params(),
                 **{f'map_metadata:s:a:{index}': f'0:s:a:{index}' for index in range(self._nb_audio_streams)},
                 dn=None, sn=None, ignore_unknown=None,
             )
@@ -166,7 +166,7 @@ class ProcessStep(BaseStep):
             logger.info('Running: %s', command.compile())
 
             total_seconds = self.context.movie_segments.total_seconds
-            for item in ffmpeg_command_with_progress(command, cmd=['ffmpeg', '-hwaccel', 'cuda']):
+            for item in ffmpeg_command_with_progress(command, cmd=['ffmpeg', *get_ffprefixes(self.context.config.ffmpeg_hwaccel)]):
                 if item.get('time'):
                     processed_time = max(position_in_seconds(item['time']), 0)
                     yield processed_time / total_seconds

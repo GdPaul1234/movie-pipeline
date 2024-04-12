@@ -1,13 +1,15 @@
-from collections import deque
 import json
-from pathlib import Path
-from typing import IO, cast, TypedDict
-from multiprocessing import Event
 import logging
 import re
 import subprocess
+from collections import deque
+from multiprocessing import Event
+from pathlib import Path
+from typing import IO, TypedDict, cast
+
 import ffmpeg
 
+from ...lib.ffmpeg.ffmpeg_cli_presets import get_ffprefixes
 from ...settings import Settings
 
 logger = logging.getLogger(__name__)
@@ -94,7 +96,7 @@ def ffmpeg_frame_producer(input: Path, target_fps: int, config: Settings, other_
 
     ffparams = {
         "-vcodec": None,  # skip any decoder and let FFmpeg chose
-        "-ffprefixes": ["-hwaccel", "cuda"],
+        "-ffprefixes": get_ffprefixes(config.ffmpeg_hwaccel),
         "-custom_resolution": "null",  # discard `-custom_resolution`
         "-framerate": "null",  # discard `-framerate`
         # define your filters

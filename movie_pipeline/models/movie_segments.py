@@ -25,8 +25,15 @@ class MovieSegments:
         return sum([stop - start for start, stop in self.segments])
 
     def to_ffmpeg_concat_segments(self, in_file, audio_streams):
-        return itertools.chain.from_iterable(
-            [(in_file.video.filter_('trim', start=segment[0], end=segment[1]).filter_('setpts', 'PTS-STARTPTS'),
-              *[in_file[str(audio['index'])].filter_('atrim', start=segment[0], end=segment[1]).filter_('asetpts', 'PTS-STARTPTS')
-                for audio in audio_streams],)
-             for segment in self.segments])
+        return itertools.chain.from_iterable([
+            (
+                # concat video stream
+                in_file.video.filter_('trim', start=start, end=end).filter_('setpts', 'PTS-STARTPTS'),
+                # concat audio streams
+                *[
+                    in_file[str(audio['index'])].filter_('atrim', start=start, end=end).filter_('asetpts', 'PTS-STARTPTS')
+                    for audio in audio_streams
+                ],
+            )
+            for start, end in self.segments
+        ])

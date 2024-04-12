@@ -52,10 +52,18 @@ def process_movie(
         command(filepath, custom_ext, config, web)
 
 
+def version_callback(value: bool):
+    if value:
+        from importlib.metadata import version
+        print(f"movie_pipeline Version: {version('movie_pipeline')}")
+        raise typer.Exit()
+
+
 @app.callback()
 def main(
     log_level: Annotated[LogLevel, typer.Option()] = LogLevel.INFO,
-    config_path: Annotated[Path, typer.Option(readable=True, help='Config path')] = Path.home() / '.movie_pipeline' / 'config.env'
+    config_path: Annotated[Path, typer.Option(readable=True, help='Config path')] = Path.home() / '.movie_pipeline' / 'config.env',
+    version: Annotated[Optional[bool], typer.Option('--version', callback=version_callback)] = None
 ):
     """Available commands:"""
     global config

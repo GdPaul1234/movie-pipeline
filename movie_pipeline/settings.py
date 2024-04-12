@@ -1,5 +1,5 @@
 import shutil
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 from pydantic.types import DirectoryPath, FilePath, PositiveInt
@@ -30,6 +30,9 @@ class LoggerSettings(BaseModel):
     file_path: FilePath
 
 
+HwAccel = Literal['cuda', 'none']
+
+
 class Settings(BaseSettings):
     Paths: PathSettings
     Archive: Optional[ArchiveSettings] = None
@@ -37,6 +40,7 @@ class Settings(BaseSettings):
     Processor: Optional[ProcessorSettings] = None
     Logger: Optional[LoggerSettings] = None
 
-    ffmpeg_path: FilePath = shutil.which('ffmpeg') # type: ignore
+    ffmpeg_path: FilePath = shutil.which('ffmpeg')  # type: ignore
+    ffmpeg_hwaccel: HwAccel = 'none'
 
     model_config = SettingsConfigDict(env_nested_delimiter='__')

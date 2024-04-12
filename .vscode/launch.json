@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Python : Module du fichier actif",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "app.py",
             "args": ["${fileBasenameNoExtension}", "${input:argPrompt}"],

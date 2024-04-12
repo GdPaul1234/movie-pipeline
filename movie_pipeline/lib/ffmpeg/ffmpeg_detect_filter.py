@@ -9,10 +9,11 @@ from typing import Literal
 import ffmpeg
 from rich.progress import Progress
 
-from ..ui_factory import transient_task_progress
+from ...lib.ffmpeg.ffmpeg_cli_presets import get_ffprefixes
 from ...lib.util import position_in_seconds, total_movie_duration
 from ...models.detected_segments import DetectedSegment
 from ...settings import Settings
+from ..ui_factory import transient_task_progress
 from .ffmpeg_with_progress import FFmpegLineContainer, FFmpegLineFilter, ffmpeg_command_with_progress
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ class BaseDetect(ABC):
 
     def __init__(self, movie_path: Path, config: Settings) -> None:
         self._movie_path = movie_path
+        self._config = config
 
     def _map_out(self, output: list[str]) -> list[DetectedSegment]:
         return [
@@ -56,7 +58,7 @@ class BaseDetect(ABC):
 
                 process = ffmpeg_command_with_progress(
                     command,
-                    cmd=['ffmpeg', '-hwaccel', 'cuda'],
+                    cmd=['ffmpeg', *get_ffprefixes(self._config.ffmpeg_hwaccel)],
                     keep_log=True,
                     line_filter=FFmpegLineFilter(self.filter_pattern),
                     line_container=self.line_container,

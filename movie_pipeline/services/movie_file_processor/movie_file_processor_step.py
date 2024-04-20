@@ -1,6 +1,7 @@
 import logging
 import math
 import shutil
+import time
 from abc import ABC
 from dataclasses import dataclass
 from pathlib import Path
@@ -25,6 +26,7 @@ logger = logging.getLogger(__name__)
 class StepProgressResult:
     current_step: 'BaseStep'
     current_step_percent: float
+    current_step_elapsed_time: float
     total_percent: float
 
 
@@ -79,14 +81,15 @@ class BaseStep(ABC):
     def _after_perform(self) -> None:
         pass
 
-    def handle(self) -> Iterator[float]:
+    def handle(self) -> Iterator[tuple[float, float]]:
+        start_time = time.perf_counter()
         self._before_perform()
 
         for progress_percent in self._perform():
-            yield progress_percent
+            yield progress_percent, time.perf_counter() - start_time
 
         self._after_perform()
-        yield 1
+        yield 1, time.perf_counter() - start_time
 
     def process_all(self) -> Iterator[StepProgressResult]:
         total_cost = self.total_cost
@@ -97,10 +100,11 @@ class BaseStep(ABC):
         while current_step is not None:
             total_normalized_current_cost = current_step.cost / float(total_cost) # (0..1)
 
-            for progress_percent in current_step.handle():
+            for progress_percent, progress_elapsed_time in current_step.handle():
                 yield StepProgressResult(
                     current_step=current_step,
                     current_step_percent=progress_percent,
+                    current_step_elapsed_time=progress_elapsed_time,
                     total_percent=completed_percent + total_normalized_current_cost * progress_percent
                 )
 

@@ -22,10 +22,10 @@ class BaseDetect(ABC):
     detect_filter: str
     media: Literal['audio', 'video']
     filter_pattern = re.compile('')
-    line_container = FFmpegLineContainer()
     args = {}
 
     def __init__(self, movie_path: Path, config: Settings) -> None:
+        self.line_container = FFmpegLineContainer()
         self._movie_path = movie_path
         self._config = config
 
@@ -160,4 +160,7 @@ class CropDetect(BaseDetect):
     detect_filter = 'cropdetect'
     media = 'video'
     filter_pattern = re.compile(r'(x1|x2|y1|y2|w|h|x|y|pts| t)\s*\:\s*(\S+)')
-    line_container = FFmpegCropSegmentMergerContainer(filter_pattern)
+
+    def __init__(self, movie_path: Path, config: Settings) -> None:
+        super().__init__(movie_path, config)
+        self.line_container = FFmpegCropSegmentMergerContainer(self.filter_pattern)

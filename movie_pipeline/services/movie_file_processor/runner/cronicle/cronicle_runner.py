@@ -22,5 +22,5 @@ def process_file(input: Input, config: Settings) -> Iterator[ReportedProgress]:
     elapsed_times: dict[str, float] = {}
 
     for step_progress_result in movie_file_processor.movie_file_processor_root_step.process_all():
-        elapsed_times[type(step_progress_result.current_step).__name__] = round(step_progress_result.current_step_elapsed_time, 2)
+        elapsed_times[step_progress_result.current_step_name] = round(step_progress_result.current_step_elapsed_time, 2)
         yield {'progress': round(step_progress_result.total_percent, 2), 'perf': elapsed_times}

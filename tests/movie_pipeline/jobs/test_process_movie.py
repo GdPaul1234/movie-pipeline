@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 import movie_pipeline.jobs.main as job
 
-from ..concerns import copy_files, create_output_movies_directories, get_output_movies_directories, lazy_load_config_file
+from ..concerns import copy_files, create_output_movies_directories, get_output_movies_directories
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 video_path = input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')
@@ -24,7 +24,7 @@ config_path = Path(__file__).parent / 'test_config.env'
 class ProcessMovieTest(unittest.TestCase):
     def setUp(self) -> None:
         sample_video_path = Path(__file__).parent.parent.joinpath('ressources', 'counter-30s.mp4')
-        copy_files([{'source': sample_video_path, 'destination': video_path},])
+        copy_files([{'source': sample_video_path, 'destination': video_path}])
 
         create_output_movies_directories(Path(__file__).parent)
 

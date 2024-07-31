@@ -4,7 +4,7 @@ import multiprocessing
 import re
 from abc import ABC
 from pathlib import Path
-from typing import Literal
+from typing import Generator, Literal
 
 import ffmpeg
 from rich.progress import Progress
@@ -44,7 +44,7 @@ class BaseDetect(ABC):
 
         return command.output('-', format='null')
 
-    def detect(self) -> list[DetectedSegment]:
+    def detect_with_progress(self) -> Generator[float, None, list[DetectedSegment]]:
         total_duration = total_movie_duration(self._movie_path)
 
         command = self._build_command(self._movie_path)
@@ -52,34 +52,42 @@ class BaseDetect(ABC):
         logger.info('Running: %s', command.compile())
         detection_result = []
 
+        stop_signal = multiprocessing.Event()
+
+        process = ffmpeg_command_with_progress(
+            command,
+            cmd=['ffmpeg', *get_ffprefixes(self._config.ffmpeg_hwaccel)],
+            keep_log=True,
+            line_filter=FFmpegLineFilter(self.filter_pattern),
+            line_container=self.line_container,
+            stop_signal=stop_signal
+        )
+
+        try:
+            while True:
+                try:
+                    if (item := next(process)).get('time'):
+                        processed_time = position_in_seconds(item['time'])
+                        yield processed_time / total_duration
+                except KeyboardInterrupt:
+                    stop_signal.set()
+
+        except StopIteration as e:
+            detection_result = self._map_out(e.value)
+            logger.info(detection_result)
+            return detection_result
+
+    def detect(self) -> list[DetectedSegment]:
+        detect_progress = self.detect_with_progress()
+
         with Progress() as progress:
-            with transient_task_progress(progress, description=self.detect_filter, total=total_duration) as task_id:
-                stop_signal = multiprocessing.Event()
-
-                process = ffmpeg_command_with_progress(
-                    command,
-                    cmd=['ffmpeg', *get_ffprefixes(self._config.ffmpeg_hwaccel)],
-                    keep_log=True,
-                    line_filter=FFmpegLineFilter(self.filter_pattern),
-                    line_container=self.line_container,
-                    stop_signal=stop_signal
-                )
-
+            with transient_task_progress(progress, description=self.detect_filter, total=1.0) as task_id:
                 try:
                     while True:
-                        try:
-                            if (item := next(process)).get('time'):
-                                processed_time = position_in_seconds(item['time'])
-                                progress.update(task_id, completed=processed_time)
-
-                        except KeyboardInterrupt:
-                            stop_signal.set()
-
+                        progress_percent = next(detect_progress)
+                        progress.update(task_id, completed=progress_percent)
                 except StopIteration as e:
-                    detection_result = self._map_out(e.value)
-
-        logger.info(detection_result)
-        return detection_result
+                    return e.value
 
 
 class BlackDetect(BaseDetect):

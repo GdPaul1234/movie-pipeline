@@ -4,11 +4,11 @@ from abc import ABC
 from configparser import ConfigParser
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Generator, cast
 
 import cv2
 from deffcode import Sourcer
-from rich.progress import Progress, TaskID
+from rich.progress import Progress
 
 from ...lib.ffmpeg.ffmpeg_with_progress import ffmpeg_frame_producer
 from ..ui_factory import transient_task_progress
@@ -19,22 +19,11 @@ from .opencv_annotator import draw_detection_box
 
 logger = logging.getLogger(__name__)
 
-segments_min_gap = 20.
-segments_min_duration = 120.
-threshold = 0.8
-
-
 @dataclass
 class PositionMetadata:
     position_in_s: float
     duration: float
     target_fps: float
-
-
-@dataclass
-class ProgressTask:
-    progress: Progress
-    task_id: TaskID
 
 
 @dataclass
@@ -100,15 +89,26 @@ class OpenCVBaseDetect(ABC):
     def __init__(self, video_path: Path, template_path: Path, config: Settings) -> None:
         self._video_path = video_path
         self._template_path = template_path
+
+        if config.SegmentDetection is None:
+            raise ValueError('SegmentDetection settings is missing in provided config')
+
+        self._segments_min_gap = config.SegmentDetection.segments_min_gap
+        self._segments_min_duration = config.SegmentDetection.segments_min_duration
+        self._threshold = config.SegmentDetection.match_template_threshold
         self._config = config
 
-        self._segments = []
+        sourcer = Sourcer(str(video_path), custom_ffmpeg=str(config.ffmpeg_path)).probe_stream()
+        video_metadata = cast(dict[str, Any], sourcer.retrieve_metadata())
+        self._duration: float = video_metadata['source_duration_sec']
+
+        self._segments: list[DetectedSegment] = []
 
     def _update_segments(self, position: float):
         position = round(position, 2)
 
-        if len(self._segments) == 0 or (position - self._segments[-1]['end']) > segments_min_gap:
-            self._segments = [segment for segment in self._segments if segment['duration'] > segments_min_duration]
+        if len(self._segments) == 0 or (position - self._segments[-1]['end']) > self._segments_min_gap:
+            self._segments = [segment for segment in self._segments if segment['duration'] > self._segments_min_duration]
             self._segments.append({'start': position, 'end': position, 'duration': 0})
         else:
             self._segments[-1]['end'] = position
@@ -119,9 +119,8 @@ class OpenCVBaseDetect(ABC):
         image: cv2.typing.MatLike,
         template: cv2.typing.MatLike,
         position_metadata: PositionMetadata,
-        progress_task: ProgressTask,
         result_window_name: str
-    ) -> bool:
+    ) -> tuple[float, bool]:
         ...
 
     def _show_detect_result(
@@ -142,44 +141,53 @@ class OpenCVBaseDetect(ABC):
             "segments": self._segments
         }
 
-        return draw_detection_box(result_window_name, image, image_shape, match_result, threshold, stats)
+        return draw_detection_box(result_window_name, image, image_shape, match_result, self._threshold, stats)
 
-
-    def detect(self) -> list[DetectedSegment]:
+    def detect_with_progress(self) -> Generator[float, None, list[DetectedSegment]]:
         template = cv2.imread(str(self._template_path), cv2.IMREAD_GRAYSCALE)
 
-        sourcer = Sourcer(str(self._video_path), custom_ffmpeg=str(self._config.ffmpeg_path)).probe_stream()
-        video_metadata = cast(dict[str, Any], sourcer.retrieve_metadata())
-
         target_fps = 5
-        duration = video_metadata['source_duration_sec']
+
         result_window_name = f'Match Template Result - {self._video_path}'
 
         if logger.isEnabledFor(logging.DEBUG):
             cv2.namedWindow(result_window_name, cv2.WINDOW_NORMAL)
 
-        with Progress() as progress:
-            try:
-                with transient_task_progress(progress, description='match_template', total=duration) as task_id:
-                    for frame, _, position_in_s in ffmpeg_frame_producer(
-                        self._video_path, target_fps=target_fps,
-                        other_video_filter=self.other_video_filter,
-                        config=self._config
-                    ):
-                        image = frame.copy()
-                        if self._do_detect(
-                            image,
-                            template,
-                            PositionMetadata(position_in_s, duration, target_fps),
-                            ProgressTask(progress, task_id),
-                            result_window_name
-                        ):
-                            break
-            finally:
-                cv2.destroyAllWindows()
+        try:
+            for frame, _, position_in_s in ffmpeg_frame_producer(
+                self._video_path, target_fps=target_fps,
+                other_video_filter=self.other_video_filter,
+                config=self._config
+            ):
+                image = frame.copy()
+                progress_percent, should_exit = self._do_detect(
+                    image,
+                    template,
+                    PositionMetadata(position_in_s, self._duration, target_fps),
+                    result_window_name
+                )
+                yield progress_percent
+
+                if should_exit:
+                    break
+        finally:
+            cv2.destroyAllWindows()
 
         logger.debug('Segments before final cleaning: %s', '\n'.join(map(str, self._segments)))
         return self._segments
+
+
+    def detect(self) -> list[DetectedSegment]:
+        detect_progress = self.detect_with_progress()
+
+        with Progress() as progress:
+            with transient_task_progress(progress, description='match_template', total=1.0) as task_id:
+                try:
+                    while True:
+                        progress_percent = next(detect_progress)
+                        progress.update(task_id, completed=progress_percent)
+                except StopIteration as e:
+                    return e.value
 
 
 class OpenCVTemplateDetect(OpenCVBaseDetect):
@@ -192,22 +200,21 @@ class OpenCVTemplateDetect(OpenCVBaseDetect):
         image: cv2.typing.MatLike,
         template: cv2.typing.MatLike,
         position_metadata: PositionMetadata,
-        progress_task: ProgressTask,
         result_window_name: str
-    ) -> bool:
+    ) -> tuple[float, bool]:
         def match_template(image):
             return cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
 
         result, process_time = timed_run(match_template, image)
         _, max_val, _, max_loc = cv2.minMaxLoc(result)
 
-        progress_task.progress.update(progress_task.task_id, completed=position_metadata.position_in_s)
+        progress_percent = position_metadata.position_in_s / self._duration
 
-        if max_val >= threshold:
+        if max_val >= self._threshold:
             self._update_segments(position_metadata.position_in_s)
 
         if logger.isEnabledFor(logging.DEBUG):
-            return self._show_detect_result(
+            return progress_percent, self._show_detect_result(
                 image,
                 template,
                 position_metadata,
@@ -216,4 +223,4 @@ class OpenCVTemplateDetect(OpenCVBaseDetect):
                 result_window_name
             )
 
-        return False
+        return progress_percent, False

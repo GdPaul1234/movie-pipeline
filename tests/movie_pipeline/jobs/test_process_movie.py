@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 import movie_pipeline.jobs.main as job
 
-from ..concerns import copy_files, create_output_movies_directories, get_output_movies_directories
+from ..concerns import copy_files, create_output_movies_directories, get_base_cronicle_json_input, get_output_movies_directories
 
 input_dir_path = Path(__file__).parent.joinpath('in')
 video_path = input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')
@@ -18,6 +18,7 @@ video_path = input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')
 output_dir_path, output_dir_movie_path, output_dir_serie_path, backup_dir_path = \
     get_output_movies_directories(Path(__file__).parent)
 
+archive_movie_dir_path = backup_dir_path.joinpath('Films')
 
 config_path = Path(__file__).parent / 'test_config.env'
 
@@ -28,19 +29,8 @@ class ProcessMovieTest(unittest.TestCase):
 
         create_output_movies_directories(Path(__file__).parent)
 
-        # see https://github.com/jhuckaby/Cronicle/blob/master/docs/Plugins.md#json-input
-        self.cronicle_json_input = {
-            "id": "jihuxvagi01",
-            "hostname": "joeretina.local",
-            "command": "/usr/local/bin/my-plugin.js",
-            "event": "3c182051",
-            "now": 1449431125,
-            "log_file": "/opt/cronicle/logs/jobs/jihuxvagi01.log",
-            "params": {
-                "myparam1": "90",
-                "myparam2": "Value"
-            }
-        }
+        archive_movie_dir_path.mkdir()
+        self.cronicle_json_input = get_base_cronicle_json_input()
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_log_progress_of_process_movie(self, mock_stdout):

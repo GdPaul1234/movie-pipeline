@@ -1,16 +1,18 @@
 from collections import deque
+import json
 import os
+import re
 import shutil
+import sys
 import unittest
 from datetime import datetime, timedelta
 from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
-from movie_pipeline.services.movie_archiver.movie_archiver import MoviesArchiver
+import movie_pipeline.jobs.main as job
 
-from ..concerns import (copy_files, create_output_movies_directories,
-                        get_output_movies_directories, lazy_load_config_file)
+from ..concerns import copy_files, create_output_movies_directories, get_base_cronicle_json_input, get_output_movies_directories
 
 output_dir_path, movie_dir_path, serie_dir_path, backup_dir_path = \
     get_output_movies_directories(Path(__file__).parent)
@@ -20,8 +22,7 @@ video_not_to_backup_path = movie_dir_path.joinpath('Movie Name', 'Movie Name.mp4
 
 archive_movie_dir_path = backup_dir_path.joinpath('Films')
 
-lazy_config = lazy_load_config_file(Path(__file__).parent)
-
+config_path = Path(__file__).parent / 'test_config.env'
 
 class ArchiveMoviesTest(unittest.TestCase):
     def setUp(self) -> None:
@@ -46,26 +47,33 @@ class ArchiveMoviesTest(unittest.TestCase):
         ])
 
         archive_movie_dir_path.mkdir()
+        self.cronicle_json_input = get_base_cronicle_json_input()
 
-    def test_is_old_movie(self):
-        movie_archiver = MoviesArchiver(lazy_config())
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_dry_archive_movies(self, mock_stdout):
+        self.cronicle_json_input["params"] = {"dry": True}
 
-        self.assertTrue(movie_archiver._is_old_movie(video_to_backup_path))
-        self.assertFalse(movie_archiver._is_old_movie(video_not_to_backup_path))
+        with patch.object(sys, 'argv', ["movie_pipeline_job_archive_movies", json.dumps(self.cronicle_json_input)]):
+            job.archive_movies(config_path)
 
-    def test_archive_abort(self):
-        movie_archiver = MoviesArchiver(lazy_config())
-
-        with patch('sys.stdin', StringIO('n\n')):
-            deque(movie_archiver.archive_with_progress())
+        output = mock_stdout.getvalue()
+        self.assertRegex(output, '{"table": {"title": "Movies to archive", "header":')
+        self.assertRegex(output, re.compile(r'{"progress": [\d.]+'))
+        self.assertRegex(output, '{"complete": 1, "code": 0}')
 
         self.assertEqual([], list(archive_movie_dir_path.iterdir()))
+    
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_log_progress_of_archive_movies(self, mock_stdout):
+        self.cronicle_json_input["params"] = {}
 
-    def test_archive_confirm(self):
-        movie_archiver = MoviesArchiver(lazy_config())
+        with patch.object(sys, 'argv', ["movie_pipeline_job_archive_movies", json.dumps(self.cronicle_json_input)]):
+            job.archive_movies(config_path)
 
-        with patch('sys.stdin', StringIO('Y')):
-            deque(movie_archiver.archive_with_progress())
+        output = mock_stdout.getvalue()
+        self.assertRegex(output, re.compile(r'{"progress": [\d.]+'))
+        self.assertRegex(output, re.compile(r'"perf": {"ArchiveMovies": [\d.]+}'))
+        self.assertRegex(output, '{"complete": 1, "code": 0}')
 
         self.assertTrue(archive_movie_dir_path.joinpath('Old Movie Name', 'Old Movie Name.mp4').exists())
         self.assertFalse(archive_movie_dir_path.joinpath('Movie Name', 'Movie Name.mp4').exists())

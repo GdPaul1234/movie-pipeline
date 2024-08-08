@@ -169,3 +169,6 @@ series_extracted_metadata.json
 media.db
 
 movie_pipeline/templates/grafana/grafana_config/tmp/
+
+tests/movie_pipeline/ressources/features/segments_detector/**/*.mp4
+tests/movie_pipeline/ressources/features/segments_detector/**/*.wav

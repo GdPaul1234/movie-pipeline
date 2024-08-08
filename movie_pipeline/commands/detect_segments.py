@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 
 from ..lib.util import debug
-from ..services.segments_detector import dump_segments_to_file, run_segment_detectors
+from ..services.segments_detector.segments_detector import dump_segments_to_file, run_segment_detectors
 from ..settings import Settings
 
 logger = logging.getLogger(__name__)

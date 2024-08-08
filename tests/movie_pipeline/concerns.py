@@ -45,3 +45,19 @@ def copy_files(rules: list[SourceDestinationDict]):
 
         if (after_copy_fn := rule.get('after_copy')) is not None:
             after_copy_fn(rule['destination'])
+
+
+def get_base_cronicle_json_input():
+    # see https://github.com/jhuckaby/Cronicle/blob/master/docs/Plugins.md#json-input
+    return {
+            "id": "jihuxvagi01",
+            "hostname": "joeretina.local",
+            "command": "/usr/local/bin/my-plugin.js",
+            "event": "3c182051",
+            "now": 1449431125,
+            "log_file": "/opt/cronicle/logs/jobs/jihuxvagi01.log",
+            "params": {
+                "myparam1": "90",
+                "myparam2": "Value"
+            }
+        }

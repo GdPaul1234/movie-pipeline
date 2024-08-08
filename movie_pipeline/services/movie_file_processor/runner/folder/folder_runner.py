@@ -10,11 +10,11 @@ from rich.live import Live
 from rich.progress import Progress, TaskID
 from rich.tree import Tree
 
+from .....lib.step_runner.step import BaseStep, StepProgressResult
 from .....lib.ui_factory import ProgressListener, ProgressUIFactory
 from .....lib.util import diff_tracking
 from .....settings import Settings
 from ...core import MovieFileProcessor
-from ...movie_file_processor_step import BaseStep, StepProgressResult
 
 logger = logging.getLogger(__name__)
 

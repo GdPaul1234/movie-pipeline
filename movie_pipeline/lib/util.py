@@ -65,16 +65,11 @@ def progress_to_task_iterator(progress_iterator: Iterator[float], count=100) -> 
 
     for progress in progress_iterator:
         if progress == 1:
-            for x in range(task_number, count + 1):
-                yield x
+            yield from range(task_number, count + 1)
         else:
-            current_task_number, current_task_reminder = divmod(
-                int(count*progress), count)
+            current_task_number, current_task_reminder = divmod(int(count*progress), count)
             current_task_number += task_reminder
-
-            for x in range(task_number, current_task_number):
-                yield x
-
+            yield from range(task_number, current_task_number)
             task_number, task_reminder = current_task_number, current_task_reminder
 
 

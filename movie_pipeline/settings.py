@@ -2,7 +2,7 @@ import shutil
 from typing import Literal, Optional
 
 from pydantic import BaseModel
-from pydantic.types import DirectoryPath, FilePath, PositiveInt
+from pydantic.types import DirectoryPath, FilePath, PositiveInt, PositiveFloat
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,6 +20,9 @@ class ArchiveSettings(BaseModel):
 
 class SegmentDetectionSettings(BaseModel):
     templates_path: DirectoryPath
+    segments_min_gap: PositiveFloat = 20.0
+    segments_min_duration: PositiveFloat = 120.0
+    match_template_threshold: PositiveFloat = 0.8
 
 
 class ProcessorSettings(BaseModel):

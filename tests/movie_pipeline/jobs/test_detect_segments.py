@@ -57,7 +57,7 @@ class DetectSegmentsTest(unittest.TestCase):
 
         self.cronicle_json_input["params"] = {'file_path': str(video_path.absolute()), 'detectors': ['match_template']}
 
-        with patch.object(sys, 'argv', ["movie_pipeline_job_process_movie", json.dumps(self.cronicle_json_input)]):
+        with patch.object(sys, 'argv', ["movie_pipeline_job_detect_segments", json.dumps(self.cronicle_json_input)]):
             job.detect_segments(config_path)
 
         output = mock_stdout.getvalue()

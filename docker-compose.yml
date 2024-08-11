@@ -1,0 +1,29 @@
+services:
+  movie_pipeline_cronicle:
+    image: fripiane/movie_pipeline_cronicle:0.2.6
+    hostname: manager1
+    ports:
+      - 3012:3012
+    command: manager
+    stdin_open: true
+    tty: true
+    volumes:
+      - ${PATHS_MOVIES_FOLDER:?error}:/app/movies
+      - ${PATHS_SERIES_FOLDER:?error}:/app/series
+      - ${PATHS_BACKUP_FOLDER:?error}:/app/backup
+      - ${ARCHIVE_BACKUP_FOLDER:?error}:/app/archive/source
+      - ${ARCHIVE_MOVIES_ARCHIVE_FOLDER?:error}:/app/archive/dest
+      - ${LOGGER_FILE_PATH?:error}:/app/logs/log.txt
+      - ./movie_pipeline/jobs/data:/opt/cronicle/data
+    environment:
+      - ffmpeg_hwaccel=cuda
+      - CRONICLE_manager=1
+      - CRONICLE_secret_key=${CRONICLE_secret_key?:error}
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu,video]

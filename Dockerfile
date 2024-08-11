@@ -38,7 +38,7 @@ RUN pip install dist/movie_pipeline-0.2.6-py3-none-any.whl \
     && rm -rf /app/dist/
 
 # Init movie_pipeline directories
-RUN mkdir -p movies series backup archive/source archive/dest /root/.movie_pipeline \
+RUN mkdir -p movies series backup logs archive/source archive/dest /root/.movie_pipeline \
     && touch /root/.movie_pipeline/config.env \
     && touch log.txt
 
@@ -51,7 +51,7 @@ ENV Paths__backup_folder=${Archive__base_backup_path}/source
 ENV Archive__movies_archive_folder=${Archive__base_backup_path}/dest
 ENV Archive__max_retention_in_s=33_000_000
 
-ENV Logger__file_path=/app/log.txt
+ENV Logger__file_path=/app/logs/log.txt
 
 # Expose port of the mpire-dashboard
 EXPOSE 8080

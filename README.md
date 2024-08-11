@@ -30,6 +30,61 @@ $ python app.py --help
 ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
+### Running locally
+
+Install poetry, then run:
+
+```sh
+poetry build -f wheel
+pip install --user ./dist/movie_pipeline-${VERSION}-py3-none-any.whl
+```
+
+The following commands will be available:
+
+```sh
+movie_pipeline
+movie_pipeline_job_archive_movies
+movie_pipeline_job_detect_segments
+movie_pipeline_job_process_movie
+```
+
+### Running with docker
+
+Build the movie_pipeline project:
+
+```sh
+docker build -t fripiane/movie_pipeline:0.2.6 .
+```
+
+Then build the cronicle integration:
+
+```sh
+docker build -t fripiane/movie_pipeline_cronicle:${VERSION} ./movie_pipeline/jobs/
+```
+
+Create and fill in the `.env` file:
+
+```env
+paths_base_path=V:\PVR
+archive_base_backup_path=W:\Dossier personnel\video
+
+PATHS_MOVIES_FOLDER=${paths_base_path}\Films
+PATHS_SERIES_FOLDER=${paths_base_path}\Séries
+PATHS_BACKUP_FOLDER=${archive_base_backup_path}\PVR\playground
+
+ARCHIVE_BACKUP_FOLDER=W:\Dossier personnel\video
+ARCHIVE_MOVIES_ARCHIVE_FOLDER=${archive_base_backup_path}\Films
+LOGGER_FILE_PATH=${paths_base_path}\log.txt
+
+CRONICLE_secret_key=
+```
+
+Then run:
+
+```sh
+docker compose up
+```
+
 ## Configuration
 
 Before using this program, you must provide a valid config file.
@@ -99,7 +154,7 @@ Logger__file_path=${Paths__base_path}\log.txt
 
 ## Main commands
 
-### Basic workflow: detect and trim relevant segments + move to library
+### Basic workflow: detect and trim relevant segments + move to media library
 
 Once the configuration file has been filled in and all registrations made:
 
@@ -134,7 +189,7 @@ Alternatively, you can manually populate each edit decision file according to th
 > Be sure that you have some kind of recycle bin puts in place in your system, so the deleted file is moved inside it
 > instead of being definitly deleted.
 
-### Archive pipeline
+### Archive medias
 
 If the remaining space of `base_path` is low, use the `archive_movies` command.
 
@@ -149,4 +204,4 @@ Only movies are supported at the time of writing this document.
 ## TODO
 
 - Improve segments detection, auto selection of the best strategies
-- Add tests for segment detections
+- Add more tests for segment detections

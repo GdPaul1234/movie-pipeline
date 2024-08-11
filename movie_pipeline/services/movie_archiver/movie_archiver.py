@@ -49,8 +49,8 @@ class MoviesArchiver:
 
         for index, old_movie in enumerate(old_movies):
             parent_dir = old_movie.parent
-            backup_parent_dir = self._base_backup_path.joinpath('PVR', 'Films', parent_dir.name)
-            dest_path = self._movies_archive_folder.joinpath(parent_dir.name)
+            backup_parent_dir = self._base_backup_path / 'PVR' / 'Films' / parent_dir.name
+            dest_path = self._movies_archive_folder /parent_dir.name
 
             try:
                 logger.info('Archiving %s\n  to %s', backup_parent_dir, dest_path)

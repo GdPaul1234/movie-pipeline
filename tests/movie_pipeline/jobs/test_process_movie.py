@@ -17,17 +17,17 @@ from ..concerns import (
 
 class ProcessMovieTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.input_dir_path = Path(__file__).parent.joinpath('in')
-        self.video_path = self.input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')
+        self.input_dir_path = Path(__file__).parent / 'in'
+        self.video_path = self.input_dir_path / 'channel 1_Movie Name_2022-11-1601-20.mp4'
         self.output_dir_path, *_, backup_dir_path = get_output_movies_directories(Path(__file__).parent)
         self.config_path = Path(__file__).parent / 'test_config.env'
 
-        sample_video_path = Path(__file__).parent.parent.joinpath('ressources', 'counter-30s.mp4')
+        sample_video_path = Path(__file__).parent.parent / 'ressources' / 'counter-30s.mp4'
         copy_files([{'source': sample_video_path, 'destination': self.video_path}])
 
         create_output_movies_directories(Path(__file__).parent)
 
-        archive_movie_dir_path = backup_dir_path.joinpath('Films')
+        archive_movie_dir_path = backup_dir_path / 'Films'
         archive_movie_dir_path.mkdir()
 
         self.cronicle_json_input = get_base_cronicle_json_input()

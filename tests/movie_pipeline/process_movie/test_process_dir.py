@@ -13,14 +13,14 @@ from ..concerns import (
 
 class TestProcessDir(unittest.TestCase):
     def setUp(self) -> None:
-        self.input_dir_path = Path(__file__).parent.joinpath('in')
-        self.video_path = self.input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')
-        self.serie_path = self.input_dir_path.joinpath('channel 1_Serie Name S01E23_2022-11-1601-20.mp4')
+        self.input_dir_path = Path(__file__).parent / 'in'
+        self.video_path = self.input_dir_path / 'channel 1_Movie Name_2022-11-1601-20.mp4'
+        self.serie_path = self.input_dir_path / 'channel 1_Serie Name S01E23_2022-11-1601-20.mp4'
         
         self.output_dir_path, _, self.output_dir_serie_path, _ = get_output_movies_directories(Path(__file__).parent)
         self.lazy_config = lazy_load_config_file(Path(__file__).parent)
 
-        sample_video_path = Path(__file__).parent.parent.joinpath('ressources', 'counter-30s.mp4')
+        sample_video_path = Path(__file__).parent.parent / 'ressources' / 'counter-30s.mp4'
         copy_files([
             {'source': sample_video_path, 'destination': self.video_path},
             {'source': sample_video_path, 'destination': self.serie_path}
@@ -38,7 +38,7 @@ class TestProcessDir(unittest.TestCase):
 
         self.assertFalse(self.serie_path.exists())
         self.assertFalse(edl_serie_path.exists())
-        self.assertTrue(self.output_dir_serie_path.joinpath('Serie Name', 'Saison 1', 'Serie Name S01E23.mp4'))
+        self.assertTrue((self.output_dir_serie_path / 'Serie Name' / 'Saison 1' / 'Serie Name S01E23.mp4').exists())
 
     def test_custom_ext_ignore_process(self):
         edl_video_path = self.video_path.with_suffix('.mp4.yml')

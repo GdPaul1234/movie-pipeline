@@ -15,17 +15,17 @@ from ..concerns import copy_files, create_output_movies_directories, get_output_
 class ArchiveMoviesTest(unittest.TestCase):
     def setUp(self) -> None:
         self.output_dir_path, movie_dir_path, self.serie_dir_path, backup_dir_path = get_output_movies_directories(Path(__file__).parent)
-        self.video_to_backup_path = movie_dir_path.joinpath('Old Movie Name', 'Old Movie Name.mp4')
-        self.video_not_to_backup_path = movie_dir_path.joinpath('Movie Name', 'Movie Name.mp4')
+        self.video_to_backup_path = movie_dir_path / 'Old Movie Name' / 'Old Movie Name.mp4'
+        self.video_not_to_backup_path = movie_dir_path / 'Movie Name' / 'Movie Name.mp4'
         self.lazy_config = lazy_load_config_file(Path(__file__).parent)
 
         create_output_movies_directories(Path(__file__).parent)
 
-        pvr_movie_backup_dir_path = backup_dir_path.joinpath('PVR', 'Films')
-        video_not_to_backup_archive_path = pvr_movie_backup_dir_path.joinpath('Movie Name', 'Movie Name.mp4')
-        video_to_backup_archive_path = pvr_movie_backup_dir_path.joinpath('Old Movie Name', 'Old Movie Name.mp4')
+        pvr_movie_backup_dir_path = backup_dir_path / 'PVR' / 'Films'
+        video_not_to_backup_archive_path = pvr_movie_backup_dir_path / 'Movie Name' / 'Movie Name.mp4'
+        video_to_backup_archive_path = pvr_movie_backup_dir_path / 'Old Movie Name' / 'Old Movie Name.mp4'
 
-        sample_video_path = Path(__file__).parent.parent.joinpath('ressources', 'counter-30s.mp4')
+        sample_video_path = Path(__file__).parent.parent / 'ressources' / 'counter-30s.mp4'
 
         def change_created_at_to_past(path: Path):
             past_datetime = datetime.now().timestamp() - timedelta(days=5).total_seconds()
@@ -39,7 +39,7 @@ class ArchiveMoviesTest(unittest.TestCase):
             {'source': self.video_to_backup_path, 'destination': video_to_backup_archive_path}
         ])
 
-        self.archive_movie_dir_path = backup_dir_path.joinpath('Films')
+        self.archive_movie_dir_path = backup_dir_path / 'Films'
         self.archive_movie_dir_path.mkdir()
         
         self.movie_archiver = MoviesArchiver(self.lazy_config())
@@ -58,8 +58,8 @@ class ArchiveMoviesTest(unittest.TestCase):
         with patch('sys.stdin', StringIO('Y')):
             deque(self.movie_archiver.archive_with_progress())
 
-        self.assertTrue(self.archive_movie_dir_path.joinpath('Old Movie Name', 'Old Movie Name.mp4').exists())
-        self.assertFalse(self.archive_movie_dir_path.joinpath('Movie Name', 'Movie Name.mp4').exists())
+        self.assertTrue((self.archive_movie_dir_path / 'Old Movie Name' / 'Old Movie Name.mp4').exists())
+        self.assertFalse((self.archive_movie_dir_path / 'Movie Name' / 'Movie Name.mp4').exists())
 
     def tearDown(self) -> None:
         shutil.rmtree(self.output_dir_path)

@@ -34,7 +34,7 @@ class BackupPolicyExecutor:
             original_movie (OriginalMovie): original movie to backup
             backup_folder_path (Path): path to store the original movie
         """
-        dest_path = backup_folder_path.joinpath(original_movie.movie.title)
+        dest_path = backup_folder_path / original_movie.movie.title
         dest_path.mkdir()
 
         logger.info('Move "%s" to "%s"', original_movie.file_path, dest_path)

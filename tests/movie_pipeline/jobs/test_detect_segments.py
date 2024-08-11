@@ -15,13 +15,13 @@ from ..concerns import copy_files, create_output_movies_directories, get_base_cr
 
 class DetectSegmentsTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.input_dir_path = Path(__file__).parent.joinpath('in')
-        self.video_path = self.input_dir_path.joinpath('channel 1_Movie Name_2022-11-1601-20.mp4')
-        self.other_video_path = self.input_dir_path.joinpath('channel 1_Other Movie Name_2022-11-1601-20.mp4')
+        self.input_dir_path = Path(__file__).parent / 'in'
+        self.video_path = self.input_dir_path / 'channel 1_Movie Name_2022-11-1601-20.mp4'
+        self.other_video_path = self.input_dir_path / 'channel 1_Other Movie Name_2022-11-1601-20.mp4'
         self.output_dir_path, *_, backup_dir_path = get_output_movies_directories(Path(__file__).parent)
         self.config_path = Path(__file__).parent / 'test_config.env'
 
-        sample_video_path = Path(__file__).parent.parent.joinpath('ressources', 'features', 'segments_detector', 'segments_detector test video.mp4')
+        sample_video_path = Path(__file__).parent.parent / 'ressources' / 'features' / 'segments_detector' / 'segments_detector test video.mp4'
         copy_files([
             {'source': sample_video_path, 'destination': self.video_path},
             {'source': sample_video_path, 'destination': self.other_video_path}
@@ -29,7 +29,7 @@ class DetectSegmentsTest(unittest.TestCase):
 
         create_output_movies_directories(Path(__file__).parent)
 
-        archive_movie_dir_path = backup_dir_path.joinpath('Films')
+        archive_movie_dir_path = backup_dir_path / 'Films'
         archive_movie_dir_path.mkdir()
 
         self.cronicle_json_input = get_base_cronicle_json_input()

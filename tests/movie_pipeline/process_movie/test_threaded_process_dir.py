@@ -16,13 +16,13 @@ class TestThreadedProcessDir(unittest.TestCase):
         self.output_dir_path, self.output_dir_movie_path, _, self.backup_dir_path = get_output_movies_directories(Path(__file__).parent)
         self.lazy_config = lazy_load_config_file(Path(__file__).parent)
 
-        self.input_dir_path = Path(__file__).parent.joinpath('in')
+        self.input_dir_path = Path(__file__).parent / 'in'
         self.input_dir_path.mkdir()
-        ressources_path = Path(__file__).parent.parent.joinpath('ressources')
+        ressources_path = Path(__file__).parent.parent / 'ressources'
 
         for video in ressources_path.glob('*.mp4'):
             # create video file
-            video_path = self.input_dir_path.joinpath(f'channel 1_{video.stem}_2022-11-291526.mp4')
+            video_path = self.input_dir_path / f'channel 1_{video.stem}_2022-11-291526.mp4'
             shutil.copyfile(video, video_path)
 
             # create edl

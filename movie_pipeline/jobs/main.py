@@ -17,7 +17,7 @@ def get_job_config(config_path=default_config_path) -> Settings:
 
 def archive_movies(config_path=default_config_path, raw_inputs: Optional[str] = None):
     from ..services.movie_archiver.runner.cronicle_runner import Input, archive_movies
-    raw_inputs = raw_inputs or sys.argv[1]
+    raw_inputs = raw_inputs or next(sys.stdin)
 
     BaseCroniclePlugin(
         lambda params: archive_movies(params, get_job_config(config_path)),
@@ -27,7 +27,7 @@ def archive_movies(config_path=default_config_path, raw_inputs: Optional[str] = 
 
 def detect_segments(config_path=default_config_path, raw_inputs: Optional[str] = None):
     from ..services.segments_detector.runner.cronicle.cronicle_runner import Input, detect_segments
-    raw_inputs = raw_inputs or sys.argv[1]
+    raw_inputs = raw_inputs or next(sys.stdin)
 
     BaseCroniclePlugin(
         lambda params: detect_segments(params, get_job_config(config_path)),
@@ -37,7 +37,7 @@ def detect_segments(config_path=default_config_path, raw_inputs: Optional[str] =
 
 def process_movie(config_path=default_config_path, raw_inputs: Optional[str] = None):
     from ..services.movie_file_processor.runner.cronicle.cronicle_runner import Input, process_file
-    raw_inputs = raw_inputs or sys.argv[1]
+    raw_inputs = raw_inputs or next(sys.stdin)
 
     BaseCroniclePlugin(
         lambda params: process_file(params, get_job_config(config_path)),

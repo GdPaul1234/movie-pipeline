@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class Input(BaseModel):
     file_path: FilePath | DirectoryPath
-    detectors: list[str] = field(default_factory=lambda: [DetectorKey.match_template.name])
+    detector: str = DetectorKey.match_template.name
 
 
 @dataclass
@@ -57,7 +57,7 @@ def detect_segments(input: Input, config: Settings) -> Iterator[ReportedProgress
             segment_detector = SegmentDetectorStep(
                 context=SegmentDetectorContext(
                     movie_file_path=file_path,
-                    detectors=[DetectorKey[detector] for detector in input.detectors],
+                    detectors=[DetectorKey[input.detector]],
                     config=config
                 ),
                 description=f'{str(file_path)} segments detection',

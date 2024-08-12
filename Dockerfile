@@ -38,9 +38,9 @@ RUN pip install dist/movie_pipeline-0.2.6-py3-none-any.whl \
     && rm -rf /app/dist/
 
 # Init movie_pipeline directories
-RUN mkdir -p movies series backup logs archive/source archive/dest /root/.movie_pipeline \
+RUN mkdir -p inputs movies series backup logs archive/source archive/dest /root/.movie_pipeline \
     && touch /root/.movie_pipeline/config.env \
-    && touch log.txt
+    && touch logs/log.txt
 
 ENV Paths__movies_folder=/app/movies
 ENV Paths__series_folder=/app/series

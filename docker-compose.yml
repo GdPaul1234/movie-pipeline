@@ -8,12 +8,13 @@ services:
     stdin_open: true
     tty: true
     volumes:
+      - ${PATHS_INPUT_FOLDER?:error}:/app/inputs
       - ${PATHS_MOVIES_FOLDER:?error}:/app/movies
       - ${PATHS_SERIES_FOLDER:?error}:/app/series
       - ${PATHS_BACKUP_FOLDER:?error}:/app/backup
       - ${ARCHIVE_BACKUP_FOLDER:?error}:/app/archive/source
       - ${ARCHIVE_MOVIES_ARCHIVE_FOLDER?:error}:/app/archive/dest
-      - ${LOGGER_FILE_PATH?:error}:/app/logs/log.txt
+      - ${LOGGER_LOG_FOLDER?:error}:/app/logs/
       - ./movie_pipeline/jobs/data:/opt/cronicle/data
     environment:
       - ffmpeg_hwaccel=cuda

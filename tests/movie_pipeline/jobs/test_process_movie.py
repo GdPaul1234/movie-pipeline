@@ -39,7 +39,7 @@ class ProcessMovieTest(unittest.TestCase):
 
         self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'edl_ext': '.yml'}
 
-        with patch.object(sys, 'argv', ["movie_pipeline_job_process_movie", json.dumps(self.cronicle_json_input)]):
+        with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
             job.process_movie(self.config_path)
 
         output = mock_stdout.getvalue()

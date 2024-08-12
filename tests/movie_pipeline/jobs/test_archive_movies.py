@@ -50,7 +50,7 @@ class ArchiveMoviesTest(unittest.TestCase):
     def test_dry_archive_movies(self, mock_stdout):
         self.cronicle_json_input["params"] = {"dry": True}
 
-        with patch.object(sys, 'argv', ["movie_pipeline_job_archive_movies", json.dumps(self.cronicle_json_input)]):
+        with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
             job.archive_movies(self.config_path)
 
         output = mock_stdout.getvalue()
@@ -64,7 +64,7 @@ class ArchiveMoviesTest(unittest.TestCase):
     def test_log_progress_of_archive_movies(self, mock_stdout):
         self.cronicle_json_input["params"] = {}
 
-        with patch.object(sys, 'argv', ["movie_pipeline_job_archive_movies", json.dumps(self.cronicle_json_input)]):
+        with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
             job.archive_movies(self.config_path)
 
         output = mock_stdout.getvalue()

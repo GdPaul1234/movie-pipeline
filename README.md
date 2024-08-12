@@ -68,13 +68,15 @@ Create and fill in the `.env` file:
 paths_base_path=V:\PVR
 archive_base_backup_path=W:\Dossier personnel\video
 
+PATHS_INPUT_FOLDER=${paths_base_path}
+
 PATHS_MOVIES_FOLDER=${paths_base_path}\Films
 PATHS_SERIES_FOLDER=${paths_base_path}\Séries
 PATHS_BACKUP_FOLDER=${archive_base_backup_path}\PVR\playground
 
 ARCHIVE_BACKUP_FOLDER=W:\Dossier personnel\video
 ARCHIVE_MOVIES_ARCHIVE_FOLDER=${archive_base_backup_path}\Films
-LOGGER_FILE_PATH=${paths_base_path}\log.txt
+LOGGER_LOG_FOLDER=${paths_base_path}
 
 CRONICLE_secret_key=
 ```

@@ -20,7 +20,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh \
 # non root user for shell plugin
 ARG CRONICLE_UID=1000
 ARG CRONICLE_GID=1099
-RUN  addgroup cronicle --gid "$CRONICLE_GID" && adduser -D -h /opt/cronicle -u "$CRONICLE_UID" -G cronicle cronicle
+RUN addgroup cronicle --gid "$CRONICLE_GID" && adduser -D -h /opt/cronicle -u "$CRONICLE_UID" -G cronicle cronicle
 
 COPY --from=builder /opt/cronicle /opt/cronicle
 

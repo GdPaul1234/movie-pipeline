@@ -65,20 +65,21 @@ docker build -t fripiane/movie_pipeline_cronicle:${VERSION} ./movie_pipeline/job
 Create and fill in the `.env` file:
 
 ```env
-paths_base_path=V:\PVR
-archive_base_backup_path=W:\Dossier personnel\video
+PATHS_INPUT_FOLDER=video/PVR
 
-PATHS_INPUT_FOLDER=${paths_base_path}
+PATHS_MOVIES_FOLDER=usbshare1/video/PVR/Films
+PATHS_SERIES_FOLDER=video/PVR/Séries
+PATHS_BACKUP_FOLDER=usbshare1/Dossier personnel/video/PVR/playground
 
-PATHS_MOVIES_FOLDER=${paths_base_path}\Films
-PATHS_SERIES_FOLDER=${paths_base_path}\Séries
-PATHS_BACKUP_FOLDER=${archive_base_backup_path}\PVR\playground
-
-ARCHIVE_BACKUP_FOLDER=W:\Dossier personnel\video
-ARCHIVE_MOVIES_ARCHIVE_FOLDER=${archive_base_backup_path}\Films
-LOGGER_LOG_FOLDER=${paths_base_path}
+ARCHIVE_BACKUP_FOLDER=usbshare1/Dossier personnel/video
+ARCHIVE_MOVIES_ARCHIVE_FOLDER=usbshare1/Dossier personnel/video/Films
+LOGGER_LOG_FOLDER=video/PVR/temp/logs
 
 CRONICLE_secret_key=
+
+CIFS_USERNAME=
+CIFS_PASSWORD=
+CIFS_SHARE=
 ```
 
 Then run:

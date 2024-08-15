@@ -54,7 +54,7 @@ class MoviesArchiver:
 
             try:
                 logger.info('Archiving %s\n  to %s', backup_parent_dir, dest_path)
-                backup_parent_dir.replace(dest_path)
+                shutil.move(backup_parent_dir, dest_path)
 
                 logger.info('Deleting %s', parent_dir)
                 shutil.rmtree(parent_dir)

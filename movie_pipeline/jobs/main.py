@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import sys
 from pathlib import Path
@@ -8,6 +9,9 @@ from ..jobs.base_cronicle_plugin import BaseCroniclePlugin, BaseCroniclePluginIn
 from ..settings import Settings
 
 default_config_path = Path.home() / '.movie_pipeline' / 'config.env'
+
+
+logging.basicConfig(level='INFO', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
 def get_job_config(config_path=default_config_path) -> Settings:

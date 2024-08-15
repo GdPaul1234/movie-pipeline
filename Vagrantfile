@@ -83,7 +83,7 @@ Vagrant.configure("2") do |config|
   
     # Customize the amount of memory on the VM:
     vb.memory = "2048"
-    vb.cpus = 2
+    vb.cpus = 8
 
     # Enable 3D acceleration for better Desktop experience
     vb.customize ["modifyvm", :id, "--accelerate3d", "on"]

@@ -32,6 +32,8 @@ class SegmentDetectorStep(BaseStep[SegmentDetectorContext]):
     def _perform(self) -> Iterator[float]:
         selected_detectors_keys = [key.name for key in self.context.detectors]
         detect_progress = run_segment_detectors_with_progress(self.context.movie_file_path, selected_detectors_keys, self.context.config, raise_error=True)
+        
+        logger.info('Search segments in "%s"...', self.context.movie_file_path)
 
         try:
             while True:

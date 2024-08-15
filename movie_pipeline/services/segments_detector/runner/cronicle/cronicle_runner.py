@@ -69,7 +69,11 @@ def detect_segments(input: Input, config: Settings) -> Iterator[ReportedProgress
 
             for step_progress_result in segment_detector.process_all():
                 elapsed_times[f'Item{index}'] = step_progress_result.current_step_elapsed_time
-                yield {'progress': round(step_progress_result.total_percent / float(file_paths_size), 2), 'perf': elapsed_times}
+                
+                yield {
+                    'progress': round((index + step_progress_result.total_percent) / float(file_paths_size), 2), 
+                    'perf': elapsed_times
+                }
 
         except Exception as e:
             logger.exception(e)

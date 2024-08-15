@@ -46,9 +46,8 @@ ENV Paths__movies_folder=/app/movies
 ENV Paths__series_folder=/app/series
 ENV Paths__backup_folder=/app/backup
 
-ENV Archive__base_backup_path=/app/archive
-ENV Paths__backup_folder=${Archive__base_backup_path}/source
-ENV Archive__movies_archive_folder=${Archive__base_backup_path}/dest
+ENV Archive__base_backup_path=/app/archive/source
+ENV Archive__movies_archive_folder=/app/archive/dest
 ENV Archive__max_retention_in_s=33_000_000
 
 ENV Logger__file_path=/app/logs/log.txt

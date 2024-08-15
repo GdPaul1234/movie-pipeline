@@ -159,6 +159,9 @@ site
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# Vagrant
+**/.vagrant/
+
 # Specific application files to ignore
 **/config.ini
 **/config.env

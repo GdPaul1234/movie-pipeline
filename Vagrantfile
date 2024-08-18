@@ -58,8 +58,7 @@ Vagrant.configure("2") do |config|
     PATHS_MOVIES_FOLDER: '/app/movies',
     PATHS_SERIES_FOLDER: '/app/series',
     PATHS_BACKUP_FOLDER: '/app/backup',
-    ARCHIVE_BACKUP_FOLDER: '/app/archive/source',
-    ARCHIVE_MOVIES_ARCHIVE_FOLDER: '/app/archive/dest',
+    ARCHIVE_BASE_FOLDER: '/app/archive',
     LOGGER_LOG_FOLDER: '/app/logs'
   }.transform_keys(&:to_s)
 
@@ -122,8 +121,8 @@ Vagrant.configure("2") do |config|
     echo Paths__series_folder=/app/series >> ~/.movie_pipeline/config.env
     echo Paths__backup_folder=/app/backup >> ~/.movie_pipeline/config.env
     echo '' >> ~/.movie_pipeline/config.env
-    echo Archive__base_backup_path=/app/archive/source  >> ~/.movie_pipeline/config.env
-    echo Archive__movies_archive_folder=/app/archive/dest  >> ~/.movie_pipeline/config.env
+    echo Archive__base_backup_path=/app/archive >> ~/.movie_pipeline/config.env
+    echo Archive__movies_archive_folder=/app/archive/Films >> ~/.movie_pipeline/config.env
     echo Archive__max_retention_in_s=33_000_000 >> ~/.movie_pipeline/config.env
     echo '' >> ~/.movie_pipeline/config.env
     echo Logger__file_path=/app/logs/log.txt >> ~/.movie_pipeline/config.env

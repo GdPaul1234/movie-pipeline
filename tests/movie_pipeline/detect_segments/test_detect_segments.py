@@ -1,4 +1,3 @@
-from typing import cast
 import unittest
 
 from movie_pipeline.models.detected_segments import DetectedSegment, humanize_segments, merge_adjacent_segments

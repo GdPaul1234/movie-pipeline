@@ -126,39 +126,28 @@ class AudioCrossCorrelationDetect(SilenceDetect):
 
 class FFmpegCropSegmentMergerContainer(FFmpegLineContainer):
     # see https://fr.wikipedia.org/wiki/Format_d'image
-    whitelisted_ratios = [1.33, 1.37, 2.39, 2.20, 1.66, 2.]
+    whitelisted_ratios = [1.33, 1.37, 1.56, 1.66, 1.85, 2., 2.20, 2.35, 2.39, 2.55, 2.76]
 
     def __init__(self, filter_pattern) -> None:
         super().__init__()
         self._filter_pattern = filter_pattern
-
-    def lines(self):
-        def mapper(line):
-            return '\t'.join(f'{key} : {line[key]}' for key in line.keys())
-
-        return list(map(mapper, self._lines))
+        self._found_ratios: set[float] = set()
+        self.segments: list[DetectedSegment] = []
 
     def append(self, line: str):
         mapped_line = {key: value for key, value in self._filter_pattern.findall(line)}
-        position = float(mapped_line[' t'])
+        position = float(mapped_line['t'])
+        ratio = float(mapped_line['w']) / float(mapped_line['h'])
 
-        w, h = tuple(map(float, (mapped_line['w'], mapped_line['h'])))
-        if not any(map(lambda x: math.isclose(x, w/h, rel_tol=1e-02), self.whitelisted_ratios)):
+        self._found_ratios.add(ratio)
+
+        if not any(math.isclose(whitelisted, ratio, rel_tol=1e-02) for whitelisted in self.whitelisted_ratios):
             return
 
-        def add_segment():
-            self._lines.append(mapped_line | new_segment)
-            logger.info(mapped_line | new_segment)
+        last_segment = self.segments[-1] if len(self.segments) > 0 else None
 
-        new_segment = { 'start': position, 'end': position, 'duration': 0 }
-        if len(self._lines) == 0:
-            add_segment()
-            return
-
-        last_segment = self._lines[-1]
-
-        if (position - last_segment['end']) > 0.1:
-            add_segment()
+        if last_segment is None or (position - last_segment['end']) > 0.1:
+            self.segments.append({ 'start': position, 'end': position, 'duration': 0 })
         else:
             last_segment['end'] = position
             last_segment['duration'] = round(position - last_segment['start'], 2)
@@ -167,8 +156,13 @@ class FFmpegCropSegmentMergerContainer(FFmpegLineContainer):
 class CropDetect(BaseDetect):
     detect_filter = 'cropdetect'
     media = 'video'
-    filter_pattern = re.compile(r'(x1|x2|y1|y2|w|h|x|y|pts| t)\s*\:\s*(\S+)')
+    filter_pattern = re.compile(r' (x1|x2|y1|y2|w|h|x|y|pts|t)\s*\:\s*(\S+)')
+    args={'reset_count': 3} # cf https://ffmpeg.org/ffmpeg-filters.html#toc-cropdetect
 
     def __init__(self, movie_path: Path, config: Settings) -> None:
         super().__init__(movie_path, config)
         self.line_container = FFmpegCropSegmentMergerContainer(self.filter_pattern)
+
+    def _map_out(self, output: list[str]) -> list[DetectedSegment]:
+        logger.info(f'found_ratios: {sorted(self.line_container._found_ratios)}')
+        return self.line_container.segments

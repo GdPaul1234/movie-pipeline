@@ -53,7 +53,7 @@ movie_pipeline_job_process_movie
 Build the movie_pipeline project:
 
 ```sh
-docker build -t fripiane/movie_pipeline:0.2.6 .
+docker build -t fripiane/movie_pipeline:${VERSION} .
 ```
 
 Then build the cronicle integration:
@@ -87,6 +87,16 @@ Then run:
 ```sh
 docker compose up
 ```
+
+### Running with Vagrant
+
+Download Vagrant, set the following environment variables, then run `vagrant up`:
+
+- `PATHS_INPUT_FOLDER`
+- `PATHS_MOVIES_FOLDER`
+- `PATHS_BACKUP_FOLDER`
+- `ARCHIVE_BASE_FOLDER`
+- `LOGGER_LOG_FOLDER`
 
 ## Configuration
 

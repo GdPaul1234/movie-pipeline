@@ -90,25 +90,10 @@ class BaseDetect(ABC):
                     return e.value
 
 
-class BlackDetect(BaseDetect):
-    detect_filter = 'blackdetect'
-    media = 'video'
-    filter_pattern = re.compile(r'(black_start|black_end|black_duration)\s*\:\s*(\S+)')
-
-
-class SilenceDetect(BaseDetect):
-    detect_filter = 'silencedetect'
+class AudioCrossCorrelationDetect(BaseDetect):
+    detect_filter = 'axcorrelate'
     media = 'audio'
     filter_pattern = re.compile(r'(silence_start|silence_end|silence_duration)\s*\:\s*(\S+)')
-
-    def _map_out(self, output: list[str]):
-        grouped_output = zip(*[iter(output)]*2)
-        flattened_ouput = [f'{start} {end}' for start, end in grouped_output] # type: ignore
-        return super()._map_out(flattened_ouput)
-
-
-class AudioCrossCorrelationDetect(SilenceDetect):
-    detect_filter = 'axcorrelate'
 
     def _build_command(self, in_file_path: Path):
         audio_tracks_input = input('Enter audio tracks to correlate separated with space: (0..nb_tracks, max: 2) ')
@@ -122,6 +107,11 @@ class AudioCrossCorrelationDetect(SilenceDetect):
             .filter_('silencedetect', noise='0dB', duration=420)
             .output('-', f='null')
         )
+    
+    def _map_out(self, output: list[str]):
+        grouped_output = zip(*[iter(output)]*2)
+        flattened_ouput = [f'{start} {end}' for start, end in grouped_output] # type: ignore
+        return super()._map_out(flattened_ouput)
 
 
 class FFmpegCropSegmentMergerContainer(FFmpegLineContainer):

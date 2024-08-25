@@ -75,6 +75,18 @@ class DetectSegmentsTest(unittest.TestCase):
         video_segments_content = self.assertAndReadOnlyVideoSegmentPathExists()
         self.assertEqual('00:00:00.080-00:00:03.280,00:00:08.600-00:00:14.320,00:00:18.920-00:00:24.160', video_segments_content['crop'])
 
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_log_progress_of_detected_segments_with_silence_detect(self, mock_stdout):
+        self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'silence'}
+
+        with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
+            job.detect_segments(self.config_path)
+
+        self.assertProgress(output=mock_stdout.getvalue())
+
+        video_segments_content = self.assertAndReadOnlyVideoSegmentPathExists()
+        self.assertEqual('00:00:00.080-00:00:03.280,00:00:08.600-00:00:14.320,00:00:18.920-00:00:24.160', video_segments_content['silence'])
+
     def assertProgress(self, output: str):
         self.assertRegex(output, re.compile(r'{"progress": [\d.]+'))
         self.assertRegex(output, re.compile(r'"perf": {"Item0": [\d.]+}'))

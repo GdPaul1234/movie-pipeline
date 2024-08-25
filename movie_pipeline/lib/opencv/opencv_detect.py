@@ -49,7 +49,7 @@ def OpenCVDetectWithInjectedTemplate(detector: type['OpenCVBaseDetect'], movie_p
     if metadata is None:
         raise ValueError('No metadata found. Please retry when the movie is finished')
 
-    template_path = templates_path.joinpath(f"{metadata['channel']}.bmp")
+    template_path = templates_path / f"{metadata['channel']}.bmp"
 
     if not template_path.exists():
         raise FileNotFoundError(template_path)

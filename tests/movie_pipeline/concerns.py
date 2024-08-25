@@ -1,10 +1,26 @@
 import os
 import shutil
 from pathlib import Path
+import textwrap
 from typing import Callable, NotRequired, TypedDict
 
 from movie_pipeline.settings import Settings
 
+
+def get_movie_edl_file_content(skip_backup=False):
+    return textwrap.dedent(f'''\
+        filename: Movie Name.mp4
+        segments: 00:00:03.370-00:00:05.960,00:00:10.520-00:00:18.200,00:00:20.320-00:00:25.080,
+        skip_backup: {'yes' if skip_backup else 'no'}
+    ''')
+
+
+def get_serie_edl_file_content(skip_backup=False):
+    return textwrap.dedent(f'''\
+        filename: Serie Name S01E23.mp4
+        segments: 00:00:03.370-00:00:05.960,00:00:10.520-00:00:18.200,00:00:20.320-00:00:25.080,
+        skip_backup: {'yes' if skip_backup else 'no'}
+    ''')
 
 def get_output_movies_directories(base_path_folder: Path):
     output_dir_path = base_path_folder / 'out'

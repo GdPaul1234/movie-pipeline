@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class Input(BaseModel):
     file_path: FilePath | DirectoryPath
-    detectors: list[str] = field(default_factory=lambda: [DetectorKey.match_template.name])
+    detector: str = DetectorKey.match_template.name
 
 
 @dataclass
@@ -32,6 +32,8 @@ class SegmentDetectorStep(BaseStep[SegmentDetectorContext]):
     def _perform(self) -> Iterator[float]:
         selected_detectors_keys = [key.name for key in self.context.detectors]
         detect_progress = run_segment_detectors_with_progress(self.context.movie_file_path, selected_detectors_keys, self.context.config, raise_error=True)
+        
+        logger.info('Search segments in "%s"...', self.context.movie_file_path)
 
         try:
             while True:
@@ -57,7 +59,7 @@ def detect_segments(input: Input, config: Settings) -> Iterator[ReportedProgress
             segment_detector = SegmentDetectorStep(
                 context=SegmentDetectorContext(
                     movie_file_path=file_path,
-                    detectors=[DetectorKey[detector] for detector in input.detectors],
+                    detectors=[DetectorKey[input.detector]],
                     config=config
                 ),
                 description=f'{str(file_path)} segments detection',
@@ -67,7 +69,11 @@ def detect_segments(input: Input, config: Settings) -> Iterator[ReportedProgress
 
             for step_progress_result in segment_detector.process_all():
                 elapsed_times[f'Item{index}'] = step_progress_result.current_step_elapsed_time
-                yield {'progress': round(step_progress_result.total_percent / float(file_paths_size), 2), 'perf': elapsed_times}
+                
+                yield {
+                    'progress': round((index + step_progress_result.total_percent) / float(file_paths_size), 2), 
+                    'perf': elapsed_times
+                }
 
         except Exception as e:
             logger.exception(e)

@@ -1,0 +1,65 @@
+services:
+  movie_pipeline_cronicle:
+    image: fripiane/movie_pipeline_cronicle:0.2.6
+    hostname: manager1
+    ports:
+      - 3012:3012
+    command: manager
+    privileged: true
+    stdin_open: true
+    tty: true
+    volumes:
+      - network_inputs:/app/inputs
+      - library_movies_folder:/app/movies
+      - library_series_folder:/app/series
+      - backup_folder:/app/backup
+      - archive_backup_folder:/app/archive/source
+      - archive_movies_folder:/app/archive/dest
+      - logs_folder:/app/logs
+      - ./movie_pipeline/jobs/data:/opt/cronicle/data
+    environment:
+      - ffmpeg_hwaccel=cuda
+      - CRONICLE_manager=1
+      - CRONICLE_secret_key=${CRONICLE_secret_key:?error}
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu,video]
+
+x-cifs-driver-opts: &cifs_driver_opts
+  type: cifs
+  o: username=${CIFS_USERNAME:?error},password=${CIFS_PASSWORD:?error},vers=3.0
+
+volumes:
+  network_inputs:
+    driver_opts:
+      <<: *cifs_driver_opts
+      device: //${CIFS_SHARE}/${PATHS_INPUT_FOLDER:?error}
+  library_movies_folder:
+    driver_opts:
+      <<: *cifs_driver_opts
+      device: //${CIFS_SHARE}/${PATHS_MOVIES_FOLDER:?error}
+  library_series_folder:
+    driver_opts:
+      <<: *cifs_driver_opts
+      device: //${CIFS_SHARE}/${PATHS_SERIES_FOLDER:?error}
+  backup_folder:
+    driver_opts:
+      <<: *cifs_driver_opts
+      device: //${CIFS_SHARE}/${PATHS_BACKUP_FOLDER:?error}
+  archive_backup_folder:
+    driver_opts:
+        <<: *cifs_driver_opts
+        device: //${CIFS_SHARE}/${ARCHIVE_BACKUP_FOLDER:?error}
+  archive_movies_folder:
+    driver_opts:
+        <<: *cifs_driver_opts
+        device: //${CIFS_SHARE}/${ARCHIVE_MOVIES_ARCHIVE_FOLDER:?error}
+  logs_folder:
+    driver_opts:
+        <<: *cifs_driver_opts
+        device: //${CIFS_SHARE}/${LOGGER_LOG_FOLDER:?error}

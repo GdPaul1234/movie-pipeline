@@ -49,12 +49,12 @@ class MoviesArchiver:
 
         for index, old_movie in enumerate(old_movies):
             parent_dir = old_movie.parent
-            backup_parent_dir = self._base_backup_path.joinpath('PVR', 'Films', parent_dir.name)
-            dest_path = self._movies_archive_folder.joinpath(parent_dir.name)
+            backup_parent_dir = self._base_backup_path / 'PVR' / 'Films' / parent_dir.name
+            dest_path = self._movies_archive_folder /parent_dir.name
 
             try:
                 logger.info('Archiving %s\n  to %s', backup_parent_dir, dest_path)
-                backup_parent_dir.replace(dest_path)
+                shutil.move(backup_parent_dir, dest_path)
 
                 logger.info('Deleting %s', parent_dir)
                 shutil.rmtree(parent_dir)

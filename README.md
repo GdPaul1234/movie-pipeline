@@ -216,5 +216,4 @@ Only movies are supported at the time of writing this document.
 
 ## TODO
 
-- Improve segments detection, auto selection of the best strategies
-- Add more tests for segment detections
+- Improve auto selection of the best strategies for segments detection

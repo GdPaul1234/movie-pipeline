@@ -67,8 +67,7 @@ class ProcessStep(BaseStep[MovieFileProcessorContext]):
     def _perform(self) -> Iterator[float]:
         logger.info('Processing "%s" from "%s"...', self._dest_filepath, self.context.in_file_path)
 
-        probe = ffmpeg.probe(self.context.in_file_path)
-        self._audio_streams = [stream for stream in probe['streams'] if stream.get('codec_type', 'N/A') == 'audio']
+        self._audio_streams = ffmpeg.probe(self.context.in_file_path, select_streams='a')['streams']
         self._nb_audio_streams = len(self._audio_streams)
         logger.debug(f'{self._nb_audio_streams=}')
 

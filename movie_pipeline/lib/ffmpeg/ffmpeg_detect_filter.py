@@ -96,10 +96,9 @@ class AudioCrossCorrelationDetect(BaseDetect):
     filter_pattern = re.compile(r'(silence_start|silence_end|silence_duration)\s*\:\s*(\S+)')
 
     def _build_command(self, in_file_path: Path):
-        probe = ffmpeg.probe(in_file_path, select_streams='a')
         audio_tracks = [
             index
-            for index, stream in enumerate(probe['streams']) 
+            for index, stream in enumerate(ffmpeg.probe(in_file_path, select_streams='a')['streams']) 
             if sum(stream['disposition'][field] for field in ('visual_impaired', 'descriptions')) < 1
         ]
 

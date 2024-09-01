@@ -26,9 +26,7 @@ def seconds_to_position(seconds: float) -> str:
 
 
 def total_movie_duration(movie_file_path: Path | str) -> float:
-    probe = ffmpeg.probe(str(movie_file_path))
-    video_streams = [stream for stream in probe['streams'] if stream.get('codec_type', 'N/A') == 'video']
-    return float(video_streams[0]['duration'])
+    return float(ffmpeg.probe(movie_file_path, select_streams='V')['streams'][0]['duration'])
 
 
 @contextmanager

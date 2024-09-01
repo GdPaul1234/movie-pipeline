@@ -47,12 +47,54 @@
 
 ## 3. Generating dialogs
 
-TODO
+Using [openedai-speech](https://github.com/matatonic/openedai-speech) and after configuring piper, make requests to the
+`/v1/audio/speech` endpoint to generate the voice-overs with the following POST bodies (`application/json`):
+
+* For the French (FR) voice-over:
+
+    ```json
+    {
+    "input": "Imaginez-vous dans une situation où vous vous sentez vraiment confiant et capable. C'est possible ! Et nous allons vous montrer comment. Essayez maintenant notre nouveau produit conçu pour vous faire atteindre vos objectifs. Chaque jour, nous pouvons prendre des décisions qui nous rendent heureux. Prendre soin de notre santé, être avec les personnes qu'on aime, se divertir. Découvrez maintenant des produits Entreprise qui répondent à vos attentes ! Vous pouvez avoir une vie parfaite en prenant soin de vous-même, et en vivant une vie équilibrée !",
+    "model": "tts-1",
+    "voice": "siwis",
+    "speed": 1.2
+    }
+    ```
+
+* For the English (EN) voice-over:
+
+    ```json
+    {
+    "input": "Imagine yourself in a situation where you feel truly confident and capable. It's possible! And we'll show you how to make it happen. Try our new product now, designed to help you achieve your goals. Every day, we have the power to make choices that bring us joy. Take care of our health, be with the people we love, have fun. Discover products from Company that meet your expectations! You can have a perfect life by taking care of yourself and living in balance!",
+    "model": "tts-1",
+    "voice": "alloy",
+    "speed": 0.7
+    }
+    ```
+
+Save them to `.\src\voiceover_#{language}.mp3`.
 
 ## 4. Adding logo and ad breaks
 
 ## 5. Edit and render the videos
 
-Open `segments_detector test video.kdenlive` in Kdenlive, then render the video.
+* Open `segments_detector test video.kdenlive` in Kdenlive.
 
-Move the rendered video in `tests\movie_pipeline\ressources\features\segments_detector\segments_detector test video.mp4`
+* Render the project with the EN track muted, into `segments_detector test video_FR.mp4`
+
+* Render the project with the FR track muted, into `segments_detector test video_EN.mp4`
+
+* Merge the audio tracks with the following ffmpeg commands:
+
+  ```sh
+  ffmpeg \
+  -i "paths/to/segments_detector test video_FR.mp4" \
+  -i "paths/to/segments_detector test video_FR.mp4" \
+  -i "paths/to/segments_detector test video_EN.mp4" \
+  -map 0:0 -c:v copy -metadata:s:v:0 language=und -map 1:1 -c:a copy -metadata:s:a:0 language=fra -disposition:a:0 default -map 2:1 -c:a copy -metadata:s:a:1 language=eng \
+  -disposition:a:1 0 \
+  -y \
+  "paths/to/segments_detector test video.mp4"
+  ```
+
+* Move the rendered video in `tests\movie_pipeline\ressources\features\segments_detector\segments_detector test video.mp4`

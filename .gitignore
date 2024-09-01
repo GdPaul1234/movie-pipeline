@@ -176,3 +176,4 @@ movie_pipeline/jobs/data/*
 
 tests/movie_pipeline/ressources/features/segments_detector/**/*.mp4
 tests/movie_pipeline/ressources/features/segments_detector/**/*.wav
+tests/movie_pipeline/ressources/features/segments_detector/**/*.mp3

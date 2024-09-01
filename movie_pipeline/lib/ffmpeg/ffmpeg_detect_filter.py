@@ -4,7 +4,7 @@ import multiprocessing
 import re
 from abc import ABC
 from pathlib import Path
-from typing import Generator, Literal
+from typing import Any, Generator, Literal, cast
 
 import ffmpeg
 from rich.progress import Progress
@@ -90,75 +90,60 @@ class BaseDetect(ABC):
                     return e.value
 
 
-class BlackDetect(BaseDetect):
-    detect_filter = 'blackdetect'
-    media = 'video'
-    filter_pattern = re.compile(r'(black_start|black_end|black_duration)\s*\:\s*(\S+)')
-
-
-class SilenceDetect(BaseDetect):
-    detect_filter = 'silencedetect'
+class AudioCrossCorrelationDetect(BaseDetect):
+    detect_filter = 'axcorrelate'
     media = 'audio'
     filter_pattern = re.compile(r'(silence_start|silence_end|silence_duration)\s*\:\s*(\S+)')
 
-    def _map_out(self, output: list[str]):
-        grouped_output = zip(*[iter(output)]*2)
-        flattened_ouput = [f'{start} {end}' for start, end in grouped_output] # type: ignore
-        return super()._map_out(flattened_ouput)
-
-
-class AudioCrossCorrelationDetect(SilenceDetect):
-    detect_filter = 'axcorrelate'
-
     def _build_command(self, in_file_path: Path):
-        audio_tracks_input = input('Enter audio tracks to correlate separated with space: (0..nb_tracks, max: 2) ')
-        audio_tracks = map(int, audio_tracks_input.split(' ', 2))
+        audio_tracks = [
+            index
+            for index, stream in enumerate(ffmpeg.probe(in_file_path, select_streams='a')['streams']) 
+            if sum(stream['disposition'][field] for field in ('visual_impaired', 'descriptions')) < 1
+        ]
 
-        in_files = [ffmpeg.input(str(in_file_path))[f'a:{i}'] for i in audio_tracks]
+        if len(audio_tracks) < 2:
+            raise ValueError('Expect to have at least 2 audio tracks (without counting impaired / descriptions audio)')
+
+        in_files = [ffmpeg.input(str(in_file_path))[f'a:{i}'] for index, i in enumerate(audio_tracks) if index < 2]
 
         return (
             ffmpeg
             .filter_(in_files, 'axcorrelate')
-            .filter_('silencedetect', noise='0dB', duration=420)
+            .filter_('silencedetect', noise='0dB', duration=2)
             .output('-', f='null')
         )
+    
+    def _map_out(self, output: list[str]):
+        grouped_output = zip(*[iter(output)]*2)
+        flattened_ouput = [f'{start} {end}' for start, end in grouped_output]
+        return super()._map_out(flattened_ouput)
 
 
 class FFmpegCropSegmentMergerContainer(FFmpegLineContainer):
     # see https://fr.wikipedia.org/wiki/Format_d'image
-    whitelisted_ratios = [1.33, 1.37, 2.39, 2.20, 1.66, 2.]
+    whitelisted_ratios = [1.33, 1.37, 1.56, 1.66, 1.85, 2., 2.20, 2.35, 2.39, 2.55, 2.76]
 
     def __init__(self, filter_pattern) -> None:
         super().__init__()
         self._filter_pattern = filter_pattern
-
-    def lines(self):
-        def mapper(line):
-            return '\t'.join(f'{key} : {line[key]}' for key in line.keys())
-
-        return list(map(mapper, self._lines))
+        self._found_ratios: set[float] = set()
+        self.segments: list[DetectedSegment] = []
 
     def append(self, line: str):
         mapped_line = {key: value for key, value in self._filter_pattern.findall(line)}
-        position = float(mapped_line[' t'])
+        position = float(mapped_line['t'])
+        ratio = float(mapped_line['w']) / float(mapped_line['h'])
 
-        w, h = tuple(map(float, (mapped_line['w'], mapped_line['h'])))
-        if not any(map(lambda x: math.isclose(x, w/h, rel_tol=1e-02), self.whitelisted_ratios)):
+        self._found_ratios.add(ratio)
+
+        if not any(math.isclose(whitelisted, ratio, rel_tol=1e-02) for whitelisted in self.whitelisted_ratios):
             return
 
-        def add_segment():
-            self._lines.append(mapped_line | new_segment)
-            logger.info(mapped_line | new_segment)
+        last_segment = self.segments[-1] if len(self.segments) > 0 else None
 
-        new_segment = { 'start': position, 'end': position, 'duration': 0 }
-        if len(self._lines) == 0:
-            add_segment()
-            return
-
-        last_segment = self._lines[-1]
-
-        if (position - last_segment['end']) > 0.1:
-            add_segment()
+        if last_segment is None or (position - last_segment['end']) > 0.1:
+            self.segments.append({ 'start': position, 'end': position, 'duration': 0 })
         else:
             last_segment['end'] = position
             last_segment['duration'] = round(position - last_segment['start'], 2)
@@ -167,8 +152,13 @@ class FFmpegCropSegmentMergerContainer(FFmpegLineContainer):
 class CropDetect(BaseDetect):
     detect_filter = 'cropdetect'
     media = 'video'
-    filter_pattern = re.compile(r'(x1|x2|y1|y2|w|h|x|y|pts| t)\s*\:\s*(\S+)')
+    filter_pattern = re.compile(r' (x1|x2|y1|y2|w|h|x|y|pts|t)\s*\:\s*(\S+)')
+    args={'reset_count': 3} # cf https://ffmpeg.org/ffmpeg-filters.html#toc-cropdetect
 
     def __init__(self, movie_path: Path, config: Settings) -> None:
         super().__init__(movie_path, config)
         self.line_container = FFmpegCropSegmentMergerContainer(self.filter_pattern)
+
+    def _map_out(self, output: list[str]) -> list[DetectedSegment]:
+        logger.info(f'found_ratios: {sorted(self.line_container._found_ratios)}')
+        return self.line_container.segments

@@ -4,7 +4,7 @@ import multiprocessing
 import re
 from abc import ABC
 from pathlib import Path
-from typing import Generator, Literal
+from typing import Any, Generator, Literal, cast
 
 import ffmpeg
 from rich.progress import Progress
@@ -96,21 +96,28 @@ class AudioCrossCorrelationDetect(BaseDetect):
     filter_pattern = re.compile(r'(silence_start|silence_end|silence_duration)\s*\:\s*(\S+)')
 
     def _build_command(self, in_file_path: Path):
-        audio_tracks_input = input('Enter audio tracks to correlate separated with space: (0..nb_tracks, max: 2) ')
-        audio_tracks = map(int, audio_tracks_input.split(' ', 2))
+        probe = ffmpeg.probe(in_file_path, select_streams='a')
+        audio_tracks = [
+            index
+            for index, stream in enumerate(probe['streams']) 
+            if sum(stream['disposition'][field] for field in ('visual_impaired', 'descriptions')) < 1
+        ]
 
-        in_files = [ffmpeg.input(str(in_file_path))[f'a:{i}'] for i in audio_tracks]
+        if len(audio_tracks) < 2:
+            raise ValueError('Expect to have at least 2 audio tracks (without counting impaired / descriptions audio)')
+
+        in_files = [ffmpeg.input(str(in_file_path))[f'a:{i}'] for index, i in enumerate(audio_tracks) if index < 2]
 
         return (
             ffmpeg
             .filter_(in_files, 'axcorrelate')
-            .filter_('silencedetect', noise='0dB', duration=420)
+            .filter_('silencedetect', noise='0dB', duration=2)
             .output('-', f='null')
         )
     
     def _map_out(self, output: list[str]):
         grouped_output = zip(*[iter(output)]*2)
-        flattened_ouput = [f'{start} {end}' for start, end in grouped_output] # type: ignore
+        flattened_ouput = [f'{start} {end}' for start, end in grouped_output]
         return super()._map_out(flattened_ouput)
 
 

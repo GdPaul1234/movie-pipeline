@@ -91,7 +91,7 @@ def ffmpeg_command_with_progress(
         return line_container.lines
 
 
-def ffmpeg_frame_producer(input: Path, target_fps: int, config: Settings, other_video_filter=''):
+def ffmpeg_frame_producer(input: Path, target_fps: float, config: Settings, other_video_filter=''):
     from deffcode import FFdecoder
 
     ffparams = {

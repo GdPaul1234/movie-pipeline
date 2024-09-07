@@ -14,7 +14,7 @@ from .settings import Settings
 app = typer.Typer()
 
 LogLevel = StrEnum('LogLevel', ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
-DetectorKey = StrEnum('DetectorKey', ['axcorrelate_silence', 'match_template', 'crop'])
+DetectorKey = StrEnum('DetectorKey', ['auto', 'match_template', 'crop', 'axcorrelate_silence'])
 
 
 config: Optional[Settings] = None

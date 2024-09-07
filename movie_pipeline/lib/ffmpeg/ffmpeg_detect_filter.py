@@ -1,25 +1,23 @@
-from itertools import pairwise
 import logging
 import math
 import multiprocessing
 import re
-from abc import ABC
+from itertools import pairwise
 from pathlib import Path
 from typing import Generator, Literal
 
 import ffmpeg
-from rich.progress import Progress
 
 from ...lib.ffmpeg.ffmpeg_cli_presets import get_ffprefixes
 from ...lib.util import position_in_seconds, total_movie_duration
 from ...models.detected_segments import DetectedSegment
+from ...services.segments_detector.core import BaseDetect
 from ...settings import Settings
-from ..ui_factory import transient_task_progress
 from .ffmpeg_with_progress import FFmpegLineContainer, FFmpegLineFilter, ffmpeg_command_with_progress
 
 logger = logging.getLogger(__name__)
 
-class BaseDetect(ABC):
+class BaseFFmpegFilterDetect(BaseDetect):
     detect_filter: str
     media: Literal['audio', 'video']
     filter_pattern = re.compile('')
@@ -35,6 +33,8 @@ class BaseDetect(ABC):
         self._segments_min_gap = config.SegmentDetection.segments_min_gap
         self._segments_min_duration = config.SegmentDetection.segments_min_duration
         self._config = config
+
+        self._duration = total_movie_duration(self._movie_path)
 
     def _map_out(self, output: list[str]) -> list[DetectedSegment]:
         pairs = list(pairwise(
@@ -55,22 +55,33 @@ class BaseDetect(ABC):
 
         return segments
 
-    def _build_command(self, in_file_path: Path):
+    def _build_command(self, in_file_path: Path, target_fps=5.0):
         in_file = ffmpeg.input(str(in_file_path))
 
         command = getattr(in_file, self.media)
 
         if self.media == 'video':
-            command = command.filter_('fps', 5)
+            command = command.filter_('fps', target_fps)
 
         command = command.filter_(self.detect_filter, **self.args)
 
         return command.output('-', format='null')
+    
+    def should_proceed(self) -> bool:
+        if self.media == 'audio':
+            return True
 
-    def detect_with_progress(self) -> Generator[float, None, list[DetectedSegment]]:
-        total_duration = total_movie_duration(self._movie_path)
+        target_nframes = 100.0
+        detect_progress = self.detect_with_progress(target_fps=target_nframes / self._duration)
 
-        command = self._build_command(self._movie_path)
+        try:
+            while True:
+                next(detect_progress)
+        except StopIteration as e:
+            return len(e.value) > 0 if isinstance(e.value, list) else False
+
+    def detect_with_progress(self, target_fps=5.0) -> Generator[float, None, list[DetectedSegment]]:
+        command = self._build_command(self._movie_path, target_fps)
 
         logger.info('Running: %s', command.compile())
         detection_result = []
@@ -91,7 +102,7 @@ class BaseDetect(ABC):
                 try:
                     if (item := next(process)).get('time'):
                         processed_time = position_in_seconds(item['time'])
-                        yield processed_time / total_duration
+                        yield processed_time / self._duration
                 except KeyboardInterrupt:
                     stop_signal.set()
 
@@ -100,25 +111,13 @@ class BaseDetect(ABC):
             logger.info(detection_result)
             return detection_result
 
-    def detect(self) -> list[DetectedSegment]:
-        detect_progress = self.detect_with_progress()
 
-        with Progress() as progress:
-            with transient_task_progress(progress, description=self.detect_filter, total=1.0) as task_id:
-                try:
-                    while True:
-                        progress_percent = next(detect_progress)
-                        progress.update(task_id, completed=progress_percent)
-                except StopIteration as e:
-                    return e.value
-
-
-class AudioCrossCorrelationDetect(BaseDetect):
+class AudioCrossCorrelationDetect(BaseFFmpegFilterDetect):
     detect_filter = 'axcorrelate'
     media = 'audio'
     filter_pattern = re.compile(r'(silence_start|silence_end|silence_duration)\s*\:\s*(\S+)')
 
-    def _build_command(self, in_file_path: Path):
+    def _build_command(self, in_file_path: Path, _):
         audio_tracks = [
             index
             for index, stream in enumerate(ffmpeg.probe(in_file_path, select_streams='a')['streams']) 
@@ -183,7 +182,7 @@ class FFmpegCropSegmentMergerContainer(FFmpegLineContainer):
             last_segment['duration'] = round(position - last_segment['start'], 2)
 
 
-class CropDetect(BaseDetect):
+class CropDetect(BaseFFmpegFilterDetect):
     detect_filter = 'cropdetect'
     media = 'video'
     filter_pattern = re.compile(r' (x1|x2|y1|y2|w|h|x|y|pts|t)\s*\:\s*(\S+)')

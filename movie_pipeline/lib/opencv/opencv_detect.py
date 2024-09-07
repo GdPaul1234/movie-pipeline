@@ -1,6 +1,5 @@
 import json
 import logging
-from abc import ABC
 from configparser import ConfigParser
 from dataclasses import dataclass
 from pathlib import Path
@@ -8,10 +7,9 @@ from typing import Any, Generator, cast
 
 import cv2
 from deffcode import Sourcer
-from rich.progress import Progress
 
+from ...services.segments_detector.core import BaseDetect
 from ...lib.ffmpeg.ffmpeg_with_progress import ffmpeg_frame_producer
-from ..ui_factory import transient_task_progress
 from ...lib.util import timed_run
 from ...models.detected_segments import DetectedSegment
 from ...settings import Settings
@@ -83,11 +81,11 @@ def build_crop_filter(template_path: Path):
     return f'crop={w=}:{h=}:{x=}:{y=}'
 
 
-class OpenCVBaseDetect(ABC):
+class OpenCVBaseDetect(BaseDetect):
     other_video_filter = ''
 
-    def __init__(self, video_path: Path, template_path: Path, config: Settings) -> None:
-        self._video_path = video_path
+    def __init__(self, movie_path: Path, template_path: Path, config: Settings) -> None:
+        self._movie_path = movie_path
         self._template_path = template_path
 
         if config.SegmentDetection is None:
@@ -98,7 +96,7 @@ class OpenCVBaseDetect(ABC):
         self._threshold = config.SegmentDetection.match_template_threshold
         self._config = config
 
-        sourcer = Sourcer(str(video_path), custom_ffmpeg=str(config.ffmpeg_path)).probe_stream()
+        sourcer = Sourcer(str(movie_path), custom_ffmpeg=str(config.ffmpeg_path)).probe_stream()
         video_metadata = cast(dict[str, Any], sourcer.retrieve_metadata())
         self._duration: float = video_metadata['source_duration_sec']
 
@@ -142,20 +140,29 @@ class OpenCVBaseDetect(ABC):
         }
 
         return draw_detection_box(result_window_name, image, image_shape, match_result, self._threshold, stats)
+    
+    def should_proceed(self) -> bool:
+        target_nframes = 100.0
+        detect_progress = self.detect_with_progress(target_fps=target_nframes / self._duration)
 
-    def detect_with_progress(self) -> Generator[float, None, list[DetectedSegment]]:
+        try:
+            while True:
+                next(detect_progress)
+        except StopIteration as e:
+            return len(e.value) > 0 if isinstance(e.value, list) else False
+
+    def detect_with_progress(self, target_fps=5.0) -> Generator[float, None, list[DetectedSegment]]:
         template = cv2.imread(str(self._template_path), cv2.IMREAD_GRAYSCALE)
 
-        target_fps = 5
-
-        result_window_name = f'Match Template Result - {self._video_path}'
+        result_window_name = f'Match Template Result - {self._movie_path}'
 
         if logger.isEnabledFor(logging.DEBUG):
             cv2.namedWindow(result_window_name, cv2.WINDOW_NORMAL)
 
         try:
             for frame, _, position_in_s in ffmpeg_frame_producer(
-                self._video_path, target_fps=target_fps,
+                self._movie_path,
+                target_fps=target_fps,
                 other_video_filter=self.other_video_filter,
                 config=self._config
             ):
@@ -177,22 +184,9 @@ class OpenCVBaseDetect(ABC):
         return self._segments
 
 
-    def detect(self) -> list[DetectedSegment]:
-        detect_progress = self.detect_with_progress()
-
-        with Progress() as progress:
-            with transient_task_progress(progress, description='match_template', total=1.0) as task_id:
-                try:
-                    while True:
-                        progress_percent = next(detect_progress)
-                        progress.update(task_id, completed=progress_percent)
-                except StopIteration as e:
-                    return e.value
-
-
 class OpenCVTemplateDetect(OpenCVBaseDetect):
-    def __init__(self, video_path: Path, template_path: Path, config: Settings) -> None:
-        super().__init__(video_path, template_path, config)
+    def __init__(self, movie_path: Path, template_path: Path, config: Settings) -> None:
+        super().__init__(movie_path, template_path, config)
         self.other_video_filter = build_crop_filter(template_path)
 
     def _do_detect(

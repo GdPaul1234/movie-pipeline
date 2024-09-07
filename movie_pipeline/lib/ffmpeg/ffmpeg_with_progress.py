@@ -44,7 +44,7 @@ class FFmpegLineContainer:
         return self._lines
 
     def append(self, line: str):
-        logger.info(line)
+        logger.debug(line)
         self._lines.append(line)
 
 

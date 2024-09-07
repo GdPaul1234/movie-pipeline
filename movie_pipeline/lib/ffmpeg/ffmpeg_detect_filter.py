@@ -1,10 +1,11 @@
+from itertools import pairwise
 import logging
 import math
 import multiprocessing
 import re
 from abc import ABC
 from pathlib import Path
-from typing import Any, Generator, Literal, cast
+from typing import Generator, Literal
 
 import ffmpeg
 from rich.progress import Progress
@@ -27,20 +28,42 @@ class BaseDetect(ABC):
     def __init__(self, movie_path: Path, config: Settings) -> None:
         self.line_container = FFmpegLineContainer()
         self._movie_path = movie_path
+
+        if config.SegmentDetection is None:
+            raise ValueError('SegmentDetection settings is missing in provided config')
+
+        self._segments_min_gap = config.SegmentDetection.segments_min_gap
+        self._segments_min_duration = config.SegmentDetection.segments_min_duration
         self._config = config
 
     def _map_out(self, output: list[str]) -> list[DetectedSegment]:
-        return [
-            DetectedSegment(**{key.split('_')[1]: float(value) for key, value in self.filter_pattern.findall(line)})
+        pairs = list(pairwise(
+            segment
             for line in output or []
+            if (segment := DetectedSegment(**{key.split('_')[1]: float(value) for key, value in self.filter_pattern.findall(line)}))
+            and segment['duration'] > self._segments_min_duration
+        ))
+
+        segments = [
+            current_segment 
+            for current_segment, next_segment in pairs
+            if next_segment['start'] - current_segment['end'] > self._segments_min_gap
         ]
+
+        if len(pairs) > 0:
+            segments.append(pairs[-1][1])
+
+        return segments
 
     def _build_command(self, in_file_path: Path):
         in_file = ffmpeg.input(str(in_file_path))
-        command = getattr(in_file, self.media).filter_(self.detect_filter, **self.args)
+
+        command = getattr(in_file, self.media)
 
         if self.media == 'video':
             command = command.filter_('fps', 5)
+
+        command = command.filter_(self.detect_filter, **self.args)
 
         return command.output('-', format='null')
 
@@ -124,26 +147,37 @@ class FFmpegCropSegmentMergerContainer(FFmpegLineContainer):
     # see https://fr.wikipedia.org/wiki/Format_d'image
     whitelisted_ratios = [1.33, 1.37, 1.56, 1.66, 1.85, 2., 2.20, 2.35, 2.39, 2.55, 2.76]
 
-    def __init__(self, filter_pattern) -> None:
+    def __init__(self, filter_pattern, config: Settings) -> None:
         super().__init__()
         self._filter_pattern = filter_pattern
         self._found_ratios: set[float] = set()
-        self.segments: list[DetectedSegment] = []
+
+        if config.SegmentDetection is None:
+            raise ValueError('SegmentDetection settings is missing in provided config')
+
+        self._segments_min_gap = config.SegmentDetection.segments_min_gap
+        self._segments_min_duration = config.SegmentDetection.segments_min_duration
+
+        self._segments: list[DetectedSegment] = []
+
+    @property
+    def segments(self):
+        return [segment for segment in self._segments if segment['duration'] > self._segments_min_duration]
 
     def append(self, line: str):
         mapped_line = {key: value for key, value in self._filter_pattern.findall(line)}
         position = float(mapped_line['t'])
-        ratio = float(mapped_line['w']) / float(mapped_line['h'])
+        ratio = float(mapped_line['w']) / (float(mapped_line['h']) or 1)
 
         self._found_ratios.add(ratio)
 
         if not any(math.isclose(whitelisted, ratio, rel_tol=1e-02) for whitelisted in self.whitelisted_ratios):
             return
 
-        last_segment = self.segments[-1] if len(self.segments) > 0 else None
+        last_segment = self._segments[-1] if len(self._segments) > 0 else None
 
-        if last_segment is None or (position - last_segment['end']) > 0.1:
-            self.segments.append({ 'start': position, 'end': position, 'duration': 0 })
+        if last_segment is None or (position - last_segment['end']) > self._segments_min_gap:
+            self._segments.append({ 'start': position, 'end': position, 'duration': 0 })
         else:
             last_segment['end'] = position
             last_segment['duration'] = round(position - last_segment['start'], 2)
@@ -157,7 +191,7 @@ class CropDetect(BaseDetect):
 
     def __init__(self, movie_path: Path, config: Settings) -> None:
         super().__init__(movie_path, config)
-        self.line_container = FFmpegCropSegmentMergerContainer(self.filter_pattern)
+        self.line_container = FFmpegCropSegmentMergerContainer(self.filter_pattern, config)
 
     def _map_out(self, output: list[str]) -> list[DetectedSegment]:
         logger.info(f'found_ratios: {sorted(self.line_container._found_ratios)}')

@@ -73,7 +73,7 @@ class DetectSegmentsTest(unittest.TestCase):
         self.assertProgress(output=mock_stdout.getvalue())
 
         video_segments_content = self.assertAndReadOnlyVideoSegmentPathExists()
-        self.assertEqual('00:00:00.080-00:00:03.280,00:00:08.600-00:00:14.320,00:00:18.920-00:00:24.160', video_segments_content['crop'])
+        self.assertEqual('00:00:00.400-00:00:03.200,00:00:08.800-00:00:14.000,00:00:19.000-00:00:24.200', video_segments_content['crop'])
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_log_progress_of_detected_segments_with_axcorrelate_silence_detect(self, mock_stdout):

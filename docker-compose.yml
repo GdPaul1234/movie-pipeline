@@ -1,6 +1,6 @@
 services:
   movie_pipeline_cronicle:
-    image: fripiane/movie_pipeline_cronicle:0.2.7
+    image: fripiane/movie_pipeline_cronicle:0.2.8
     hostname: manager1
     ports:
       - 3012:3012

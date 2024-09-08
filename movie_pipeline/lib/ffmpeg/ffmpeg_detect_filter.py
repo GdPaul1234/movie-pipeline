@@ -4,18 +4,20 @@ import multiprocessing
 import re
 from itertools import pairwise
 from pathlib import Path
-from typing import Generator, Literal
+from typing import Any, Generator, Literal, Optional, cast
 
 import ffmpeg
+from deffcode import Sourcer
 
 from ...lib.ffmpeg.ffmpeg_cli_presets import get_ffprefixes
-from ...lib.util import position_in_seconds, total_movie_duration
+from ...lib.util import position_in_seconds
 from ...models.detected_segments import DetectedSegment
 from ...services.segments_detector.core import BaseDetect
 from ...settings import Settings
 from .ffmpeg_with_progress import FFmpegLineContainer, FFmpegLineFilter, ffmpeg_command_with_progress
 
 logger = logging.getLogger(__name__)
+
 
 class BaseFFmpegFilterDetect(BaseDetect):
     detect_filter: str
@@ -34,28 +36,35 @@ class BaseFFmpegFilterDetect(BaseDetect):
         self._segments_min_duration = config.SegmentDetection.segments_min_duration
         self._config = config
 
-        self._duration = total_movie_duration(self._movie_path)
+        sourcer = Sourcer(str(movie_path), custom_ffmpeg=str(config.ffmpeg_path)).probe_stream()
+        video_metadata = cast(dict[str, Any], sourcer.retrieve_metadata())
+        self._duration: float = video_metadata['source_duration_sec']
+        self._nframes: int = video_metadata['approx_video_nframes']
+        self._framerate: float = video_metadata['source_video_framerate']
 
-    def _map_out(self, output: list[str]) -> list[DetectedSegment]:
-        pairs = list(pairwise(
-            segment
+    def _map_out(self, output: list[str], no_post_processing=False) -> list[DetectedSegment]:
+        raw_segments = [
+            DetectedSegment(**{key.split('_')[1]: float(value) for key, value in self.filter_pattern.findall(line)})
             for line in output or []
-            if (segment := DetectedSegment(**{key.split('_')[1]: float(value) for key, value in self.filter_pattern.findall(line)}))
-            and segment['duration'] > self._segments_min_duration
-        ))
-
-        segments = [
-            current_segment 
-            for current_segment, next_segment in pairs
-            if next_segment['start'] - current_segment['end'] > self._segments_min_gap
         ]
 
-        if len(pairs) > 0:
-            segments.append(pairs[-1][1])
+        if no_post_processing or len(raw_segments) < 2:
+            return raw_segments
+
+        pairs = list(pairwise(segment for segment in raw_segments if segment['duration'] > self._segments_min_duration))
+
+        segments = [
+            current_segment
+            if next_segment['start'] - current_segment['end'] > self._segments_min_gap
+            else DetectedSegment(start=current_segment['start'], end=next_segment['end'], duration=next_segment['end'] - current_segment['start'])
+            for current_segment, next_segment in pairs
+        ]
+
+        segments.append(pairs[-1][1])
 
         return segments
 
-    def _build_command(self, in_file_path: Path, target_fps=5.0):
+    def _build_command(self, in_file_path: Path, target_fps: float):
         in_file = ffmpeg.input(str(in_file_path))
 
         command = getattr(in_file, self.media)
@@ -66,31 +75,54 @@ class BaseFFmpegFilterDetect(BaseDetect):
         command = command.filter_(self.detect_filter, **self.args)
 
         return command.output('-', format='null')
-    
+
     def should_proceed(self) -> bool:
+        logger.info(f'Checking if should proceed "{str(self._movie_path)}" with {self.__class__.__name__}...')
+
         if self.media == 'audio':
             return True
 
-        target_nframes = 100.0
-        detect_progress = self.detect_with_progress(target_fps=target_nframes / self._duration)
+        target_nframes = 10
+        proceed_thresold = 0.55
+        all_segments: list[DetectedSegment] = []
 
-        try:
-            while True:
-                next(detect_progress)
-        except StopIteration as e:
-            return len(e.value) > 0 if isinstance(e.value, list) else False
+        for frame_position in range(0, self._nframes, self._nframes // target_nframes):
+            position = frame_position / self._framerate
+            detector = self.__class__(self._movie_path, self._config)
+            detect_progress = detector.detect_with_progress(seek_ss=position, seek_t=1, no_post_processing=True)
 
-    def detect_with_progress(self, target_fps=5.0) -> Generator[float, None, list[DetectedSegment]]:
+            try:
+                while True:
+                    next(detect_progress)
+            except StopIteration as e:
+                [all_segments.append(segment) for index, segment in enumerate(e.value) if index < 1]
+
+        return len(all_segments) > proceed_thresold * target_nframes
+
+    def detect_with_progress(
+        self,
+        target_fps=5.0,
+        seek_ss: Optional[str | float] = None,
+        seek_t: Optional[str | float] = None,
+        no_post_processing=False
+    ) -> Generator[float, None, list[DetectedSegment]]:
         command = self._build_command(self._movie_path, target_fps)
 
-        logger.info('Running: %s', command.compile())
+        cmd = [
+            'ffmpeg',
+            *get_ffprefixes(self._config.ffmpeg_hwaccel),
+            *(['-ss', str(seek_ss)] if seek_ss is not None else []),
+            *(['-t', str(seek_t)] if seek_t is not None else [])
+        ]
+
+        logger.info('Running: %s with %s', command.compile(), cmd)
         detection_result = []
 
         stop_signal = multiprocessing.Event()
 
         process = ffmpeg_command_with_progress(
             command,
-            cmd=['ffmpeg', *get_ffprefixes(self._config.ffmpeg_hwaccel)],
+            cmd=cmd,
             keep_log=True,
             line_filter=FFmpegLineFilter(self.filter_pattern),
             line_container=self.line_container,
@@ -107,7 +139,7 @@ class BaseFFmpegFilterDetect(BaseDetect):
                     stop_signal.set()
 
         except StopIteration as e:
-            detection_result = self._map_out(e.value)
+            detection_result = self._map_out(e.value, no_post_processing)
             logger.info(detection_result)
             return detection_result
 
@@ -120,7 +152,7 @@ class AudioCrossCorrelationDetect(BaseFFmpegFilterDetect):
     def _build_command(self, in_file_path: Path, _):
         audio_tracks = [
             index
-            for index, stream in enumerate(ffmpeg.probe(in_file_path, select_streams='a')['streams']) 
+            for index, stream in enumerate(ffmpeg.probe(in_file_path, select_streams='a')['streams'])
             if sum(stream['disposition'][field] for field in ('visual_impaired', 'descriptions')) < 1
         ]
 
@@ -135,11 +167,11 @@ class AudioCrossCorrelationDetect(BaseFFmpegFilterDetect):
             .filter_('silencedetect', noise='0dB', duration=2)
             .output('-', f='null')
         )
-    
-    def _map_out(self, output: list[str]):
+
+    def _map_out(self, output: list[str], no_post_processing=False):
         grouped_output = zip(*[iter(output)]*2)
         flattened_ouput = [f'{start} {end}' for start, end in grouped_output]
-        return super()._map_out(flattened_ouput)
+        return super()._map_out(flattened_ouput, no_post_processing)
 
 
 class FFmpegCropSegmentMergerContainer(FFmpegLineContainer):
@@ -176,7 +208,7 @@ class FFmpegCropSegmentMergerContainer(FFmpegLineContainer):
         last_segment = self._segments[-1] if len(self._segments) > 0 else None
 
         if last_segment is None or (position - last_segment['end']) > self._segments_min_gap:
-            self._segments.append({ 'start': position, 'end': position, 'duration': 0 })
+            self._segments.append({'start': position, 'end': position, 'duration': 0})
         else:
             last_segment['end'] = position
             last_segment['duration'] = round(position - last_segment['start'], 2)
@@ -186,12 +218,13 @@ class CropDetect(BaseFFmpegFilterDetect):
     detect_filter = 'cropdetect'
     media = 'video'
     filter_pattern = re.compile(r' (x1|x2|y1|y2|w|h|x|y|pts|t)\s*\:\s*(\S+)')
-    args={'reset_count': 3} # cf https://ffmpeg.org/ffmpeg-filters.html#toc-cropdetect
+    args = {'reset_count': 3} # cf https://ffmpeg.org/ffmpeg-filters.html#toc-cropdetect
 
     def __init__(self, movie_path: Path, config: Settings) -> None:
         super().__init__(movie_path, config)
-        self.line_container = FFmpegCropSegmentMergerContainer(self.filter_pattern, config)
+        self.line_container = FFmpegCropSegmentMergerContainer(
+            self.filter_pattern, config)
 
-    def _map_out(self, output: list[str]) -> list[DetectedSegment]:
+    def _map_out(self, output: list[str], no_post_processing=False) -> list[DetectedSegment]:
         logger.info(f'found_ratios: {sorted(self.line_container._found_ratios)}')
-        return self.line_container.segments
+        return self.line_container.segments if not no_post_processing else self.line_container._segments

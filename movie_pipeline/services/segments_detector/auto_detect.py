@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 from pathlib import Path
 from functools import partial
@@ -8,6 +9,8 @@ from ...lib.ffmpeg.ffmpeg_detect_filter import AudioCrossCorrelationDetect, Crop
 from ...lib.opencv.opencv_detect import OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect
 from ...settings import Settings
 from .core import BaseDetect
+
+logger = logging.getLogger(__name__)
 
 
 class AvailableRegisteredSegmentDetector(Enum):
@@ -27,7 +30,8 @@ class AutoDetect(BaseDetect):
                 if (detector := registered_segment_detector.value(movie_path, config)).should_proceed():
                     self._detector = detector
                     return
-            except:
+            except Exception as e:
+                logger.info(f'Skip {registered_segment_detector.name}: {e}')
                 continue
 
         raise NoSuitableSegmentDetectorFound(f'No suitable segment detector found for "{str(movie_path)}"')

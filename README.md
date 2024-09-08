@@ -213,7 +213,3 @@ This command is mainly created for my needs, don't run it if you don't have a mo
 the oldest movies in `base_path` and move the corresponding `${base_backup_path}/PVR/Films` to `movies_archive_folder`.
 
 Only movies are supported at the time of writing this document.
-
-## TODO
-
-- Improve auto selection of the best strategies for segments detection

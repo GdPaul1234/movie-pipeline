@@ -8,6 +8,8 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
+import ffmpeg
+
 import movie_pipeline.jobs.main as job
 
 from ..concerns import copy_files, create_output_movies_directories, get_base_cronicle_json_input, get_output_movies_directories
@@ -22,9 +24,18 @@ class DetectSegmentsTest(unittest.TestCase):
         self.config_path = Path(__file__).parent / 'test_config.env'
 
         sample_video_path = Path(__file__).parent.parent / 'ressources' / 'features' / 'segments_detector' / 'segments_detector test video.mp4'
+
+        sample_logo_picture_path = Path(__file__).parent.parent / 'ressources' / 'features' / 'segments_detector' / 'logo' / 'channel 1.bmp'
+        self.sample_logo_picture_path = self.input_dir_path / 'logo' / 'channel 1.bmp'
+
+        sample_logo_config_path = Path(__file__).parent.parent / 'ressources' / 'features' / 'segments_detector' / 'logo' / 'channel 1.ini'
+        self.sample_logo_config_path = self.input_dir_path / 'logo' / 'channel 1.ini'
+
         copy_files([
             {'source': sample_video_path, 'destination': self.video_path},
-            {'source': sample_video_path, 'destination': self.other_video_path}
+            {'source': sample_video_path, 'destination': self.other_video_path},
+            {'source': sample_logo_picture_path, 'destination': self.sample_logo_picture_path},
+            {'source': sample_logo_config_path, 'destination': self.sample_logo_config_path}
         ])
 
         video_metadata_path = self.video_path.with_suffix(f'{self.video_path.suffix}.metadata.json')
@@ -51,21 +62,54 @@ class DetectSegmentsTest(unittest.TestCase):
 
         self.cronicle_json_input = get_base_cronicle_json_input()
 
+        self.expected_video_segments_content = {
+            'match_template': [
+                '00:00:00.200-00:00:03.400,00:00:08.800-00:00:14.200,00:00:19.200-00:00:24.200',
+                '00:00:00.240-00:00:03.400,00:00:08.760-00:00:14.200,00:00:19.200-00:00:24.200'
+            ],
+            'crop': [
+                '00:00:00.400-00:00:03.200,00:00:08.800-00:00:14.000,00:00:19.000-00:00:24.200',
+                '00:00:00.486-00:00:03.162,00:00:08.512-00:00:14.000,00:00:19.000-00:00:24.200'
+            ],
+            'axcorrelate_silence': [
+                '00:00:00.000-00:00:03.475,00:00:08.153-00:00:14.395,00:00:19.288-00:00:24.320',
+                '00:00:00.000-00:00:07.788,00:00:08.153-00:00:14.464,00:00:19.289-00:00:24.320'
+            ]
+        }
+
+    def test_log_progress_of_detected_segments(self):
+        for detector_key, expected_video_segments_any_content in self.expected_video_segments_content.items():
+            with self.subTest(detector_key=detector_key):
+                self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': detector_key}
+
+                with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
+                    with patch.object(sys, 'stdout', new_callable=StringIO) as mock_stdout:
+                        job.detect_segments(self.config_path)
+
+                self.assertProgress(output=mock_stdout.getvalue())
+            
+                video_segments_content = self.assertAndReadOnlyVideoSegmentPathExists()
+                self.assertIn(video_segments_content[detector_key], expected_video_segments_any_content)
+
     @patch('sys.stdout', new_callable=StringIO)
-    def test_log_progress_of_detected_segments_with_match_template(self, mock_stdout):
-        self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'match_template'}
+    def test_log_progress_of_detected_segments_with_auto_detect_select_match_template(self, mock_stdout):
+        self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
 
         with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
             job.detect_segments(self.config_path)
 
         self.assertProgress(output=mock_stdout.getvalue())
-     
+
         video_segments_content = self.assertAndReadOnlyVideoSegmentPathExists()
-        self.assertEqual('00:00:00.200-00:00:03.400,00:00:08.800-00:00:14.200,00:00:19.200-00:00:24.200', video_segments_content['match_template'])
+        self.assertIn(video_segments_content['auto'], self.expected_video_segments_content['match_template'])
 
     @patch('sys.stdout', new_callable=StringIO)
-    def test_log_progress_of_detected_segments_with_crop_detect(self, mock_stdout):
-        self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'crop'}
+    def test_log_progress_of_detected_segments_with_auto_detect_select_crop_detect(self, mock_stdout):
+        self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
+
+        # remove logo to force crop detect instead of eligible match_template detect
+        self.sample_logo_picture_path.unlink()
+        self.sample_logo_config_path.unlink()
 
         with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
             job.detect_segments(self.config_path)
@@ -73,11 +117,27 @@ class DetectSegmentsTest(unittest.TestCase):
         self.assertProgress(output=mock_stdout.getvalue())
 
         video_segments_content = self.assertAndReadOnlyVideoSegmentPathExists()
-        self.assertEqual('00:00:00.080-00:00:03.280,00:00:08.600-00:00:14.320,00:00:18.920-00:00:24.160', video_segments_content['crop'])
+        self.assertIn(video_segments_content['auto'], self.expected_video_segments_content['crop'])
 
     @patch('sys.stdout', new_callable=StringIO)
-    def test_log_progress_of_detected_segments_with_axcorrelate_silence_detect(self, mock_stdout):
-        self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'axcorrelate_silence'}
+    def test_log_progress_of_detected_segments_with_auto_detect_select_axcorrelate_silence_detect(self, mock_stdout):
+        self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
+
+        # crop video to discard match_template and crop detect by removing the 'cinema' aspect ratio
+        nb_audio_streams = len(ffmpeg.probe(self.video_path, select_streams='a')['streams'])
+        cropped_video_path = self.video_path.with_stem(f'{self.video_path.stem}_cropped')
+
+        v1 = ffmpeg.input(str(self.video_path)).video.filter_('scale', w='1.31*iw', h='1.31*ih').filter_('crop', w='iw/1.31', h='ih/1.31')
+        a1 = ffmpeg.input(str(self.video_path)).audio
+
+        ffmpeg.output(
+            v1, a1,
+            str(cropped_video_path),
+            **{f'map_metadata:s:a:{index}': f'0:s:a:{index}' for index in range(nb_audio_streams)}
+        ).run()
+
+        self.video_path.unlink()
+        cropped_video_path.rename(self.video_path)
 
         with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
             job.detect_segments(self.config_path)
@@ -85,7 +145,7 @@ class DetectSegmentsTest(unittest.TestCase):
         self.assertProgress(output=mock_stdout.getvalue())
 
         video_segments_content = self.assertAndReadOnlyVideoSegmentPathExists()
-        self.assertEqual('00:00:00.000-00:00:03.475,00:00:08.153-00:00:14.395,00:00:19.288-00:00:24.320', video_segments_content['axcorrelate_silence'])
+        self.assertIn(video_segments_content['auto'], self.expected_video_segments_content['axcorrelate_silence'])
 
     def assertProgress(self, output: str):
         self.assertRegex(output, re.compile(r'{"progress": [\d.]+'))

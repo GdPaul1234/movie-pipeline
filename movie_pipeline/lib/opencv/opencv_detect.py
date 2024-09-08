@@ -1,17 +1,15 @@
 import json
 import logging
-from abc import ABC
 from configparser import ConfigParser
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Generator, cast
+from typing import Any, Generator, Optional, cast
 
 import cv2
 from deffcode import Sourcer
-from rich.progress import Progress
 
+from ...services.segments_detector.core import BaseDetect
 from ...lib.ffmpeg.ffmpeg_with_progress import ffmpeg_frame_producer
-from ..ui_factory import transient_task_progress
 from ...lib.util import timed_run
 from ...models.detected_segments import DetectedSegment
 from ...settings import Settings
@@ -83,11 +81,11 @@ def build_crop_filter(template_path: Path):
     return f'crop={w=}:{h=}:{x=}:{y=}'
 
 
-class OpenCVBaseDetect(ABC):
+class OpenCVBaseDetect(BaseDetect):
     other_video_filter = ''
 
-    def __init__(self, video_path: Path, template_path: Path, config: Settings) -> None:
-        self._video_path = video_path
+    def __init__(self, movie_path: Path, template_path: Path, config: Settings) -> None:
+        self._movie_path = movie_path
         self._template_path = template_path
 
         if config.SegmentDetection is None:
@@ -98,9 +96,11 @@ class OpenCVBaseDetect(ABC):
         self._threshold = config.SegmentDetection.match_template_threshold
         self._config = config
 
-        sourcer = Sourcer(str(video_path), custom_ffmpeg=str(config.ffmpeg_path)).probe_stream()
+        sourcer = Sourcer(str(movie_path), custom_ffmpeg=str(config.ffmpeg_path)).probe_stream()
         video_metadata = cast(dict[str, Any], sourcer.retrieve_metadata())
         self._duration: float = video_metadata['source_duration_sec']
+        self._nframes: int = video_metadata['approx_video_nframes']
+        self._framerate: float = video_metadata['source_video_framerate']
 
         self._segments: list[DetectedSegment] = []
 
@@ -142,21 +142,53 @@ class OpenCVBaseDetect(ABC):
         }
 
         return draw_detection_box(result_window_name, image, image_shape, match_result, self._threshold, stats)
+    
+    def should_proceed(self) -> bool:
+        logger.info(f'Checking if should proceed "{str(self._movie_path)}" with {self.__class__.__name__}...')
+        
+        target_nframes = 10
+        proceed_thresold = 0.55
+        all_segments: list[DetectedSegment] = []
 
-    def detect_with_progress(self) -> Generator[float, None, list[DetectedSegment]]:
+        for frame_position in range(0, self._nframes, self._nframes // target_nframes):
+            position = frame_position / self._framerate
+            detect_progress = self.detect_with_progress(seek_ss=position, seek_t=1, no_post_processing=True)
+
+            try:
+                while True:
+                    next(detect_progress)
+            except StopIteration as e:
+                [all_segments.append(segment) for index, segment in enumerate(e.value) if index < 1]
+
+        return len(all_segments) > proceed_thresold * target_nframes
+
+    def detect_with_progress(
+        self,
+        target_fps=5.0,
+        seek_ss: Optional[str | float] = None,
+        seek_t: Optional[str | float] = None,
+        no_post_processing=False
+    ) -> Generator[float, None, list[DetectedSegment]]:
+        self._segments = []
         template = cv2.imread(str(self._template_path), cv2.IMREAD_GRAYSCALE)
 
-        target_fps = 5
-
-        result_window_name = f'Match Template Result - {self._video_path}'
+        result_window_name = f'Match Template Result - {self._movie_path}'
 
         if logger.isEnabledFor(logging.DEBUG):
             cv2.namedWindow(result_window_name, cv2.WINDOW_NORMAL)
 
         try:
+            custom_ffparams = {
+                k: v
+                for k, v in [['-ss', str(seek_ss)], ['-t', str(seek_t)]]
+                if v != 'None'
+            }
+
             for frame, _, position_in_s in ffmpeg_frame_producer(
-                self._video_path, target_fps=target_fps,
+                self._movie_path,
+                target_fps=target_fps,
                 other_video_filter=self.other_video_filter,
+                custom_ffparams=custom_ffparams,
                 config=self._config
             ):
                 image = frame.copy()
@@ -173,26 +205,15 @@ class OpenCVBaseDetect(ABC):
         finally:
             cv2.destroyAllWindows()
 
-        logger.debug('Segments before final cleaning: %s', '\n'.join(map(str, self._segments)))
+        if no_post_processing:
+            logger.debug('Segments before final cleaning: %s', '\n'.join(map(str, self._segments)))
+
         return self._segments
 
 
-    def detect(self) -> list[DetectedSegment]:
-        detect_progress = self.detect_with_progress()
-
-        with Progress() as progress:
-            with transient_task_progress(progress, description='match_template', total=1.0) as task_id:
-                try:
-                    while True:
-                        progress_percent = next(detect_progress)
-                        progress.update(task_id, completed=progress_percent)
-                except StopIteration as e:
-                    return e.value
-
-
 class OpenCVTemplateDetect(OpenCVBaseDetect):
-    def __init__(self, video_path: Path, template_path: Path, config: Settings) -> None:
-        super().__init__(video_path, template_path, config)
+    def __init__(self, movie_path: Path, template_path: Path, config: Settings) -> None:
+        super().__init__(movie_path, template_path, config)
         self.other_video_filter = build_crop_filter(template_path)
 
     def _do_detect(

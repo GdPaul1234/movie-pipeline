@@ -17,6 +17,8 @@ from ..concerns import copy_files, create_output_movies_directories, get_base_cr
 
 class ArchiveMoviesTest(unittest.TestCase):
     def setUp(self) -> None:
+        self.input_dir_path = Path(__file__).parent / 'in'
+
         self.output_dir_path, movie_dir_path, _, backup_dir_path = get_output_movies_directories(Path(__file__).parent)
         video_to_backup_path = movie_dir_path / 'Old Movie Name' / 'Old Movie Name.mp4'
         video_not_to_backup_path = movie_dir_path / 'Movie Name' / 'Movie Name.mp4'
@@ -43,6 +45,9 @@ class ArchiveMoviesTest(unittest.TestCase):
 
         self.archive_movie_dir_path = backup_dir_path / 'Films'
         self.archive_movie_dir_path.mkdir()
+
+        logo_dir_path = self.input_dir_path / 'logo'
+        logo_dir_path.mkdir(parents=True)
         
         self.cronicle_json_input = get_base_cronicle_json_input()
 
@@ -76,4 +81,5 @@ class ArchiveMoviesTest(unittest.TestCase):
         self.assertFalse((self.archive_movie_dir_path / 'Movie Name' / 'Movie Name.mp4').exists())
 
     def tearDown(self) -> None:
+        shutil.rmtree(self.input_dir_path)
         shutil.rmtree(self.output_dir_path)

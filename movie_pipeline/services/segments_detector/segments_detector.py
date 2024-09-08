@@ -11,13 +11,16 @@ from ...lib.opencv.opencv_detect import OpenCVDetectWithInjectedTemplate, OpenCV
 from ...lib.ui_factory import transient_task_progress
 from ...models.detected_segments import humanize_segments, merge_adjacent_segments
 from ...settings import Settings
+from .auto_detect import AutoDetect
 
 logger = logging.getLogger(__name__)
 
+
 class RegisteredSegmentDetector(Enum):
-    axcorrelate_silence = AudioCrossCorrelationDetect
+    auto = AutoDetect
     match_template = partial(OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect)
     crop = CropDetect
+    axcorrelate_silence = AudioCrossCorrelationDetect
 
 
 def run_segment_detectors_with_progress(movie_path: Path, selected_detectors_key, config: Settings, raise_error = False):

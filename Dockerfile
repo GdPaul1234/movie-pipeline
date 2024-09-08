@@ -15,7 +15,7 @@ RUN cd /app && poetry build -f wheel
 FROM borda/docker_python-opencv-ffmpeg:gpu-py3.11-cv4.10.0 AS runtime
 
 LABEL org.opencontainers.image.title=movie_pipeline
-LABEL org.opencontainers.image.version=0.2.7
+LABEL org.opencontainers.image.version=0.2.8
 LABEL org.opencontainers.image.authors=['GdPaul1234 <paul.godin1234@outlook.fr>']
 LABEL org.opencontainers.image.licenses=
 LABEL org.opencontainers.image.url=
@@ -34,7 +34,7 @@ RUN apt-get remove -y python3-blinker
 WORKDIR /app
 COPY --from=builder /app/dist/ /app/dist/
 
-RUN pip install dist/movie_pipeline-0.2.7-py3-none-any.whl \
+RUN pip install dist/movie_pipeline-0.2.8-py3-none-any.whl \
     && rm -rf /app/dist/
 
 # Init movie_pipeline directories

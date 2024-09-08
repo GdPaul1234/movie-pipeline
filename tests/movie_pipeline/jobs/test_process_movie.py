@@ -30,6 +30,9 @@ class ProcessMovieTest(unittest.TestCase):
         archive_movie_dir_path = backup_dir_path / 'Films'
         archive_movie_dir_path.mkdir()
 
+        logo_dir_path = self.input_dir_path / 'logo'
+        logo_dir_path.mkdir(parents=True)
+
         self.cronicle_json_input = get_base_cronicle_json_input()
 
     @patch('sys.stdout', new_callable=StringIO)

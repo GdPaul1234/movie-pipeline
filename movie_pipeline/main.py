@@ -14,7 +14,7 @@ from .settings import Settings
 app = typer.Typer()
 
 LogLevel = StrEnum('LogLevel', ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
-DetectorKey = StrEnum('DetectorKey', ['axcorrelate_silence', 'match_template', 'crop'])
+DetectorKey = StrEnum('DetectorKey', ['auto', 'match_template', 'crop', 'axcorrelate_silence'])
 
 
 config: Optional[Settings] = None
@@ -31,7 +31,7 @@ def archive_movies():
 @app.command('detect_segments')
 def detect_segments(
     filepath: Annotated[Path, typer.Argument(help='File or folder to process')],
-    detector: Annotated[list[DetectorKey],typer.Option(help='Run detect segments with selected detectors')] = [DetectorKey.match_template]
+    detector: Annotated[list[DetectorKey], typer.Option(help='Run detect segments with selected detectors')] = [DetectorKey.auto]
 ):
     """Run best-effort segments detectors"""
     from movie_pipeline.commands.detect_segments import command

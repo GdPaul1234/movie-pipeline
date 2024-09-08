@@ -20,7 +20,7 @@ class ArchiveSettings(BaseModel):
 
 class SegmentDetectionSettings(BaseModel):
     templates_path: DirectoryPath
-    segments_min_gap: PositiveFloat = 20.0
+    segments_min_gap: PositiveFloat = 10.0
     segments_min_duration: PositiveFloat = 120.0
     match_template_threshold: PositiveFloat = 0.8
 

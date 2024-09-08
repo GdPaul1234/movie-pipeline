@@ -18,14 +18,14 @@ logger = logging.getLogger(__name__)
 
 class Input(BaseModel):
     file_path: FilePath | DirectoryPath
-    detector: str = DetectorKey.match_template.name
+    detector: str = DetectorKey.auto.name
 
 
 @dataclass
 class SegmentDetectorContext:
     movie_file_path: Path
     config: Settings
-    detectors: list[DetectorKey] = field(default_factory=lambda: [DetectorKey.match_template])
+    detectors: list[DetectorKey] = field(default_factory=lambda: [DetectorKey.auto])
 
 
 class SegmentDetectorStep(BaseStep[SegmentDetectorContext]):

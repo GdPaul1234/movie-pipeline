@@ -3,7 +3,7 @@ import logging
 from configparser import ConfigParser
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Generator, cast
+from typing import Any, Generator, Optional, cast
 
 import cv2
 from deffcode import Sourcer
@@ -99,6 +99,8 @@ class OpenCVBaseDetect(BaseDetect):
         sourcer = Sourcer(str(movie_path), custom_ffmpeg=str(config.ffmpeg_path)).probe_stream()
         video_metadata = cast(dict[str, Any], sourcer.retrieve_metadata())
         self._duration: float = video_metadata['source_duration_sec']
+        self._nframes: int = video_metadata['approx_video_nframes']
+        self._framerate: float = video_metadata['source_video_framerate']
 
         self._segments: list[DetectedSegment] = []
 
@@ -142,16 +144,32 @@ class OpenCVBaseDetect(BaseDetect):
         return draw_detection_box(result_window_name, image, image_shape, match_result, self._threshold, stats)
     
     def should_proceed(self) -> bool:
-        target_nframes = 100.0
-        detect_progress = self.detect_with_progress(target_fps=target_nframes / self._duration)
+        logger.info(f'Checking if should proceed "{str(self._movie_path)}" with {self.__class__.__name__}...')
+        
+        target_nframes = 10
+        proceed_thresold = 0.55
+        all_segments: list[DetectedSegment] = []
 
-        try:
-            while True:
-                next(detect_progress)
-        except StopIteration as e:
-            return len(e.value) > 0 if isinstance(e.value, list) else False
+        for frame_position in range(0, self._nframes, self._nframes // target_nframes):
+            position = frame_position / self._framerate
+            detect_progress = self.detect_with_progress(seek_ss=position, seek_t=1, no_post_processing=True)
 
-    def detect_with_progress(self, target_fps=5.0) -> Generator[float, None, list[DetectedSegment]]:
+            try:
+                while True:
+                    next(detect_progress)
+            except StopIteration as e:
+                [all_segments.append(segment) for index, segment in enumerate(e.value) if index < 1]
+
+        return len(all_segments) > proceed_thresold * target_nframes
+
+    def detect_with_progress(
+        self,
+        target_fps=5.0,
+        seek_ss: Optional[str | float] = None,
+        seek_t: Optional[str | float] = None,
+        no_post_processing=False
+    ) -> Generator[float, None, list[DetectedSegment]]:
+        self._segments = []
         template = cv2.imread(str(self._template_path), cv2.IMREAD_GRAYSCALE)
 
         result_window_name = f'Match Template Result - {self._movie_path}'
@@ -160,10 +178,17 @@ class OpenCVBaseDetect(BaseDetect):
             cv2.namedWindow(result_window_name, cv2.WINDOW_NORMAL)
 
         try:
+            custom_ffparams = {
+                k: v
+                for k, v in [['-ss', str(seek_ss)], ['-t', str(seek_t)]]
+                if v != 'None'
+            }
+
             for frame, _, position_in_s in ffmpeg_frame_producer(
                 self._movie_path,
                 target_fps=target_fps,
                 other_video_filter=self.other_video_filter,
+                custom_ffparams=custom_ffparams,
                 config=self._config
             ):
                 image = frame.copy()
@@ -180,7 +205,9 @@ class OpenCVBaseDetect(BaseDetect):
         finally:
             cv2.destroyAllWindows()
 
-        logger.debug('Segments before final cleaning: %s', '\n'.join(map(str, self._segments)))
+        if no_post_processing:
+            logger.debug('Segments before final cleaning: %s', '\n'.join(map(str, self._segments)))
+
         return self._segments
 
 

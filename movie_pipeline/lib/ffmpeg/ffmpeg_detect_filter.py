@@ -115,7 +115,9 @@ class BaseFFmpegFilterDetect(BaseDetect):
             *(['-t', str(seek_t)] if seek_t is not None else [])
         ]
 
-        logger.info('Running: %s with %s', command.compile(), cmd)
+        if not no_post_processing:
+            logger.info('Running: %s with %s', command.compile(), cmd)
+
         detection_result = []
 
         stop_signal = multiprocessing.Event()
@@ -222,8 +224,7 @@ class CropDetect(BaseFFmpegFilterDetect):
 
     def __init__(self, movie_path: Path, config: Settings) -> None:
         super().__init__(movie_path, config)
-        self.line_container = FFmpegCropSegmentMergerContainer(
-            self.filter_pattern, config)
+        self.line_container = FFmpegCropSegmentMergerContainer(self.filter_pattern, config)
 
     def _map_out(self, output: list[str], no_post_processing=False) -> list[DetectedSegment]:
         logger.info(f'found_ratios: {sorted(self.line_container._found_ratios)}')

@@ -123,11 +123,7 @@ class DetectSegmentsTest(unittest.TestCase):
     def test_log_progress_of_detected_segments_with_auto_detect_select_axcorrelate_silence_detect(self, mock_stdout):
         self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
 
-        # remove logo to force crop detect instead of eligible match_template detect
-        self.sample_logo_picture_path.unlink()
-        self.sample_logo_config_path.unlink()
-
-        # crop video to discard crop detect by removing the 'cinema' aspect ratio
+        # crop video to discard match_template and crop detect by removing the 'cinema' aspect ratio
         nb_audio_streams = len(ffmpeg.probe(self.video_path, select_streams='a')['streams'])
         cropped_video_path = self.video_path.with_stem(f'{self.video_path.stem}_cropped')
 

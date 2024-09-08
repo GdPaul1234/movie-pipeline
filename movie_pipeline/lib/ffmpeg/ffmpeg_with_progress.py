@@ -91,7 +91,13 @@ def ffmpeg_command_with_progress(
         return line_container.lines
 
 
-def ffmpeg_frame_producer(input: Path, target_fps: float, config: Settings, other_video_filter=''):
+def ffmpeg_frame_producer(
+    input: Path, 
+    target_fps: float, 
+    config: Settings, 
+    other_video_filter='',
+    custom_ffparams={}
+):
     from deffcode import FFdecoder
 
     ffparams = {
@@ -100,7 +106,8 @@ def ffmpeg_frame_producer(input: Path, target_fps: float, config: Settings, othe
         "-custom_resolution": "null",  # discard `-custom_resolution`
         "-framerate": "null",  # discard `-framerate`
         # define your filters
-        "-vf":  ','.join(filter(bool, [f"fps={target_fps}", other_video_filter]))
+        "-vf":  ','.join(filter(bool, [f"fps={target_fps}", other_video_filter])),
+        **custom_ffparams
     }
 
     with FFdecoder(str(input), frame_format='gray', **ffparams, custom_ffmpeg=str(config.ffmpeg_path)) as decoder:

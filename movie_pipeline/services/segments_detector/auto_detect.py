@@ -40,4 +40,10 @@ class AutoDetect(BaseDetect):
         return False
 
     def detect_with_progress(self) -> Generator[float, None, list[DetectedSegment]]:
-        return self._detector.detect_with_progress()
+        detect_progress = self._detector.detect_with_progress()
+
+        try:
+            while True:
+                yield next(detect_progress)
+        except StopIteration as e:
+            return e.value 

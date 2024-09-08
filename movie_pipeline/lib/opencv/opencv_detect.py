@@ -178,17 +178,16 @@ class OpenCVBaseDetect(BaseDetect):
             cv2.namedWindow(result_window_name, cv2.WINDOW_NORMAL)
 
         try:
-            custom_ffparams = {
-                k: v
-                for k, v in [['-ss', str(seek_ss)], ['-t', str(seek_t)]]
-                if v != 'None'
-            }
+            ffprefixes = [
+                *(['-ss', str(seek_ss)] if seek_ss is not None else []),
+                *(['-t', str(seek_t)] if seek_t is not None else [])
+            ]
 
             for frame, _, position_in_s in ffmpeg_frame_producer(
                 self._movie_path,
                 target_fps=target_fps,
                 other_video_filter=self.other_video_filter,
-                custom_ffparams=custom_ffparams,
+                custom_ffparams={'-ffprefixes': ffprefixes},
                 config=self._config
             ):
                 image = frame.copy()

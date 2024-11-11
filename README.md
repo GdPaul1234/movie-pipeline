@@ -65,21 +65,18 @@ docker build -t fripiane/movie_pipeline_cronicle:${VERSION} ./movie_pipeline/job
 Create and fill in the `.env` file:
 
 ```env
-PATHS_INPUT_FOLDER=video/PVR
+PATHS_INPUT_FOLDER=/mnt/share/video/PVR
 
-PATHS_MOVIES_FOLDER=usbshare1/video/PVR/Films
-PATHS_SERIES_FOLDER=video/PVR/Séries
-PATHS_BACKUP_FOLDER=usbshare1/Dossier personnel/video/PVR/playground
+PATHS_MOVIES_FOLDER=/mnt/share/video/PVR/Films
+PATHS_SERIES_FOLDER=/mnt/share/video/PVR/Séries
+PATHS_BACKUP_FOLDER=/mnt/share/usbshare1/Dossier personnel/video/PVR/playground
 
-ARCHIVE_BACKUP_FOLDER=usbshare1/Dossier personnel/video
-ARCHIVE_MOVIES_ARCHIVE_FOLDER=usbshare1/Dossier personnel/video/Films
-LOGGER_LOG_FOLDER=video/PVR/temp/logs
+ARCHIVE_BASE_BACKUP_FOLDER=/mnt/share/usbshare1/Dossier personnel/video
+LOGGER_LOG_FOLDER=/mnt/share/video/PVR/temp/logs
+
+SEGMENTDETECTION_TEMPLATES_PATH=/mnt/share/video/PVR/autres/scripts/common-ressources/logo
 
 CRONICLE_secret_key=
-
-CIFS_USERNAME=
-CIFS_PASSWORD=
-CIFS_SHARE=
 ```
 
 Then run:
@@ -94,8 +91,10 @@ Download Vagrant, set the following environment variables, then run `vagrant up`
 
 - `PATHS_INPUT_FOLDER`
 - `PATHS_MOVIES_FOLDER`
+- `PATHS_SERIES_FOLDER`
 - `PATHS_BACKUP_FOLDER`
 - `ARCHIVE_BASE_FOLDER`
+- `ARCHIVE_MOVIES_ARCHIVE_FOLDER`
 - `LOGGER_LOG_FOLDER`
 
 ## Configuration

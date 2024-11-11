@@ -172,6 +172,7 @@ site
 **/media.db
 
 **/movie_pipeline/jobs/data/*
+**/movie_pipeline/jobs/data.old/
 !movie_pipeline/jobs/data/.keep
 
 **/tests/movie_pipeline/ressources/features/segments_detector/**/*.mp4

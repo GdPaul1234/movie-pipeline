@@ -7,15 +7,19 @@ ENV POETRY_VIRTUALENVS_CREATE=1
 ENV POETRY_CACHE_DIR=/tmp/poetry_cache
 
 RUN mkdir /app
-COPY pyproject.toml poetry.lock* README* /app/
+COPY pyproject.toml README* /app/
+
+# replace opencv-contrib-python dependency by opencv-contrib-python-headless
+RUN sed -i 's/opencv-contrib-python/opencv-contrib-python-headless/g' /app/pyproject.toml
+
 COPY ./movie_pipeline /app/movie_pipeline
 RUN cd /app && poetry build -f wheel
 
 
-FROM borda/docker_python-opencv-ffmpeg:gpu-py3.11-cv4.10.0 AS runtime
+FROM jrottenberg/ffmpeg:7.1-nvidia AS runtime
 
 LABEL org.opencontainers.image.title=movie_pipeline
-LABEL org.opencontainers.image.version=0.2.8
+LABEL org.opencontainers.image.version=0.2.9
 LABEL org.opencontainers.image.authors=['GdPaul1234 <paul.godin1234@outlook.fr>']
 LABEL org.opencontainers.image.licenses=
 LABEL org.opencontainers.image.url=
@@ -25,17 +29,18 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update \
-    && apt-get install -y tini \
-    && rm -rf /var/lib/apt/lists/*
-
-# Remove conflicting package
-RUN apt-get remove -y python3-blinker
+    && apt-get install -y python3-pip tini \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 --version
 
 WORKDIR /app
 COPY --from=builder /app/dist/ /app/dist/
 
-RUN pip install dist/movie_pipeline-0.2.8-py3-none-any.whl \
-    && rm -rf /app/dist/
+# Install and verify movie_pipeline installation
+ARG PIP_BREAK_SYSTEM_PACKAGES=1
+ARG PIP_NO_CACHE_DIR=1 
+RUN pip3 install dist/movie_pipeline-0.2.9-py3-none-any.whl \
+    && movie_pipeline --help
 
 # Init movie_pipeline directories
 RUN mkdir -p inputs movies series backup logs archive/source archive/dest /root/.movie_pipeline \

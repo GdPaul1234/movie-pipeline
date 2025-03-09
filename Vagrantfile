@@ -108,7 +108,7 @@ Vagrant.configure("2") do |config|
     apt-get install -y curl tini ffmpeg pipx
 
     # Install movie_pipeline
-    pipx install /vagrant/dist/movie_pipeline-0.2.8.tar.gz
+    pipx install /vagrant/dist/movie_pipeline-0.2.9.tar.gz
     pipx ensurepath
 
     # Init movie_pipeline environment

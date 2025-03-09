@@ -79,7 +79,7 @@ class ProcessStep(BaseStep[MovieFileProcessorContext]):
             )
             .output(
                 str(self._dest_filepath),
-                **get_ffencode_video_params(self.context.config.ffmpeg_hwaccel),
+                **get_ffencode_video_params(self.context.config.ffmpeg_hwaccel, self.context.config.ffmpeg_vcodec),
                 **get_ffencode_audio_params(),
                 **{f'map_metadata:s:a:{index}': f'0:s:a:{index}' for index in range(self._nb_audio_streams)},
                 dn=None, sn=None, ignore_unknown=None,

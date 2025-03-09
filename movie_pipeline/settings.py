@@ -34,6 +34,7 @@ class LoggerSettings(BaseModel):
 
 
 HwAccel = Literal['cuda', 'none']
+VideoCodec = Literal['h264', 'hevc']
 
 
 class Settings(BaseSettings):
@@ -45,5 +46,6 @@ class Settings(BaseSettings):
 
     ffmpeg_path: FilePath = shutil.which('ffmpeg')  # type: ignore
     ffmpeg_hwaccel: HwAccel = 'none'
+    ffmpeg_vcodec: VideoCodec = 'h264'
 
     model_config = SettingsConfigDict(env_nested_delimiter='__')

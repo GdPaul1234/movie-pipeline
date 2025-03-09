@@ -1,0 +1,20 @@
+{
+  "params": [
+    {
+      "type": "text",
+      "id": "file_path",
+      "title": "File / Directory path",
+      "size": 20,
+      "value": "/app/inputs"
+    }
+  ],
+  "enabled": 1,
+  "title": "DetectSegments",
+  "ipc": 0,
+  "wf": 0,
+  "stdin": 0,
+  "command": "movie_pipeline_job_detect_segments",
+  "cwd": "",
+  "uid": "",
+  "gid": ""
+}

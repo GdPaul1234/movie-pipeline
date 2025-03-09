@@ -1,0 +1,19 @@
+{
+  "params": [
+    {
+      "type": "checkbox",
+      "id": "dry",
+      "title": "Only report",
+      "value": 0
+    }
+  ],
+  "enabled": 1,
+  "title": "ArchiveMovies",
+  "ipc": 0,
+  "wf": 0,
+  "stdin": 0,
+  "command": "movie_pipeline_job_archive_movies",
+  "cwd": "",
+  "uid": "",
+  "gid": ""
+}

@@ -65,6 +65,7 @@ def ffmpeg_command_with_progress(
             try:
                 if (retcode := process.poll()) is not None:
                     if retcode != 0:
+                        last_lines.extend(cast(IO[str], process.stderr))
                         raise ffmpeg.Error('ffmpeg', None, '\n'.join(last_lines))
                     break
 

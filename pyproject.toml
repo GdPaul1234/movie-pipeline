@@ -1,16 +1,18 @@
-[tool.poetry]
+[project]
 name = "movie_pipeline"
-version = "0.2.9"
+version = "0.2.10"
 description = ""
-authors = ["GdPaul1234 <paul.godin1234@outlook.fr>"]
 readme = "README.md"
-packages = [{include = "movie_pipeline"}]
+authors = [{email = "GdPaul1234 <paul.godin1234@outlook.fr>"}]
 
-[tool.poetry.scripts]
+[project.scripts]
 movie_pipeline = "movie_pipeline.main:app"
 movie_pipeline_job_archive_movies = "movie_pipeline.jobs.main:archive_movies"
 movie_pipeline_job_detect_segments = "movie_pipeline.jobs.main:detect_segments"
 movie_pipeline_job_process_movie = "movie_pipeline.jobs.main:process_movie"
+
+[tool.poetry]
+packages = [{include = "movie_pipeline"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -18,13 +20,13 @@ PyYAML = "^6.0.2"
 ffmpeg-python = "^0.2.0"
 schema = "^0.7.7"
 binpacking = "^1.5.2"
-rich = "^13.9.4"
+rich = "^14.1.0"
 deffcode = "^0.2.6"
 opencv-contrib-python = "^4.10.0.84"
-pydantic = "^2.10.6"
-pydantic-settings = "^2.8.1"
+pydantic = "^2.11.7"
+pydantic-settings = "^2.10.1"
 mpire = {extras = ["dashboard"], version = "^2.10.2"}
-typer = {extras = ["all"], version = "^0.15.2"}
+typer = {extras = ["all"], version = "^0.16.0"}
 
 [build-system]
 requires = ["poetry-core"]

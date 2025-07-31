@@ -10,6 +10,7 @@ from ...lib.ffmpeg.ffmpeg_detect_filter import AudioCrossCorrelationDetect, Crop
 from ...lib.opencv.opencv_detect import OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect
 from ...lib.ui_factory import transient_task_progress
 from ...models.detected_segments import humanize_segments, merge_adjacent_segments
+from ...services.segments_detector.core import DummyDetect
 from ...settings import Settings
 from .auto_detect import AutoDetect
 
@@ -21,6 +22,7 @@ class RegisteredSegmentDetector(Enum):
     match_template = partial(OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect)
     crop = CropDetect
     axcorrelate_silence = AudioCrossCorrelationDetect
+    dummy = DummyDetect
 
 
 def run_segment_detectors_with_progress(movie_path: Path, selected_detectors_key, config: Settings, raise_error = False):

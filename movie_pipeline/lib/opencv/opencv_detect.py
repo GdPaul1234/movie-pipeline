@@ -38,7 +38,7 @@ def load_metadata(movie_path: Path):
 
 
 def OpenCVDetectWithInjectedTemplate(detector: type['OpenCVBaseDetect'], movie_path: Path, config: Settings):
-    if config.SegmentDetection is None:
+    if config.SegmentDetection.templates_path is None:
         raise ValueError('No config path provided')
 
     templates_path = config.SegmentDetection.templates_path
@@ -87,9 +87,6 @@ class OpenCVBaseDetect(BaseDetect):
     def __init__(self, movie_path: Path, template_path: Path, config: Settings) -> None:
         self._movie_path = movie_path
         self._template_path = template_path
-
-        if config.SegmentDetection is None:
-            raise ValueError('SegmentDetection settings is missing in provided config')
 
         self._segments_min_gap = config.SegmentDetection.segments_min_gap
         self._segments_min_duration = config.SegmentDetection.segments_min_duration

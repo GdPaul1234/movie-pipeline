@@ -74,6 +74,9 @@ class DetectSegmentsTest(unittest.TestCase):
             'axcorrelate_silence': [
                 '00:00:00.000-00:00:03.475,00:00:08.153-00:00:14.395,00:00:19.288-00:00:24.320',
                 '00:00:00.000-00:00:07.788,00:00:08.153-00:00:14.464,00:00:19.289-00:00:24.320'
+            ],
+            'dummy' : [
+                '00:00:01.000-00:00:23.320'
             ]
         }
 
@@ -119,6 +122,7 @@ class DetectSegmentsTest(unittest.TestCase):
         video_segments_content = self.assertAndReadOnlyVideoSegmentPathExists()
         self.assertIn(video_segments_content['auto'], self.expected_video_segments_content['crop'])
 
+    @unittest.skip('slow, do not detect relevant segments in real life medias')
     @patch('sys.stdout', new_callable=StringIO)
     def test_log_progress_of_detected_segments_with_auto_detect_select_axcorrelate_silence_detect(self, mock_stdout):
         self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
@@ -146,6 +150,34 @@ class DetectSegmentsTest(unittest.TestCase):
 
         video_segments_content = self.assertAndReadOnlyVideoSegmentPathExists()
         self.assertIn(video_segments_content['auto'], self.expected_video_segments_content['axcorrelate_silence'])
+
+    @patch('sys.stdout', new_callable=StringIO)
+    def test_log_progress_of_detected_segments_with_auto_detect_select_dummy_detect(self, mock_stdout):
+        self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
+
+        # crop video to discard match_template and crop detect by removing the 'cinema' aspect ratio
+        nb_audio_streams = len(ffmpeg.probe(self.video_path, select_streams='a')['streams'])
+        cropped_video_path = self.video_path.with_stem(f'{self.video_path.stem}_cropped')
+
+        v1 = ffmpeg.input(str(self.video_path)).video.filter_('scale', w='1.31*iw', h='1.31*ih').filter_('crop', w='iw/1.31', h='ih/1.31')
+        a1 = ffmpeg.input(str(self.video_path)).audio
+
+        ffmpeg.output(
+            v1, a1,
+            str(cropped_video_path),
+            **{f'map_metadata:s:a:{index}': f'0:s:a:{index}' for index in range(nb_audio_streams)}
+        ).run()
+
+        self.video_path.unlink()
+        cropped_video_path.rename(self.video_path)
+
+        with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
+            job.detect_segments(self.config_path)
+
+        self.assertProgress(output=mock_stdout.getvalue())
+
+        video_segments_content = self.assertAndReadOnlyVideoSegmentPathExists()
+        self.assertIn(video_segments_content['auto'], self.expected_video_segments_content['dummy'])
 
     def assertProgress(self, output: str):
         self.assertRegex(output, re.compile(r'{"progress": [\d.]+'))

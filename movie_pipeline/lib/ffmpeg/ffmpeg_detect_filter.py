@@ -29,9 +29,6 @@ class BaseFFmpegFilterDetect(BaseDetect):
         self.line_container = FFmpegLineContainer()
         self._movie_path = movie_path
 
-        if config.SegmentDetection is None:
-            raise ValueError('SegmentDetection settings is missing in provided config')
-
         self._segments_min_gap = config.SegmentDetection.segments_min_gap
         self._segments_min_duration = config.SegmentDetection.segments_min_duration
         self._config = config
@@ -185,9 +182,6 @@ class FFmpegCropSegmentMergerContainer(FFmpegLineContainer):
         self._filter_pattern = filter_pattern
         self._found_ratios: set[float] = set()
 
-        if config.SegmentDetection is None:
-            raise ValueError('SegmentDetection settings is missing in provided config')
-
         self._segments_min_gap = config.SegmentDetection.segments_min_gap
         self._segments_min_duration = config.SegmentDetection.segments_min_duration
 
@@ -198,7 +192,7 @@ class FFmpegCropSegmentMergerContainer(FFmpegLineContainer):
         return [segment for segment in self._segments if segment['duration'] > self._segments_min_duration]
 
     def append(self, line: str):
-        mapped_line = {key: value for key, value in self._filter_pattern.findall(line)}
+        mapped_line = dict(self._filter_pattern.findall(line))
         position = float(mapped_line['t'])
         ratio = float(mapped_line['w']) / (float(mapped_line['h']) or 1)
 

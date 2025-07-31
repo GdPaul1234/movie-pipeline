@@ -5,10 +5,10 @@ from functools import partial
 from typing import Generator
 
 from ...models.detected_segments import DetectedSegment
-from ...lib.ffmpeg.ffmpeg_detect_filter import AudioCrossCorrelationDetect, CropDetect
+from ...lib.ffmpeg.ffmpeg_detect_filter import CropDetect
 from ...lib.opencv.opencv_detect import OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect
 from ...settings import Settings
-from .core import BaseDetect
+from .core import BaseDetect, DummyDetect
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class AvailableRegisteredSegmentDetector(Enum):
     match_template = partial(OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect)
     crop = CropDetect
-    axcorrelate_silence = AudioCrossCorrelationDetect
+    dummy = DummyDetect
 
 
 class NoSuitableSegmentDetectorFound(Exception):

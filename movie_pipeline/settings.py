@@ -19,10 +19,11 @@ class ArchiveSettings(BaseModel):
 
 
 class SegmentDetectionSettings(BaseModel):
-    templates_path: DirectoryPath
+    templates_path: Optional[DirectoryPath] = None
     segments_min_gap: PositiveFloat = 10.0
     segments_min_duration: PositiveFloat = 120.0
     match_template_threshold: PositiveFloat = 0.8
+    padding_duration: PositiveFloat = 1800.0
 
 
 class ProcessorSettings(BaseModel):
@@ -40,7 +41,7 @@ VideoCodec = Literal['h264', 'hevc']
 class Settings(BaseSettings):
     Paths: PathSettings
     Archive: Optional[ArchiveSettings] = None
-    SegmentDetection: Optional[SegmentDetectionSettings] = None
+    SegmentDetection: SegmentDetectionSettings = SegmentDetectionSettings()
     Processor: Optional[ProcessorSettings] = None
     Logger: Optional[LoggerSettings] = None
 

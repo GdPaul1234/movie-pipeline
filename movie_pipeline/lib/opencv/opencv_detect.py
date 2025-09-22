@@ -199,7 +199,8 @@ class OpenCVBaseDetect(BaseDetect):
                 if should_exit:
                     break
         finally:
-            cv2.destroyAllWindows()
+            if logger.isEnabledFor(logging.DEBUG):
+                cv2.destroyAllWindows()
 
         if no_post_processing:
             logger.debug('Segments before final cleaning: %s', '\n'.join(map(str, self._segments)))

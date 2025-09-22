@@ -1,6 +1,5 @@
 import json
 import logging
-from enum import Enum
 from functools import partial
 from pathlib import Path
 
@@ -10,26 +9,26 @@ from ...lib.ffmpeg.ffmpeg_detect_filter import AudioCrossCorrelationDetect, Crop
 from ...lib.opencv.opencv_detect import OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect
 from ...lib.ui_factory import transient_task_progress
 from ...models.detected_segments import humanize_segments, merge_adjacent_segments
-from ...services.segments_detector.core import DummyDetect
+from ...services.segments_detector.core import DummyDetect, SegmentDetector
 from ...settings import Settings
 from .auto_detect import AutoDetect
 
 logger = logging.getLogger(__name__)
 
 
-class RegisteredSegmentDetector(Enum):
-    auto = AutoDetect
-    match_template = partial(OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect)
-    crop = CropDetect
-    axcorrelate_silence = AudioCrossCorrelationDetect
-    dummy = DummyDetect
-
+REGISTERED_SEGMENT_DETECTOR: dict[str, SegmentDetector] = {
+    'auto': AutoDetect,
+    'match_template': partial(OpenCVDetectWithInjectedTemplate, OpenCVTemplateDetect),
+    'crop': CropDetect,
+    'axcorrelate_silence': AudioCrossCorrelationDetect,
+    'dummy': DummyDetect
+}
 
 def run_segment_detectors_with_progress(movie_path: Path, selected_detectors_key, config: Settings, raise_error = False):
     detected_segments = {}
 
     try:
-        selected_detectors = { key: RegisteredSegmentDetector[key].value for key in selected_detectors_key }
+        selected_detectors = { key: REGISTERED_SEGMENT_DETECTOR[key] for key in selected_detectors_key }
         selected_detectors_size = len(selected_detectors)
 
 

@@ -1,10 +1,14 @@
 from abc import ABC
 from pathlib import Path
-from typing import Generator, Optional
+from typing import Callable, Generator, Optional, Type
 
 from ...lib.util import total_movie_duration
 from ...models.detected_segments import DetectedSegment
 from ...settings import Settings
+
+
+SegmentDetector = Type['BaseDetect'] | Callable[[Path, Settings], 'BaseDetect']
+
 
 class BaseDetect(ABC):
     def __init__(self, movie_path: Path, config: Settings) -> None:

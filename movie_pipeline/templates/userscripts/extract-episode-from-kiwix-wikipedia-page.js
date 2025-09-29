@@ -1,27 +1,42 @@
-const seasonHeaders = document.querySelectorAll('[id*="Saison_"]')
+const seasonHeaders = document.querySelectorAll('[id*="aison_"]') // 'Saison 1' or 'Première saison'
 const episodeHeaders = document.querySelectorAll('[id^="Épisode_"]')
+
+const seasonRegExp = RegExp(/Saison (\d+)/)
+const ordinalNumbers = [
+  undefined,
+  'Première',
+  'Deuxième',
+  'Troisième',
+  'Quatrième',
+  'Cinquième',
+  'Sixième',
+  'Septième'
+]
 
 function padNumber(number, length) {
   return number.toString().padStart(length, '0')
 }
 
 function getEpisodeEntriesFromSeasonHeaders() {
-  return Array.from(seasonHeaders).flatMap((seasonHeader, index) => {
-    const seasonNumber = index + 1
+  return Array.from(seasonHeaders).flatMap(seasonHeader => {
+    const seasonNumber = +seasonRegExp.exec(seasonHeader.textContent)?.at(1)
+      || ordinalNumbers.findIndex(ordinalNumber => seasonHeader.textContent.includes(ordinalNumber))
+
     const details = seasonHeader.parentElement.parentElement
     let detailsContentChildren
 
     if ((detailsContentChildren = details.getElementsByTagName('table')).length) {
-      const [detailsContent] = detailsContentChildren
-      const tableHeaders = Array.from(detailsContent.getElementsByTagName('th'))
-      const titleHeaderIndex = tableHeaders.findIndex(_ => _.textContent.includes('Titre'))
+      const firstTableHeaders = Array.from(detailsContentChildren[0].getElementsByTagName('tr')[0].getElementsByTagName('th'))
+      const titleHeaderIndex = firstTableHeaders.findIndex(_ => _.textContent.startsWith('Titre'))
+      const episodeNumberIndex = firstTableHeaders.findIndex(_ =>  _.textContent.startsWith('No'))
 
       return Object.fromEntries(
-        Array.from(detailsContent.getElementsByTagName('tr'))
-          .filter(row => row.children[titleHeaderIndex]?.children?.length)
-          .map((row, i) => [
+        Array.from(detailsContentChildren)
+          .flatMap(detailsContent => Array.from(detailsContent.getElementsByTagName('tr')))
+          .filter(row => row.children?.length > 1 && row.children[titleHeaderIndex]?.children?.length)
+          .map(row => [
             row.children[titleHeaderIndex].children[0].textContent,
-            { formattedEpisode: `S${padNumber(seasonNumber, 2)}E${padNumber(i + 1, 2)}` }
+            { formattedEpisode: `S${padNumber(seasonNumber, 2)}E${padNumber(row.children[episodeNumberIndex].textContent, 2)}` }
           ])
       )
     }
@@ -38,9 +53,7 @@ function getEpisodeEntriesFromSeasonHeaders() {
 }
 
 function getEpisodeEntriesFromEpisodeHeaders() {
-  const seasonRegExp = RegExp(/Saison (\d+)/)
-
-  const titleContent = document.querySelector('#title_0').textContent
+  const titleContent = document.querySelector('#firstHeading').textContent
   const titleSeasonNumber = +seasonRegExp.exec(titleContent)?.at(1)
 
   return Array.from(episodeHeaders).map(episodeHeader => {

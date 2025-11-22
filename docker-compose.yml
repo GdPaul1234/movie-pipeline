@@ -16,6 +16,7 @@ services:
       - ./movie_pipeline/jobs/data:/opt/cronicle/data
     environment:
       - ffmpeg_hwaccel=cuda
+      - ffmpeg_vcodec=hevc
       - Archive__base_backup_path=/app/archive
       - Archive__movies_archive_folder=/app/archive/Films
       - SegmentDetection__templates_path=/app/resources/logo

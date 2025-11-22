@@ -49,13 +49,17 @@ def process_directory(input: DirectoryInput, config: Settings) -> Iterator[Repor
         res = requests.post(
             'http://localhost:3012/api/app/run_event/v1',
             headers={'X-API-Key': input.api_key},
-            json={'title': 'Process Movie', 'plugin': 'ProcessMovie', 'params': params}
+            json={'title': 'Process Movie', 'params': params}
         )
 
         try:
             res.raise_for_status()
             json: dict[str, Any] = res.json()
-            return f'http://localhost:3012/#JobDetails?id={json['ids'][0]}' if json['code'] == 0 else f'ERROR "{json['code']}": {json['description']}'
+
+            if json['code'] == 0:
+                return '⏳ ENQUEUED' if json.get('queue') is not None else f'🔄️ PROCESSING (http://localhost:3012/#JobDetails?id={json['ids'][0]})'
+            else:
+                return f'⛔ ERROR "{json['code']}": {json['description']}'
 
         except requests.HTTPError as e:
             return e.args[0]
@@ -64,9 +68,9 @@ def process_directory(input: DirectoryInput, config: Settings) -> Iterator[Repor
         return {
             "table": {
                 "title": "Movies to process",
-                "header": ["Edl Path", "Link to job details"],
+                "header": ["Edl Path", "Job status"],
                 "rows": [[str(edl_path.with_suffix('').name), submit_job(edl_path)] for edl_path in edls],
-                "caption": f"{len(edls)} enqueued tasks."
+                "caption": f"{len(edls)} tasks."
             }
         }
 

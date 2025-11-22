@@ -62,7 +62,7 @@ class ProcessMovieTest(unittest.TestCase):
         edl_serie_path.write_text(get_serie_edl_file_content(), encoding='utf-8')
 
         mock_post.return_value.status_code = 200
-        mock_post.return_value.json.side_effect = [{'code': 0, 'ids': ['23f5c37f']}, {'code': 0, 'ids': ['f8ac3082']}]
+        mock_post.return_value.json.side_effect = [{'code': 0, 'ids': ['23f5c37f']}, {'code': 0, 'ids': [], 'queue': 1}]
 
         self.cronicle_json_input["params"] = {'api_key': 'CRONICLE_API_KEY', 'folder_path': str(self.input_dir_path.absolute()), 'edl_ext': '.yml'}
 
@@ -72,7 +72,7 @@ class ProcessMovieTest(unittest.TestCase):
         common_expected_post_args = ['http://localhost:3012/api/app/run_event/v1']
         common_expected_post_kwargs = {
             'headers': {'X-API-Key': self.cronicle_json_input['params']['api_key']},
-            'json': {'title': 'Process Movie', 'plugin': 'ProcessMovie'}
+            'json': {'title': 'Process Movie'}
         }
 
         movie_expected_post_kwargs = common_expected_post_kwargs | {'json': common_expected_post_kwargs['json'] | {'params': EquivalentProcessFileParams({'file_path': str(self.video_path.absolute()), 'edl_ext': '.pending_yml_'})}} 
@@ -89,12 +89,12 @@ class ProcessMovieTest(unittest.TestCase):
         expected_custom_table_json = json.dumps({
             "table": {
                 "title": "Movies to process",
-                "header": ["Edl Path", "Link to job details"],
+                "header": ["Edl Path", "Job status"],
                 "rows": [
-                    [self.video_path.name, 'http://localhost:3012/#JobDetails?id=23f5c37f'],
-                    [self.serie_path.name, 'http://localhost:3012/#JobDetails?id=f8ac3082']
+                    [self.video_path.name, '🔄️ PROCESSING (http://localhost:3012/#JobDetails?id=23f5c37f)'],
+                    [self.serie_path.name, '⏳ ENQUEUED']
                 ],
-                "caption": "2 enqueued tasks."
+                "caption": "2 tasks."
             }
         })
 

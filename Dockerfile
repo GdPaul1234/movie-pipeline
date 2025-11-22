@@ -1,6 +1,6 @@
 
-FROM python:3.11.9 AS builder
-RUN pip install poetry==2.1.3
+FROM python:3.13.9 AS builder
+RUN pip install poetry==2.2.1
 
 ENV POETRY_VIRTUALENVS_IN_PROJECT=1
 ENV POETRY_VIRTUALENVS_CREATE=1
@@ -19,7 +19,7 @@ RUN cd /app && poetry build -f wheel
 FROM jrottenberg/ffmpeg:7.1-nvidia AS runtime
 
 LABEL org.opencontainers.image.title=movie_pipeline
-LABEL org.opencontainers.image.version=0.2.11
+LABEL org.opencontainers.image.version=0.2.12
 LABEL org.opencontainers.image.authors=['GdPaul1234 <paul.godin1234@outlook.fr>']
 LABEL org.opencontainers.image.licenses=
 LABEL org.opencontainers.image.url=
@@ -39,7 +39,7 @@ COPY --from=builder /app/dist/ /app/dist/
 # Install and verify movie_pipeline installation
 ARG PIP_BREAK_SYSTEM_PACKAGES=1
 ARG PIP_NO_CACHE_DIR=1 
-RUN pip3 install dist/movie_pipeline-0.2.11-py3-none-any.whl \
+RUN pip3 install dist/movie_pipeline-0.2.12-py3-none-any.whl \
     && movie_pipeline --help
 
 # Init movie_pipeline directories

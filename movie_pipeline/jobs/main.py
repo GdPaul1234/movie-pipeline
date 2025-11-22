@@ -40,10 +40,20 @@ def detect_segments(config_path=default_config_path, raw_inputs: Optional[str] =
 
 
 def process_movie(config_path=default_config_path, raw_inputs: Optional[str] = None):
-    from ..services.movie_file_processor.runner.cronicle.cronicle_runner import Input, process_file
+    from ..services.movie_file_processor.runner.cronicle.cronicle_runner import FileInput, process_file
     raw_inputs = raw_inputs or next(sys.stdin)
 
     BaseCroniclePlugin(
         lambda params: process_file(params, get_job_config(config_path)),
-        inputs=BaseCroniclePluginInput[Input](**json.loads(raw_inputs))
+        inputs=BaseCroniclePluginInput[FileInput](**json.loads(raw_inputs))
+    ).run()
+
+
+def process_directory(config_path=default_config_path, raw_inputs: Optional[str] = None):
+    from ..services.movie_file_processor.runner.cronicle.cronicle_runner import DirectoryInput, process_directory
+    raw_inputs = raw_inputs or next(sys.stdin)
+
+    BaseCroniclePlugin(
+        lambda params: process_directory(params, get_job_config(config_path)),
+        inputs=BaseCroniclePluginInput[DirectoryInput](**json.loads(raw_inputs))
     ).run()

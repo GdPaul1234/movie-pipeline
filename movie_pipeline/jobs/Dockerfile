@@ -1,6 +1,6 @@
 FROM cronicle/edge:latest AS builder
 
-FROM fripiane/movie_pipeline:0.2.11 AS runtime
+FROM fripiane/movie_pipeline:0.2.12 AS runtime
 
 # Include `movie_pipeline` to `cronicle_edge`
 # cf https://github.com/cronicle-edge/cronicle-edge/blob/main/Dockerfile

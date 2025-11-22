@@ -10,6 +10,7 @@ movie_pipeline = "movie_pipeline.main:app"
 movie_pipeline_job_archive_movies = "movie_pipeline.jobs.main:archive_movies"
 movie_pipeline_job_detect_segments = "movie_pipeline.jobs.main:detect_segments"
 movie_pipeline_job_process_movie = "movie_pipeline.jobs.main:process_movie"
+movie_pipeline_job_process_directory = "movie_pipeline.jobs.main:process_directory"
 
 [tool.poetry]
 packages = [{include = "movie_pipeline"}]
@@ -25,6 +26,7 @@ deffcode = "^0.2.6"
 opencv-contrib-python = "^4.10.0.84"
 pydantic = "^2.11.7"
 pydantic-settings = "^2.10.1"
+requests = "^2.32.5"
 mpire = {extras = ["dashboard"], version = "^2.10.2"}
 typer = {extras = ["all"], version = "^0.16.0"}
 

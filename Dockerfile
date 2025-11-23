@@ -16,7 +16,7 @@ COPY ./movie_pipeline /app/movie_pipeline
 RUN cd /app && poetry build -f wheel
 
 
-FROM jrottenberg/ffmpeg:7.1-nvidia AS runtime
+FROM linuxserver/ffmpeg:version-8.0-cli AS runtime
 
 LABEL org.opencontainers.image.title=movie_pipeline
 LABEL org.opencontainers.image.version=0.2.12

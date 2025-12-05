@@ -89,7 +89,7 @@ class ProcessMovieTest(unittest.TestCase):
         expected_custom_table_json = json.dumps({
             "table": {
                 "title": "Movies to process",
-                "header": ["Edl Path", "Job status"],
+                "header": ["Path", "Job status"],
                 "rows": [
                     [self.video_path.name, '🔄️ PROCESSING (http://localhost:3012/#JobDetails?id=23f5c37f)'],
                     [self.serie_path.name, '⏳ ENQUEUED']

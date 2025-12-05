@@ -68,7 +68,7 @@ def process_directory(input: DirectoryInput, config: Settings) -> Iterator[Repor
         return {
             "table": {
                 "title": "Movies to process",
-                "header": ["Edl Path", "Job status"],
+                "header": ["Path", "Job status"],
                 "rows": [[str(edl_path.with_suffix('').name), submit_job(edl_path)] for edl_path in edls],
                 "caption": f"{len(edls)} tasks."
             }

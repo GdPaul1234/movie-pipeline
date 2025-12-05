@@ -1,5 +1,5 @@
 
-FROM python:3.13.9 AS builder
+FROM python:3.13.10 AS builder
 RUN pip install poetry==2.2.1
 
 ENV POETRY_VIRTUALENVS_IN_PROJECT=1
@@ -56,9 +56,6 @@ ENV Archive__movies_archive_folder=/app/archive/dest
 ENV Archive__max_retention_in_s=33_000_000
 
 ENV Logger__file_path=/app/logs/log.txt
-
-# Expose port of the mpire-dashboard
-EXPOSE 8080
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["movie_pipeline", "--help"]

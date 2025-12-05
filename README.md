@@ -102,18 +102,6 @@ You will now have four tasks that can be scheduled:
 - Process Movie
 - Process Movie Directory
 
-### Running with Vagrant
-
-Download Vagrant, set the following environment variables, then run `vagrant up`:
-
-- `PATHS_INPUT_FOLDER`
-- `PATHS_MOVIES_FOLDER`
-- `PATHS_SERIES_FOLDER`
-- `PATHS_BACKUP_FOLDER`
-- `ARCHIVE_BASE_FOLDER`
-- `ARCHIVE_MOVIES_ARCHIVE_FOLDER`
-- `LOGGER_LOG_FOLDER`
-
 ## Configuration
 
 Before using this program, you must provide a valid config file.

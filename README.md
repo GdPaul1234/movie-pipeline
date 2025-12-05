@@ -42,10 +42,13 @@ pip install --user ./dist/movie_pipeline-${VERSION}-py3-none-any.whl
 The following commands will be available:
 
 ```sh
-movie_pipeline
-movie_pipeline_job_archive_movies
-movie_pipeline_job_detect_segments
-movie_pipeline_job_process_movie
+
+movie_pipeline # The main app, type `movie_pipeline --help` to list available commands
+
+movie_pipeline_job_archive_movies # executable for the ArchiveMovies cronicle plugin
+movie_pipeline_job_detect_segments # executable for the DetectSegments cronicle plugin
+movie_pipeline_job_process_movie # executable for the ProcessMovie cronicle plugin, used by the ProcessMovieDirectory plugin
+movie_pipeline_job_process_directory # executable for the ProcessMovieDirectory cronicle plugin. You must have a valid API Key with "Edit events" and "Run events" privileges
 ```
 
 ### Running with docker
@@ -84,6 +87,20 @@ Then run:
 ```sh
 docker compose up
 ```
+
+### Setting up Cronicle, the task scheduler and runner used by Movie Pipeline
+
+Visit http://localhost:3012 to connect to your Cronicle instance, then import each JSON plugin manifest from the
+[cronicle plugin manifest folder](./movie_pipeline/jobs/config/plugins) into http://localhost:3012/#Admin?sub=plugins.
+
+Finally, import the [preconfigured schedule configuration](./movie_pipeline/jobs/config/scheduler.txt) into http://localhost:3012/#Schedule.
+
+You will now have four tasks that can be scheduled:
+
+- Archive Movies
+- Detect Segments
+- Process Movie
+- Process Movie Directory
 
 ### Running with Vagrant
 

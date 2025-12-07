@@ -2,8 +2,7 @@
 
 ## 1. Generating the video
 
-1. Install and launch [stable-diffusion-webui-docker
-](https://github.com/AbdBarho/stable-diffusion-webui-docker) and follows instructions to install AUTOMATIC1111.
+1. Install and launch [stable-diffusion-webui-docker](https://github.com/AbdBarho/stable-diffusion-webui-docker) and follows instructions to install AUTOMATIC1111.
 
 2. Download the [playground-v2.fp16.safetensors](https://huggingface.co/playgroundai/playground-v2-1024px-aesthetic/blob/main/playground-v2.fp16.safetensors) Stable Diffusion checkpoint and puts it under `#{stable-diffusion-webui-docker folder}/data/models/Stable-diffusion`.
 

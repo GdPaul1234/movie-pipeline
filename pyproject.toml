@@ -1,6 +1,6 @@
 [project]
 name = "movie_pipeline"
-version = "0.2.12"
+version = "0.2.13"
 description = ""
 readme = "README.md"
 authors = [{email = "GdPaul1234 <paul.godin1234@outlook.fr>"}]
@@ -24,10 +24,9 @@ binpacking = "^1.5.2"
 rich = "^14.2.0"
 deffcode = "^0.2.6"
 opencv-contrib-python = "^4.12.0.88"
-pydantic = "^2.12.4"
+pydantic = "^2.12.5"
 pydantic-settings = "^2.12.0"
 requests = "^2.32.5"
-mpire = {extras = ["dashboard"], version = "^2.10.2"}
 typer = {extras = ["all"], version = "^0.20.0"}
 
 [build-system]

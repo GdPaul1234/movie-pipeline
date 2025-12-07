@@ -1,117 +1,118 @@
 # Movie Pipeline
 
-Set of tools that automatize most of movies library maintenance
+*A set of tools to automate movie library maintenance.*
 
-**This program is distributed WITHOUT ANY WARRANTY, use AT YOUR OWN RISK.**
+**⚠️ WARNING: This program is distributed WITHOUT ANY WARRANTY. Use at your own risk.**
 
 ## Usage
 
-```
-$ python app.py --help
-
- Usage: app.py [OPTIONS] COMMAND [ARGS]...
-
- Available commands:
-
-╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ --log-level                 [debug|info|warning|error|critical]  [default: info]                                     │
-│ --config-path               PATH                                 Config path                                         │
-│                                                                  [default:                                           │
-│                                                                  C:\Users\paulg\.movie_pipeline\config.env]          │
-│ --install-completion                                             Install completion for the current shell.           │
-│ --show-completion                                                Show completion for the current shell, to copy it   │
-│                                                                  or customize the installation.                      │
-│ --help                                                           Show this message and exit.                         │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ───────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ archive_movies             Archive movies regarding options in config file                                           │
-│ detect_segments            Run best-effort segments detectors                                                        │
-│ process_movie              Cut and merge movie segments to keep only relevant part                                   │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-```
-
-### Running locally
-
-Install poetry, then run:
+Run the following command to see available options:
 
 ```sh
-poetry build -f wheel
-pip install --user ./dist/movie_pipeline-${VERSION}-py3-none-any.whl
+python app.py --help
 ```
 
-The following commands will be available:
+**Available commands:**
 
-```sh
-movie_pipeline
-movie_pipeline_job_archive_movies
-movie_pipeline_job_detect_segments
-movie_pipeline_job_process_movie
-```
+- `archive_movies` – Archive movies based on settings in the config file.
+- `detect_segments` – Run best-effort segment detection.
 
-### Running with docker
+- `process_movie` – Cut and merge movie segments to retain only relevant parts.
 
-Build the movie_pipeline project:
+### Running Locally
 
-```sh
-docker build -t fripiane/movie_pipeline:${VERSION} .
-```
+1. Install **Poetry** (if not already installed).
 
-Then build the cronicle integration:
+2. Build and install the package:
 
-```sh
-docker build -t fripiane/movie_pipeline_cronicle:${VERSION} ./movie_pipeline/jobs/
-```
+   ```sh
+   poetry build -f wheel
+   pip install --user ./dist/movie_pipeline-${VERSION}-py3-none-any.whl
+   ```
 
-Create and fill in the `.env` file:
+3. After installation, the following commands will be available:
 
-```env
-PATHS_INPUT_FOLDER=/mnt/share/video/PVR
+    | Command | Description |
+    |---|---|
+    | `movie_pipeline` | Main app (run `movie_pipeline --help` for options) |
+    | `movie_pipeline_job_archive_movies` | Executable for the ArchiveMovies Cronicle plugin |
+    | `movie_pipeline_job_detect_segments` | Executable for the DetectSegments Cronicle plugin |
+    | `movie_pipeline_job_process_movie` | Executable for the ProcessMovie Cronicle plugin (used by ProcessMovieDirectory) |
+    | `movie_pipeline_job_process_directory` | Executable for the ProcessMovieDirectory Cronicle plugin |
 
-PATHS_MOVIES_FOLDER=/mnt/share/video/PVR/Films
-PATHS_SERIES_FOLDER=/mnt/share/video/PVR/Séries
-PATHS_BACKUP_FOLDER=/mnt/share/usbshare1/Dossier personnel/video/PVR/playground
+    > **Note:** To use `movie_pipeline_job_process_directory`, you must have a valid API key with **"Edit events"** and **"Run events"** permissions.
 
-ARCHIVE_BASE_BACKUP_FOLDER=/mnt/share/usbshare1/Dossier personnel/video
-LOGGER_LOG_FOLDER=/mnt/share/video/PVR/temp/logs
+### Running with Docker
 
-SEGMENTDETECTION_TEMPLATES_PATH=/mnt/share/video/PVR/autres/scripts/common-ressources/logo
+1. **Build the Movie Pipeline image:**
 
-CRONICLE_secret_key=
-```
+   ```sh
+   docker build -t fripiane/movie_pipeline:${VERSION} .
+   ```
 
-Then run:
+2. **Build the Cronicle integration:**
 
-```sh
-docker compose up
-```
+   ```sh
+   docker build -t fripiane/movie_pipeline_cronicle:${VERSION} ./movie_pipeline/jobs/
+   ```
 
-### Running with Vagrant
+3. **Configure `.env`:**
 
-Download Vagrant, set the following environment variables, then run `vagrant up`:
+   ```env
+   PATHS_INPUT_FOLDER=/mnt/share/video/PVR
 
-- `PATHS_INPUT_FOLDER`
-- `PATHS_MOVIES_FOLDER`
-- `PATHS_SERIES_FOLDER`
-- `PATHS_BACKUP_FOLDER`
-- `ARCHIVE_BASE_FOLDER`
-- `ARCHIVE_MOVIES_ARCHIVE_FOLDER`
-- `LOGGER_LOG_FOLDER`
+   PATHS_MOVIES_FOLDER=/mnt/share/video/PVR/Films
+   PATHS_SERIES_FOLDER=/mnt/share/video/PVR/Séries
+   PATHS_BACKUP_FOLDER=/mnt/share/usbshare1/Dossier personnel/video/PVR/playground
+
+   ARCHIVE_BASE_BACKUP_FOLDER=/mnt/share/usbshare1/Dossier personnel/video
+   LOGGER_LOG_FOLDER=/mnt/share/video/PVR/temp/logs
+
+   SEGMENTDETECTION_TEMPLATES_PATH=/mnt/share/video/PVR/autres/scripts/common-ressources/logo
+
+   CRONICLE_secret_key=
+   ```
+
+4. **Run the containers:**
+
+   ```sh
+   docker compose up
+   ```
+
+### Setting Up Cronicle (Task Scheduler)
+
+1. Access your Cronicle instance at **[http://localhost:3012](http://localhost:3012)**.
+
+2. Import the plugin manifests from:
+   **[`./movie_pipeline/jobs/config/plugins`](https://github.com/GdPaul1234/movie-pipeline/tree/master/movie_pipeline/jobs/config/plugins)**
+   (via **Admin → Plugins → From JSON**).
+
+3. Import the preconfigured schedule from:
+   **[`./movie_pipeline/jobs/config/scheduler.txt`](https://github.com/GdPaul1234/movie-pipeline/blob/master/movie_pipeline/jobs/config/scheduler.txt)**
+   (via **Schedule → Import**).
+
+4. **Available tasks:**
+   - Archive Movies
+   - Detect Segments
+   - Process Movie
+   - Process Movie Directory
 
 ## Configuration
 
-Before using this program, you must provide a valid config file.
+Before running the program, provide a valid config file.
 
-You can find many of them in the `tests` directory.
+- **Default location:** `~/.movie_pipeline/config.env`
 
-If no `--config-path` is empty, the app will fallback to `~/.movie_pipeline/config.env` file.
+- **Example configs:** Check the [`tests`](https://github.com/GdPaul1234/movie-pipeline/tree/master/tests) directory.
 
 > [!NOTE]
-> Relative path is resolved from the config folder. Older config MIGHT break.
+>
+> - Relative paths are resolved from the config folder. Older configs **may break**.
+> - **Breaking change:** The config format now uses **Pydantic + python-dotenv** for runtime validation.
 
-> [!WARNING]
-> There is a breaking change with the configuration format to ensure runtime validation with Pydantic and python-dotenv
+### Old vs. New Config Format
 
-You can find bellow an example of the old format:
+#### **Old (INI-style):**
 
 ```ini
 [Paths]
@@ -141,7 +142,7 @@ nb_worker=2
 file_path=${Paths:base_path}\log.txt
 ```
 
-The equivalent in the newer format is:
+#### **New (ENV-style):**
 
 ```env
 Paths__base_path=V:\PVR
@@ -164,51 +165,40 @@ Processor__nb_worker=2
 Logger__file_path=${Paths__base_path}\log.txt
 ```
 
-## Main commands
+## Main Commands
 
-### Basic workflow: detect and trim relevant segments + move to media library
+### **Basic Workflow: Detect & Trim Segments + Move to Media Library**
 
-Once the configuration file has been filled in and all registrations made:
+1. **Fill in the config file** and register all plugins.
 
-- **RECOMMENDED**. Run sequentially :
-  1. The `detect_segments` command to prefill the relevant segments to be kept for a given movie
+2. **Recommended workflow:**
+   - Run `detect_segments` to identify relevant segments.
 
-  2. `python segment_validator` after downloading and installing the
-     [movie_pipeline_segments_validator](https://github.com/GdPaul1234/movie-pipeline-segments-validator) tool.
-     It will create an edit decision file after you review and validate the releant segments to be kept.
+   - Install and run **[movie-pipeline-segments-validator](https://github.com/GdPaul1234/movie-pipeline-segments-validator)** to review and validate segments.
 
-Alternatively, you can manually populate each edit decision file according to the following rules:
+   - Alternatively, manually edit `.yml` files with:
+     - Corrected titles (e.g., `Serie Name S01E02.mp4`).
+     - Segment ranges (e.g., `00:31:53.960-01:00:51.520,01:06:54.480-01:31:40.160,01:37:34.480-02:23:05.560,`).
 
-1. Scaffold the recording. For each media, fill in the editing decision file (`.yml.txt` files) by:
-    - Correcting the title if necessary, especially for Series.
+        Don't forget to add the leading comma at the end of the segment ranges!
 
-      _For reference, the format of the series title is as follows: `Serie Name S01E02.mp4`_
+     - `skip_backup: yes` for large files (>10GB).
 
-    - Using a third-party software or the built-in `detect_segments` command to fill in the segments to be kept.
-
-      _i.e. `00:31:53.960-01:00:51.520,01:06:54.480-01:31:40.160,01:37:34.480-02:23:05.560,`_
-
-      Don't forget to:
-        1. Carrefuly review the segments field
-        2. Append the leading comma at the end to validate your result!
-
-    - Add `skip_backup: yes` line if the movie file is too big (more than 10 Go).
-
-2. Process movie (cut, trim, convert movies, backup and move them to the right location) by running the `process_movie` command
+3. **Process movies** by running `process_movie` (cuts, trims, converts, and moves files).
 
 > [!WARNING]
-> The current implementation of `backup_policy_executor` deletes the original file if is identified as a **serie**.
-> Be sure that you have some kind of recycle bin puts in place in your system, so the deleted file is moved inside it
-> instead of being definitly deleted.
+>
+> - The `backup_policy_executor` **deletes original files** if they are identified as **series**.
+> - Ensure your system has a **recycle bin** to recover deleted files.
 
-### Archive medias
+### **Archive Media**
 
-If the remaining space of `base_path` is low, use the `archive_movies` command.
+If `base_path` is running low on space, use:
+
+```sh
+archive_movies
+```
 
 > [!WARNING]
-> It takes for granted that you periodicaly backup each movies (located in `movies_folder`) to `${base_backup_path}/PVR/Films`.
-
-This command is mainly created for my needs, don't run it if you don't have a movie backup in place as it deletes
-the oldest movies in `base_path` and move the corresponding `${base_backup_path}/PVR/Films` to `movies_archive_folder`.
-
-Only movies are supported at the time of writing this document.
+>
+> - This command **assumes** you have **periodic backups** of movies in `${base_backup_path}/PVR/Films`.

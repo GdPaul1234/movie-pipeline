@@ -43,13 +43,12 @@ def detect_segments(
 @app.command('process_movie')
 def process_movie(
     filepath: Annotated[Path, typer.Argument(help='File or folder to process')],
-    custom_ext: Annotated[str, typer.Option(help='Extension of Processing decision files')] = '.yml',
-    web: Annotated[bool, typer.Option(help='Use the new folder movie file processor and launch the web dashboard')] = False
+    custom_ext: Annotated[str, typer.Option(help='Extension of Processing decision files')] = '.yml'
 ):
     """Cut and merge movie segments to keep only relevant part"""
     from movie_pipeline.commands.process_movie import command
     if config is not None:
-        command(filepath, custom_ext, config, web)
+        command(filepath, custom_ext, config)
 
 
 def version_callback(value: bool):

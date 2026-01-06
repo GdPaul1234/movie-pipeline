@@ -59,9 +59,9 @@ class ArchiveMoviesTest(unittest.TestCase):
             job.archive_movies(self.config_path)
 
         output = mock_stdout.getvalue()
-        self.assertRegex(output, '{"table": {"title": "Movies to archive", "header":')
-        self.assertRegex(output, re.compile(r'{"progress": [\d.]+'))
-        self.assertRegex(output, '{"complete": 1, "code": 0}')
+        self.assertRegex(output, '{"xy": 1, "table": {"title": "Movies to archive", "header":')
+        self.assertRegex(output, re.compile(r'{"xy": 1, "progress": [\d.]+'))
+        self.assertRegex(output, '{"xy": 1, "code": 0}')
 
         self.assertEqual([], list(self.archive_movie_dir_path.iterdir()))
 
@@ -73,9 +73,9 @@ class ArchiveMoviesTest(unittest.TestCase):
             job.archive_movies(self.config_path)
 
         output = mock_stdout.getvalue()
-        self.assertRegex(output, re.compile(r'{"progress": [\d.]+'))
+        self.assertRegex(output, re.compile(r'{"xy": 1, "progress": [\d.]+'))
         self.assertRegex(output, re.compile(r'"perf": {"ArchiveMovies": [\d.]+}'))
-        self.assertRegex(output, '{"complete": 1, "code": 0}')
+        self.assertRegex(output, '{"xy": 1, "code": 0}')
 
         self.assertTrue((self.archive_movie_dir_path / 'Old Movie Name' / 'Old Movie Name.mp4').exists())
         self.assertFalse((self.archive_movie_dir_path / 'Movie Name' / 'Movie Name.mp4').exists())

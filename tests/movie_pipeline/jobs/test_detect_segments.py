@@ -180,9 +180,9 @@ class DetectSegmentsTest(unittest.TestCase):
         self.assertIn(video_segments_content['auto'], self.expected_video_segments_content['dummy'])
 
     def assertProgress(self, output: str):
-        self.assertRegex(output, re.compile(r'{"progress": [\d.]+'))
+        self.assertRegex(output, re.compile(r'{"xy": 1, "progress": [\d.]+'))
         self.assertRegex(output, re.compile(r'"perf": {"Item0": [\d.]+}'))
-        self.assertRegex(output, '{"complete": 1, "code": 0}')
+        self.assertRegex(output, '{"xy": 1, "code": 0}')
 
     def assertAndReadOnlyVideoSegmentPathExists(self):
         video_segments_path = self.video_path.with_suffix(f'{self.video_path.suffix}.segments.json')

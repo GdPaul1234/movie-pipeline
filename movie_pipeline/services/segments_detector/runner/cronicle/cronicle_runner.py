@@ -71,6 +71,7 @@ def detect_segments(input: Input, config: Settings) -> Iterator[ReportedProgress
                 elapsed_times[f'Item{index}'] = step_progress_result.current_step_elapsed_time
                 
                 yield {
+                    'xy': 1,
                     'progress': round((index + step_progress_result.total_percent) / float(file_paths_size), 2), 
                     'perf': elapsed_times
                 }

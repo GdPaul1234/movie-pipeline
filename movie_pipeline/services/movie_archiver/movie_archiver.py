@@ -28,6 +28,7 @@ class MoviesArchiver:
     def _report_movies_to_archive(self, movies: list[Path], format: Literal['json', 'table'] = 'table') -> str:
         # cf https://github.com/jhuckaby/Cronicle/blob/master/docs/Plugins.md#custom-data-tables
         raw_table = {
+            "xy": 1,
             "table": {
                 "title": "Movies to archive",
                 "header": ["Modified at", "File Name"],

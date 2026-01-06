@@ -48,9 +48,9 @@ class ProcessMovieTest(unittest.TestCase):
             job.process_movie(self.config_path)
 
         output = mock_stdout.getvalue()
-        self.assertRegex(output, re.compile(r'{"progress": [\d.]+'))
+        self.assertRegex(output, re.compile(r'{"xy": 1, "progress": [\d.]+'))
         self.assertRegex(output, re.compile(r'"perf": {"ProcessStep": [\d.]+, "BackupStep": [\d.]+}'))
-        self.assertRegex(output, '{"complete": 1, "code": 0}')
+        self.assertRegex(output, '{"xy": 1, "code": 0}')
 
     @patch('movie_pipeline.services.movie_file_processor.runner.cronicle.cronicle_runner.requests.post')
     @patch('sys.stdout', new_callable=StringIO)
@@ -82,11 +82,12 @@ class ProcessMovieTest(unittest.TestCase):
         mock_post.assert_any_call(*common_expected_post_args, **serie_expected_post_kwargs)
 
         output = mock_stdout.getvalue()
-        self.assertRegex(output, re.compile(r'{"progress": [\d.]+'))
+        self.assertRegex(output, re.compile(r'{"xy": 1, "progress": [\d.]+'))
         self.assertRegex(output, re.compile(r'"perf": {"SubmitJobs": [\d.]+'))
-        self.assertRegex(output, '{"complete": 1, "code": 0}')
+        self.assertRegex(output, '{"xy": 1, "code": 0}')
 
         expected_custom_table_json = json.dumps({
+            "xy": 1,
             "table": {
                 "title": "Movies to process",
                 "header": ["Path", "Job status"],

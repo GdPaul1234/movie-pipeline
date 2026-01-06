@@ -27,7 +27,7 @@ def process_file(input: FileInput, config: Settings) -> Iterator[ReportedProgres
 
     for step_progress_result in movie_file_processor.movie_file_processor_root_step.process_all():
         elapsed_times[step_progress_result.current_step_name] = round(step_progress_result.current_step_elapsed_time, 2)
-        yield {'progress': round(step_progress_result.total_percent, 2), 'perf': elapsed_times}
+        yield {'xy': 1, 'progress': round(step_progress_result.total_percent, 2), 'perf': elapsed_times}
 
 
 class DirectoryInput(BaseModel):
@@ -66,6 +66,7 @@ def process_directory(input: DirectoryInput, config: Settings) -> Iterator[Repor
 
     def process_all():
         return {
+            "xy": 1,
             "table": {
                 "title": "Movies to process",
                 "header": ["Path", "Job status"],
@@ -77,4 +78,4 @@ def process_directory(input: DirectoryInput, config: Settings) -> Iterator[Repor
     raw_table, process_time = timed_run(process_all)
 
     print(json.dumps(raw_table))
-    yield {'progress': 1., 'perf': {'SubmitJobs': process_time}}
+    yield {'xy': 1, 'progress': 1., 'perf': {'SubmitJobs': process_time}}

@@ -63,7 +63,7 @@ def copy_files(rules: list[SourceDestinationDict]):
             after_copy_fn(rule['destination'])
 
 
-def get_base_cronicle_json_input():
+def get_base_xyops_json_input():
     # see https://github.com/pixlcore/xyops/blob/main/docs/plugins.md#input
     return {
         "xy": 1,

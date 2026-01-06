@@ -6,9 +6,9 @@ import requests
 from pydantic import BaseModel, DirectoryPath
 from pydantic.types import FilePath
 
-from .....jobs.base_cronicle_plugin import ReportedProgress
+from .....jobs.base_xyops_plugin import ReportedProgress
 from .....lib.util import timed_run
-from .....services.movie_file_processor.core import MovieFileProcessor
+from ...core import MovieFileProcessor
 from .....settings import Settings
 
 

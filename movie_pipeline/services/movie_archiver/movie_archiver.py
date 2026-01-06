@@ -26,7 +26,7 @@ class MoviesArchiver:
         return (today - last_modified_time) >= self._max_retention_in_s
 
     def _report_movies_to_archive(self, movies: list[Path], format: Literal['json', 'table'] = 'table') -> str:
-        # cf https://github.com/jhuckaby/Cronicle/blob/master/docs/Plugins.md#custom-data-tables
+        # cf https://github.com/pixlcore/xyops/blob/main/docs/plugins.md#custom-content
         raw_table = {
             "xy": 1,
             "table": {

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 ParamT = TypeVar('ParamT')
 
-class BaseCroniclePluginInput(BaseModel, Generic[ParamT]):
+class BaseXyOpsPluginInput(BaseModel, Generic[ParamT]):
     # event properties
     xy: int
     type: Literal['event']
@@ -30,8 +30,8 @@ class ReportedProgress(TypedDict):
 
 Runnable = Callable[[ParamT], Iterator[ReportedProgress]]
 
-class BaseCroniclePlugin(Generic[ParamT]):
-    def __init__(self, runnable: Runnable[ParamT], inputs: BaseCroniclePluginInput[ParamT]) -> None:
+class BaseXyOpsPlugin(Generic[ParamT]):
+    def __init__(self, runnable: Runnable[ParamT], inputs: BaseXyOpsPluginInput[ParamT]) -> None:
         self._runnable = runnable
         self._inputs = inputs
 

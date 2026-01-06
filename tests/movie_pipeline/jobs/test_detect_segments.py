@@ -12,7 +12,7 @@ import ffmpeg
 
 import movie_pipeline.jobs.main as job
 
-from ..concerns import copy_files, create_output_movies_directories, get_base_cronicle_json_input, get_output_movies_directories
+from ..concerns import copy_files, create_output_movies_directories, get_base_xyops_json_input, get_output_movies_directories
 
 
 class DetectSegmentsTest(unittest.TestCase):
@@ -60,7 +60,7 @@ class DetectSegmentsTest(unittest.TestCase):
         archive_movie_dir_path = backup_dir_path / 'Films'
         archive_movie_dir_path.mkdir()
 
-        self.cronicle_json_input = get_base_cronicle_json_input()
+        self.xyops_json_input = get_base_xyops_json_input()
 
         self.expected_video_segments_content = {
             'match_template': [
@@ -83,9 +83,9 @@ class DetectSegmentsTest(unittest.TestCase):
     def test_log_progress_of_detected_segments(self):
         for detector_key, expected_video_segments_any_content in self.expected_video_segments_content.items():
             with self.subTest(detector_key=detector_key):
-                self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': detector_key}
+                self.xyops_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': detector_key}
 
-                with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
+                with patch.object(sys, 'stdin', StringIO(json.dumps(self.xyops_json_input))):
                     with patch.object(sys, 'stdout', new_callable=StringIO) as mock_stdout:
                         job.detect_segments(self.config_path)
 
@@ -96,9 +96,9 @@ class DetectSegmentsTest(unittest.TestCase):
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_log_progress_of_detected_segments_with_auto_detect_select_match_template(self, mock_stdout):
-        self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
+        self.xyops_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
 
-        with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
+        with patch.object(sys, 'stdin', StringIO(json.dumps(self.xyops_json_input))):
             job.detect_segments(self.config_path)
 
         self.assertProgress(output=mock_stdout.getvalue())
@@ -108,13 +108,13 @@ class DetectSegmentsTest(unittest.TestCase):
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_log_progress_of_detected_segments_with_auto_detect_select_crop_detect(self, mock_stdout):
-        self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
+        self.xyops_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
 
         # remove logo to force crop detect instead of eligible match_template detect
         self.sample_logo_picture_path.unlink()
         self.sample_logo_config_path.unlink()
 
-        with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
+        with patch.object(sys, 'stdin', StringIO(json.dumps(self.xyops_json_input))):
             job.detect_segments(self.config_path)
 
         self.assertProgress(output=mock_stdout.getvalue())
@@ -125,7 +125,7 @@ class DetectSegmentsTest(unittest.TestCase):
     @unittest.skip('slow, do not detect relevant segments in real life medias')
     @patch('sys.stdout', new_callable=StringIO)
     def test_log_progress_of_detected_segments_with_auto_detect_select_axcorrelate_silence_detect(self, mock_stdout):
-        self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
+        self.xyops_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
 
         # crop video to discard match_template and crop detect by removing the 'cinema' aspect ratio
         nb_audio_streams = len(ffmpeg.probe(self.video_path, select_streams='a')['streams'])
@@ -143,7 +143,7 @@ class DetectSegmentsTest(unittest.TestCase):
         self.video_path.unlink()
         cropped_video_path.rename(self.video_path)
 
-        with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
+        with patch.object(sys, 'stdin', StringIO(json.dumps(self.xyops_json_input))):
             job.detect_segments(self.config_path)
 
         self.assertProgress(output=mock_stdout.getvalue())
@@ -153,7 +153,7 @@ class DetectSegmentsTest(unittest.TestCase):
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_log_progress_of_detected_segments_with_auto_detect_select_dummy_detect(self, mock_stdout):
-        self.cronicle_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
+        self.xyops_json_input["params"] = {'file_path': str(self.video_path.absolute()), 'detector': 'auto'}
 
         # crop video to discard match_template and crop detect by removing the 'cinema' aspect ratio
         nb_audio_streams = len(ffmpeg.probe(self.video_path, select_streams='a')['streams'])
@@ -171,7 +171,7 @@ class DetectSegmentsTest(unittest.TestCase):
         self.video_path.unlink()
         cropped_video_path.rename(self.video_path)
 
-        with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
+        with patch.object(sys, 'stdin', StringIO(json.dumps(self.xyops_json_input))):
             job.detect_segments(self.config_path)
 
         self.assertProgress(output=mock_stdout.getvalue())

@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from ..jobs.base_cronicle_plugin import BaseCroniclePlugin, BaseCroniclePluginInput
+from .base_xyops_plugin import BaseXyOpsPlugin, BaseXyOpsPluginInput
 from ..settings import Settings
 
 default_config_path = Path.home() / '.movie_pipeline' / 'config.env'
@@ -20,40 +20,40 @@ def get_job_config(config_path=default_config_path) -> Settings:
 
 
 def archive_movies(config_path=default_config_path, raw_inputs: Optional[str] = None):
-    from ..services.movie_archiver.runner.cronicle_runner import Input, archive_movies
+    from ..services.movie_archiver.runner.xyops_runner import Input, archive_movies
     raw_inputs = raw_inputs or next(sys.stdin)
 
-    BaseCroniclePlugin(
+    BaseXyOpsPlugin(
         lambda params: archive_movies(params, get_job_config(config_path)),
-        inputs=BaseCroniclePluginInput[Input](**json.loads(raw_inputs))
+        inputs=BaseXyOpsPluginInput[Input](**json.loads(raw_inputs))
     ).run()
 
 
 def detect_segments(config_path=default_config_path, raw_inputs: Optional[str] = None):
-    from ..services.segments_detector.runner.cronicle.cronicle_runner import Input, detect_segments
+    from ..services.segments_detector.runner.xyops.xyops_runner import Input, detect_segments
     raw_inputs = raw_inputs or next(sys.stdin)
 
-    BaseCroniclePlugin(
+    BaseXyOpsPlugin(
         lambda params: detect_segments(params, get_job_config(config_path)),
-        inputs=BaseCroniclePluginInput[Input](**json.loads(raw_inputs))
+        inputs=BaseXyOpsPluginInput[Input](**json.loads(raw_inputs))
     ).run()
 
 
 def process_movie(config_path=default_config_path, raw_inputs: Optional[str] = None):
-    from ..services.movie_file_processor.runner.cronicle.cronicle_runner import FileInput, process_file
+    from ..services.movie_file_processor.runner.xyops.xyops_runner import FileInput, process_file
     raw_inputs = raw_inputs or next(sys.stdin)
 
-    BaseCroniclePlugin(
+    BaseXyOpsPlugin(
         lambda params: process_file(params, get_job_config(config_path)),
-        inputs=BaseCroniclePluginInput[FileInput](**json.loads(raw_inputs))
+        inputs=BaseXyOpsPluginInput[FileInput](**json.loads(raw_inputs))
     ).run()
 
 
 def process_directory(config_path=default_config_path, raw_inputs: Optional[str] = None):
-    from ..services.movie_file_processor.runner.cronicle.cronicle_runner import DirectoryInput, process_directory
+    from ..services.movie_file_processor.runner.xyops.xyops_runner import DirectoryInput, process_directory
     raw_inputs = raw_inputs or next(sys.stdin)
 
-    BaseCroniclePlugin(
+    BaseXyOpsPlugin(
         lambda params: process_directory(params, get_job_config(config_path)),
-        inputs=BaseCroniclePluginInput[DirectoryInput](**json.loads(raw_inputs))
+        inputs=BaseXyOpsPluginInput[DirectoryInput](**json.loads(raw_inputs))
     ).run()

@@ -6,11 +6,11 @@ from typing import Iterator
 from pydantic import BaseModel
 from pydantic.types import DirectoryPath, FilePath
 
-from .....jobs.base_cronicle_plugin import ReportedProgress
+from .....jobs.base_xyops_plugin import ReportedProgress
 from .....lib.step_runner.step import BaseStep
 from .....lib.util import total_movie_duration
 from .....main import DetectorKey
-from .....services.segments_detector.segments_detector import dump_segments_to_file, run_segment_detectors_with_progress
+from ...segments_detector import dump_segments_to_file, run_segment_detectors_with_progress
 from .....settings import Settings
 
 logger = logging.getLogger(__name__)

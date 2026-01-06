@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 import movie_pipeline.jobs.main as job
 
-from ..concerns import copy_files, create_output_movies_directories, get_base_cronicle_json_input, get_output_movies_directories
+from ..concerns import copy_files, create_output_movies_directories, get_base_xyops_json_input, get_output_movies_directories
 
 
 class ArchiveMoviesTest(unittest.TestCase):
@@ -49,13 +49,13 @@ class ArchiveMoviesTest(unittest.TestCase):
         logo_dir_path = self.input_dir_path / 'logo'
         logo_dir_path.mkdir(parents=True)
         
-        self.cronicle_json_input = get_base_cronicle_json_input()
+        self.xyops_json_input = get_base_xyops_json_input()
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_dry_archive_movies(self, mock_stdout):
-        self.cronicle_json_input["params"] = {"dry": True}
+        self.xyops_json_input["params"] = {"dry": True}
 
-        with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
+        with patch.object(sys, 'stdin', StringIO(json.dumps(self.xyops_json_input))):
             job.archive_movies(self.config_path)
 
         output = mock_stdout.getvalue()
@@ -67,9 +67,9 @@ class ArchiveMoviesTest(unittest.TestCase):
 
     @patch('sys.stdout', new_callable=StringIO)
     def test_log_progress_of_archive_movies(self, mock_stdout):
-        self.cronicle_json_input["params"] = {}
+        self.xyops_json_input["params"] = {}
 
-        with patch.object(sys, 'stdin', StringIO(json.dumps(self.cronicle_json_input))):
+        with patch.object(sys, 'stdin', StringIO(json.dumps(self.xyops_json_input))):
             job.archive_movies(self.config_path)
 
         output = mock_stdout.getvalue()

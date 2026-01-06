@@ -4,8 +4,8 @@ from typing import Iterator
 
 from pydantic import BaseModel
 
-from ....jobs.base_cronicle_plugin import ReportedProgress
-from ....services.movie_archiver.movie_archiver import MoviesArchiver
+from ....jobs.base_xyops_plugin import ReportedProgress
+from ..movie_archiver import MoviesArchiver
 from ....settings import Settings
 
 logger = logging.getLogger(__name__)

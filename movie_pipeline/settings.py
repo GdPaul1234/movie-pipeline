@@ -28,6 +28,7 @@ class SegmentDetectionSettings(BaseModel):
 
 class ProcessorSettings(BaseModel):
     nb_worker: PositiveInt
+    xyops_process_file_event_id: Optional[str] = None
 
 
 class LoggerSettings(BaseModel):

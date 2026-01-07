@@ -1,15 +1,14 @@
 import json
 from datetime import datetime
-from typing import Any, Iterator
+from typing import Iterator
 
-import requests
-from pydantic import BaseModel, DirectoryPath
-from pydantic.types import FilePath
+from pydantic import BaseModel
+from pydantic.types import DirectoryPath, FilePath
 
 from .....jobs.base_xyops_plugin import ReportedProgress
 from .....lib.util import timed_run
-from ...core import MovieFileProcessor
 from .....settings import Settings
+from ...core import MovieFileProcessor
 
 
 class FileInput(BaseModel):
@@ -31,51 +30,40 @@ def process_file(input: FileInput, config: Settings) -> Iterator[ReportedProgres
 
 
 class DirectoryInput(BaseModel):
-    api_key: str
     folder_path: DirectoryPath
     edl_ext: str
 
 
 def process_directory(input: DirectoryInput, config: Settings) -> Iterator[ReportedProgress]:
-    edls: list[FilePath] = []
+    def submit_actions():
+        if config.Processor is None or (xyops_process_file_event_id := config.Processor.xyops_process_file_event_id) is None:
+            raise ValueError('Processor__xyops_process_file_event_id is missing')
 
-    for edl in input.folder_path.glob(f'*{input.edl_ext}'):
-        new_edl_name = edl.with_suffix(f'.pending_yml_{int(datetime.utcnow().timestamp())}')
-        edl.rename(new_edl_name)
-        edls.append(new_edl_name)
+        edls: list[FilePath] = []
 
-    def submit_job(edl_path: FilePath):
-        params = {'file_path': str(edl_path.with_suffix('')), 'edl_ext': edl_path.suffix}
-        res = requests.post(
-            'http://localhost:3012/api/app/run_event/v1',
-            headers={'X-API-Key': input.api_key},
-            json={'title': 'Process Movie', 'params': params}
-        )
+        for edl in input.folder_path.glob(f'*{input.edl_ext}'):
+            new_edl_name = edl.with_suffix(f'.pending_yml_{int(datetime.utcnow().timestamp())}')
+            edl.rename(new_edl_name)
+            edls.append(new_edl_name)
 
-        try:
-            res.raise_for_status()
-            json: dict[str, Any] = res.json()
-
-            if json['code'] == 0:
-                return '⏳ ENQUEUED' if json.get('queue') is not None else f'🔄️ PROCESSING (http://localhost:3012/#JobDetails?id={json['ids'][0]})'
-            else:
-                return f'⛔ ERROR "{json['code']}": {json['description']}'
-
-        except requests.HTTPError as e:
-            return e.args[0]
-
-    def process_all():
-        return {
-            "xy": 1,
-            "table": {
-                "title": "Movies to process",
-                "header": ["Path", "Job status"],
-                "rows": [[str(edl_path.with_suffix('').name), submit_job(edl_path)] for edl_path in edls],
-                "caption": f"{len(edls)} tasks."
+        # submit jobs
+        # cf https://github.com/pixlcore/xyops/blob/main/docs/plugins.md#actions
+        # cf https://github.com/pixlcore/xyops/blob/main/docs/actions.md#run-event
+        actions = [
+            {
+                'condition': 'complete',
+                'type': 'run_event',
+                'event_id': xyops_process_file_event_id,
+                'params': {
+                    'file_path': str(edl_path.with_suffix('')),
+                    'edl_ext': edl_path.suffix
+                },
+                'enabled': True
             }
-        }
+            for edl_path in edls
+        ]
 
-    raw_table, process_time = timed_run(process_all)
+        print(json.dumps({'xy': 1, 'push': {'actions': actions}}))
 
-    print(json.dumps(raw_table))
+    _, process_time = timed_run(submit_actions)
     yield {'xy': 1, 'progress': 1., 'perf': {'SubmitJobs': process_time}}

@@ -1,0 +1,103 @@
+{
+	"type": "xypdf",
+	"description": "xyOps Portable Data Object",
+	"version": "1.0",
+	"items": [
+		{
+			"type": "event",
+			"data": {
+				"id": "emk7iulp0dtxh247",
+				"title": "Detect Segments",
+				"enabled": true,
+				"targets": [
+					"main"
+				],
+				"params": {
+					"file_path": "/app/inputs"
+				},
+				"fields": [],
+				"triggers": [
+					{
+						"enabled": true,
+						"type": "manual"
+					},
+					{
+						"enabled": true,
+						"type": "schedule",
+						"hours": [
+							8
+						],
+						"minutes": [
+							0
+						]
+					}
+				],
+				"limits": [
+					{
+						"type": "job",
+						"enabled": true,
+						"amount": 1
+					},
+					{
+						"type": "queue",
+						"enabled": true,
+						"amount": 0
+					},
+					{
+						"type": "retry",
+						"enabled": true,
+						"amount": 0,
+						"duration": 0
+					}
+				],
+				"actions": [],
+				"notes": "",
+				"category": "general",
+				"plugin": "pmk7hy35rxn0gnst",
+				"icon": "",
+				"tags": [],
+				"algo": "random"
+			}
+		},
+		{
+			"type": "plugin",
+			"data": {
+				"id": "pmk7hy35rxn0gnst",
+				"title": "Detect Segments",
+				"enabled": true,
+				"type": "event",
+				"command": "movie_pipeline_job_detect_segments",
+				"script": "",
+				"groups": [],
+				"format": "",
+				"params": [
+					{
+						"id": "file_path",
+						"title": "File / Directory path",
+						"type": "text",
+						"caption": "",
+						"locked": false,
+						"value": "/app/inputs",
+						"variant": "text",
+						"required": true
+					}
+				],
+				"kill": "parent",
+				"runner": true,
+				"notes": "",
+				"icon": "folder-search",
+				"uid": "",
+				"gid": ""
+			}
+		},
+		{
+			"type": "group",
+			"data": {
+				"id": "main",
+				"title": "Main Group",
+				"hostname_match": ".+",
+				"alert_actions": []
+			}
+		}
+	]
+}

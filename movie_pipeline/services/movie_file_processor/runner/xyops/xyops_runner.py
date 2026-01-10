@@ -30,15 +30,13 @@ def process_file(input: FileInput, config: Settings) -> Iterator[ReportedProgres
 
 
 class DirectoryInput(BaseModel):
+    xyops_process_file_event_id: str
     folder_path: DirectoryPath
     edl_ext: str
 
 
 def process_directory(input: DirectoryInput, config: Settings) -> Iterator[ReportedProgress]:
     def submit_actions():
-        if config.Processor is None or (xyops_process_file_event_id := config.Processor.xyops_process_file_event_id) is None:
-            raise ValueError('Processor__xyops_process_file_event_id is missing')
-
         edls: list[FilePath] = []
 
         for edl in input.folder_path.glob(f'*{input.edl_ext}'):
@@ -49,21 +47,15 @@ def process_directory(input: DirectoryInput, config: Settings) -> Iterator[Repor
         # submit jobs
         # cf https://github.com/pixlcore/xyops/blob/main/docs/plugins.md#actions
         # cf https://github.com/pixlcore/xyops/blob/main/docs/actions.md#run-event
-        actions = [
-            {
+        for edl_path in edls:
+            action = {
                 'condition': 'complete',
                 'type': 'run_event',
-                'event_id': xyops_process_file_event_id,
-                'params': {
-                    'file_path': str(edl_path.with_suffix('')),
-                    'edl_ext': edl_path.suffix
-                },
+                'event_id': input.xyops_process_file_event_id,
+                'params': {'file_path': str(edl_path.with_suffix('')), 'edl_ext': edl_path.suffix},
                 'enabled': True
             }
-            for edl_path in edls
-        ]
-
-        print(json.dumps({'xy': 1, 'push': {'actions': actions}}))
+            print(json.dumps({'xy': 1, 'push': {'actions': [action]}}))
 
     _, process_time = timed_run(submit_actions)
     yield {'xy': 1, 'progress': 1., 'perf': {'SubmitJobs': process_time}}

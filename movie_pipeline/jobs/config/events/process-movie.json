@@ -1,0 +1,112 @@
+{
+	"type": "xypdf",
+	"description": "xyOps Portable Data Object",
+	"version": "1.0",
+	"items": [
+		{
+			"type": "event",
+			"data": {
+				"actions": [],
+				"algo": "random",
+				"category": "camk7hj7tbq89k21",
+				"enabled": true,
+				"fields": [],
+				"icon": "",
+				"id": "emk7iosv1axxqvw1",
+				"limits": [
+					{
+						"enabled": true,
+						"type": "job",
+						"amount": 2
+					},
+					{
+						"amount": 0,
+						"duration": 0,
+						"enabled": true,
+						"type": "retry"
+					}
+				],
+				"notes": "",
+				"params": {
+					"file_path": "",
+					"edl_ext": ".yml"
+				},
+				"plugin": "pmk7i4x12114hp1n",
+				"tags": [],
+				"targets": [
+					"main"
+				],
+				"title": "Process Movie",
+				"triggers": [
+					{
+						"enabled": true,
+						"type": "manual"
+					}
+				]
+			}
+		},
+		{
+			"type": "plugin",
+			"data": {
+				"id": "pmk7i4x12114hp1n",
+				"title": "Process Movie",
+				"enabled": true,
+				"type": "event",
+				"command": "movie_pipeline_job_process_movie",
+				"script": "",
+				"groups": [],
+				"format": "",
+				"params": [
+					{
+						"id": "file_path",
+						"title": "file path",
+						"type": "text",
+						"caption": "",
+						"locked": false,
+						"value": "",
+						"variant": "text",
+						"required": false
+					},
+					{
+						"id": "edl_ext",
+						"title": "edl ext",
+						"type": "text",
+						"caption": "",
+						"locked": false,
+						"value": ".yml",
+						"variant": "text",
+						"required": true
+					}
+				],
+				"kill": "parent",
+				"runner": true,
+				"notes": "",
+				"icon": "movie-cog",
+				"uid": "",
+				"gid": ""
+			}
+		},
+		{
+			"type": "category",
+			"data": {
+				"id": "camk7hj7tbq89k21",
+				"title": "Process Movies",
+				"notes": "",
+				"enabled": true,
+				"color": "plain",
+				"limits": [],
+				"actions": [],
+				"icon": ""
+			}
+		},
+		{
+			"type": "group",
+			"data": {
+				"id": "main",
+				"title": "Main Group",
+				"hostname_match": ".+",
+				"alert_actions": []
+			}
+		}
+	]
+}

@@ -83,7 +83,7 @@
 					}
 				],
 				"kill": "parent",
-				"runner": true,
+				"runner": false,
 				"notes": "",
 				"icon": "folder-search",
 				"uid": "",

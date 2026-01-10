@@ -1,0 +1,2 @@
+Paste content of /opt/xyops/satellite/config.json in `satellite` folder to avoid re-registering xysat on subsequent launch
+Do not forget to uncomment the associated volume in docker-compose.yml

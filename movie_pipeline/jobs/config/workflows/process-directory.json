@@ -1,0 +1,257 @@
+{
+	"type": "xypdf",
+	"description": "xyOps Portable Data Object",
+	"version": "1.0",
+	"items": [
+		{
+			"type": "event",
+			"data": {
+				"id": "emk874zgsrpacqz0",
+				"title": "Process Movie Directory",
+				"enabled": true,
+				"targets": [],
+				"params": {},
+				"fields": [],
+				"triggers": [
+					{
+						"enabled": true,
+						"type": "manual",
+						"id": "nuoip4ln"
+					}
+				],
+				"limits": [
+					{
+						"type": "job",
+						"enabled": true,
+						"amount": 1
+					},
+					{
+						"type": "queue",
+						"enabled": true,
+						"amount": 0
+					},
+					{
+						"type": "retry",
+						"enabled": true,
+						"amount": 0,
+						"duration": 0
+					}
+				],
+				"actions": [],
+				"notes": "",
+				"workflow": {
+					"nodes": [
+						{
+							"id": "nuoip4ln",
+							"type": "trigger",
+							"x": -328,
+							"y": 359
+						},
+						{
+							"id": "nmy5ctar",
+							"type": "job",
+							"data": {
+								"params": {
+									"folder_path": "/app/inputs",
+									"edl_ext": ".yml"
+								},
+								"targets": [
+									"main"
+								],
+								"algo": "random",
+								"label": "",
+								"category": "general",
+								"plugin": "pmk7ic1ks4lrbw74",
+								"icon": "",
+								"tags": []
+							},
+							"x": -183,
+							"y": 271
+						},
+						{
+							"id": "njyu87rj",
+							"type": "controller",
+							"data": {
+								"controller": "split",
+								"split": "data.process_file_inputs",
+								"continue": 0
+							},
+							"x": 173,
+							"y": 358
+						},
+						{
+							"id": "nhi7grig",
+							"type": "job",
+							"data": {
+								"params": {
+									"file_path": "{{ data.item.file_path }}",
+									"edl_ext": "{{ data.item.edl_ext }}"
+								},
+								"targets": [
+									"main"
+								],
+								"algo": "random",
+								"label": "",
+								"category": "camk7hj7tbq89k21",
+								"plugin": "pmk7i4x12114hp1n",
+								"tags": []
+							},
+							"x": 364,
+							"y": 271
+						},
+						{
+							"id": "nxeu4c7j",
+							"type": "limit",
+							"data": {
+								"type": "job",
+								"enabled": true,
+								"amount": 2
+							},
+							"x": 428,
+							"y": 541
+						},
+						{
+							"id": "n1im2hmf",
+							"type": "limit",
+							"data": {
+								"type": "queue",
+								"enabled": true,
+								"amount": 1000
+							},
+							"x": 514,
+							"y": 540
+						}
+					],
+					"connections": [
+						{
+							"id": "cgkgrj1p",
+							"source": "nuoip4ln",
+							"dest": "nmy5ctar"
+						},
+						{
+							"id": "cyhaq77q",
+							"source": "nmy5ctar",
+							"dest": "njyu87rj",
+							"condition": "success"
+						},
+						{
+							"id": "cu1n1vls",
+							"source": "njyu87rj",
+							"dest": "nhi7grig"
+						},
+						{
+							"id": "cky0jdre",
+							"source": "nhi7grig",
+							"dest": "nxeu4c7j"
+						},
+						{
+							"id": "c5e9l4w6",
+							"source": "nhi7grig",
+							"dest": "n1im2hmf"
+						}
+					]
+				},
+				"category": "camk7hj7tbq89k21",
+				"type": "workflow",
+				"icon": "",
+				"tags": [],
+				"plugin": "_workflow"
+			}
+		},
+		{
+			"type": "plugin",
+			"data": {
+				"id": "pmk7ic1ks4lrbw74",
+				"title": "Process Movie Directory",
+				"enabled": true,
+				"type": "event",
+				"command": "movie_pipeline_job_process_directory",
+				"script": "",
+				"groups": [],
+				"format": "",
+				"params": [
+					{
+						"id": "folder_path",
+						"title": "Folder path",
+						"type": "text",
+						"caption": "",
+						"locked": false,
+						"value": "/app/inputs",
+						"variant": "text",
+						"required": true
+					},
+					{
+						"id": "edl_ext",
+						"title": "edl ext",
+						"type": "text",
+						"caption": "",
+						"locked": false,
+						"value": ".yml",
+						"variant": "text",
+						"required": true
+					}
+				],
+				"kill": "parent",
+				"runner": true,
+				"notes": "Output data schema: { eld_params: { file_path: string, edl_ext: string }[] }\n",
+				"icon": "folder-cog",
+				"uid": "",
+				"gid": ""
+			}
+		},
+		{
+			"type": "plugin",
+			"data": {
+				"id": "pmk7i4x12114hp1n",
+				"title": "Process Movie",
+				"enabled": true,
+				"type": "event",
+				"command": "movie_pipeline_job_process_movie",
+				"script": "",
+				"groups": [],
+				"format": "",
+				"params": [
+					{
+						"id": "file_path",
+						"title": "File path",
+						"type": "text",
+						"caption": "",
+						"locked": false,
+						"value": "",
+						"variant": "text",
+						"required": false
+					},
+					{
+						"id": "edl_ext",
+						"title": "edl ext",
+						"type": "text",
+						"caption": "",
+						"locked": false,
+						"value": ".yml",
+						"variant": "text",
+						"required": true
+					}
+				],
+				"kill": "parent",
+				"runner": true,
+				"notes": "",
+				"icon": "movie-cog",
+				"uid": "",
+				"gid": ""
+			}
+		},
+		{
+			"type": "category",
+			"data": {
+				"id": "camk7hj7tbq89k21",
+				"title": "Process Movies",
+				"notes": "",
+				"enabled": true,
+				"color": "plain",
+				"limits": [],
+				"actions": [],
+				"icon": ""
+			}
+		}
+	]
+}

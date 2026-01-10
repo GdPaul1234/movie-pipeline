@@ -22,13 +22,14 @@ services:
       - ${ARCHIVE_BASE_BACKUP_FOLDER?:error}:/app/archive
       - ${SEGMENTDETECTION_TEMPLATES_PATH?:error}:/app/resources/logo
       - ${LOGGER_LOG_FOLDER?:error}:/app/logs
+      - ./movie_pipeline/jobs/data/satellite/config.json:/opt/xyops/satellite/config.json # 2) Uncomment this line after first launch
     environment:
       - ffmpeg_hwaccel=cuda
       - ffmpeg_vcodec=hevc
       - Archive__base_backup_path=/app/archive
       - Archive__movies_archive_folder=/app/archive/Films
       - SegmentDetection__templates_path=/app/resources/logo
-      - XYOPS_setup=${XYOPS_setup?:error}
+      - XYOPS_setup=${XYOPS_setup?:error} # 1) Comment this line after first launch
     depends_on:
       - xyops01
     deploy:

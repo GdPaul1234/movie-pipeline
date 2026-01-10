@@ -30,7 +30,6 @@ def process_file(input: FileInput, config: Settings) -> Iterator[ReportedProgres
 
 
 class DirectoryInput(BaseModel):
-    xyops_process_file_event_id: str
     folder_path: DirectoryPath
     edl_ext: str
 
@@ -44,18 +43,8 @@ def process_directory(input: DirectoryInput, config: Settings) -> Iterator[Repor
             edl.rename(new_edl_name)
             edls.append(new_edl_name)
 
-        # submit jobs
-        # cf https://github.com/pixlcore/xyops/blob/main/docs/plugins.md#actions
-        # cf https://github.com/pixlcore/xyops/blob/main/docs/actions.md#run-event
-        for edl_path in edls:
-            action = {
-                'condition': 'complete',
-                'type': 'run_event',
-                'event_id': input.xyops_process_file_event_id,
-                'params': {'file_path': str(edl_path.with_suffix('')), 'edl_ext': edl_path.suffix},
-                'enabled': True
-            }
-            print(json.dumps({'xy': 1, 'push': {'actions': [action]}}))
+        process_file_inputs = [{'file_path': str(edl_path.with_suffix('')), 'edl_ext': edl_path.suffix} for edl_path in edls]
+        print(json.dumps({'xy': 1, 'data': {'process_file_inputs': process_file_inputs}}))
 
     _, process_time = timed_run(submit_actions)
     yield {'xy': 1, 'progress': 1., 'perf': {'SubmitJobs': process_time}}

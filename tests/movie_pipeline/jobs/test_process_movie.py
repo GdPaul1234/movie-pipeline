@@ -60,18 +60,23 @@ class ProcessMovieTest(unittest.TestCase):
         edl_serie_path = self.serie_path.with_suffix('.mp4.yml')
         edl_serie_path.write_text(get_serie_edl_file_content(), encoding='utf-8')
 
-        self.xyops_json_input["params"] = {'xyops_process_file_event_id': 'process_movie', 'folder_path': str(self.input_dir_path.absolute()), 'edl_ext': '.yml'}
+        self.xyops_json_input["params"] = {'folder_path': str(self.input_dir_path.absolute()), 'edl_ext': '.yml'}
 
         with patch.object(sys, 'stdin', StringIO(json.dumps(self.xyops_json_input))):
             job.process_directory(self.config_path)
 
         output = mock_stdout.getvalue()
 
-        expected_push_action_json_1 = json.dumps({"xy": 1, "push": {"actions": [{"condition": "complete", "type": "run_event", "event_id": "process_movie", "params": {'file_path': str(self.video_path.absolute()), 'edl_ext': '__edl_ext_regex__'}, "enabled": True}]}})
-        self.assertRegex(output, re.compile(re.escape(expected_push_action_json_1).replace('__edl_ext_regex__', r'\.pending_yml_\d+')))
-
-        expected_push_action_json_2 = json.dumps({"xy": 1, "push": {"actions": [{"condition": "complete", "type": "run_event", "event_id": "process_movie", "params": {'file_path': str(self.serie_path.absolute()), 'edl_ext': '__edl_ext_regex__'}, "enabled": True}]}})
-        self.assertRegex(output, re.compile(re.escape(expected_push_action_json_2).replace('__edl_ext_regex__', r'\.pending_yml_\d+')))
+        expected_date_output = json.dumps({
+            "xy": 1,
+            "data": {
+                "process_file_inputs": [
+                    {'file_path': str(self.video_path.absolute()), 'edl_ext': '__edl_ext_regex__'},
+                    {'file_path': str(self.serie_path.absolute()), 'edl_ext': '__edl_ext_regex__'}
+                ]
+            }
+        })
+        self.assertRegex(output, re.compile(re.escape(expected_date_output).replace('__edl_ext_regex__', r'\.pending_yml_\d+')))
 
         self.assertRegex(output, re.compile(r'{"xy": 1, "progress": [\d.]+'))
         self.assertRegex(output, re.compile(r'"perf": {"SubmitJobs": [\d.]+'))

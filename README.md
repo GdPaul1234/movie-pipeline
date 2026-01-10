@@ -64,8 +64,8 @@ python app.py --help
 
    SEGMENTDETECTION_TEMPLATES_PATH=/mnt/share/video/PVR/autres/scripts/common-ressources/logo
 
-   # Follow https://github.com/pixlcore/xyops/blob/main/docs/servers.md#automated-server-bootstrap to set and get the API KEY
-   XYOPS_setup=http://xyops01:5522/api/app/satellite/config?t=API_KEY_HERE
+   # Follow instruction in https://github.com/pixlcore/xyops/blob/main/docs/servers.md to get the AUTH_TOKEN
+   XYOPS_setup=http://xyops01:5522/api/app/satellite/config?t=AUTH_TOKEN_HERE
    ```
 
 3. **Run the containers:**

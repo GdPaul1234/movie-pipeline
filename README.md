@@ -35,28 +35,22 @@ python app.py --help
     | Command | Description |
     |---|---|
     | `movie_pipeline` | Main app (run `movie_pipeline --help` for options) |
-    | `movie_pipeline_job_archive_movies` | Executable for the ArchiveMovies Cronicle plugin |
-    | `movie_pipeline_job_detect_segments` | Executable for the DetectSegments Cronicle plugin |
-    | `movie_pipeline_job_process_movie` | Executable for the ProcessMovie Cronicle plugin (used by ProcessMovieDirectory) |
-    | `movie_pipeline_job_process_directory` | Executable for the ProcessMovieDirectory Cronicle plugin |
+    | `movie_pipeline_job_archive_movies` | Executable for the ArchiveMovies xyOps plugin |
+    | `movie_pipeline_job_detect_segments` | Executable for the DetectSegments xyOps plugin |
+    | `movie_pipeline_job_process_movie` | Executable for the ProcessMovie xyOps plugin (used by ProcessMovieDirectory) |
+    | `movie_pipeline_job_process_directory` | Executable for the ProcessMovieDirectory xyOps plugin |
 
     > **Note:** To use `movie_pipeline_job_process_directory`, you must have a valid API key with **"Edit events"** and **"Run events"** permissions.
 
 ### Running with Docker
 
-1. **Build the Movie Pipeline image:**
+1. **Build the xyOps Satellite (xySat) integration:**
 
    ```sh
-   docker build -t fripiane/movie_pipeline:${VERSION} .
+   docker build --build-context movie_pipeline=. -t fripiane/movie_pipeline_xysat:${VERSION} ./movie_pipeline/jobs/
    ```
 
-2. **Build the Cronicle integration:**
-
-   ```sh
-   docker build -t fripiane/movie_pipeline_cronicle:${VERSION} ./movie_pipeline/jobs/
-   ```
-
-3. **Configure `.env`:**
+2. **Configure `.env`:**
 
    ```env
    PATHS_INPUT_FOLDER=/mnt/share/video/PVR
@@ -70,28 +64,25 @@ python app.py --help
 
    SEGMENTDETECTION_TEMPLATES_PATH=/mnt/share/video/PVR/autres/scripts/common-ressources/logo
 
-   CRONICLE_secret_key=
+   # Follow instruction in https://github.com/pixlcore/xyops/blob/main/docs/servers.md to get the AUTH_TOKEN
+   XYOPS_setup=http://xyops01:5522/api/app/satellite/config?t=AUTH_TOKEN_HERE
    ```
 
-4. **Run the containers:**
+3. **Run the containers:**
 
    ```sh
    docker compose up
    ```
 
-### Setting Up Cronicle (Task Scheduler)
+### Setting Up xyOps (Task Scheduler)
 
-1. Access your Cronicle instance at **[http://localhost:3012](http://localhost:3012)**.
+1. Access your xyOps instance at **[http://localhost:5522](http://localhost:5522)** or at **[https://localhost:5523](https://localhost:5523)**.
 
 2. Import the plugin manifests from:
-   **[`./movie_pipeline/jobs/config/plugins`](https://github.com/GdPaul1234/movie-pipeline/tree/master/movie_pipeline/jobs/config/plugins)**
-   (via **Admin → Plugins → From JSON**).
+   **[`./movie_pipeline/jobs/config/xyops-data-export.txt`](https://github.com/GdPaul1234/movie-pipeline/tree/master/movie_pipeline/jobs/config/xyops-data-export.txt)**
+   (via **Admin → System → Import Data...**).
 
-3. Import the preconfigured schedule from:
-   **[`./movie_pipeline/jobs/config/scheduler.txt`](https://github.com/GdPaul1234/movie-pipeline/blob/master/movie_pipeline/jobs/config/scheduler.txt)**
-   (via **Schedule → Import**).
-
-4. **Available tasks:**
+3. **Available events:**
    - Archive Movies
    - Detect Segments
    - Process Movie

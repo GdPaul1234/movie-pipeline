@@ -1,6 +1,6 @@
 [project]
 name = "movie_pipeline"
-version = "0.2.13"
+version = "0.2.14"
 description = ""
 readme = "README.md"
 authors = [{email = "GdPaul1234 <paul.godin1234@outlook.fr>"}]
@@ -26,8 +26,7 @@ deffcode = "^0.2.6"
 opencv-contrib-python = "^4.12.0.88"
 pydantic = "^2.12.5"
 pydantic-settings = "^2.12.0"
-requests = "^2.32.5"
-typer = {extras = ["all"], version = "^0.20.0"}
+typer = {version = "^0.21.1"}
 
 [build-system]
 requires = ["poetry-core"]

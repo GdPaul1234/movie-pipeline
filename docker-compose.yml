@@ -1,10 +1,19 @@
 services:
-  movie_pipeline_cronicle:
-    image: fripiane/movie_pipeline_cronicle:0.2.13
-    hostname: manager1
+  xyops01:
+    image: ghcr.io/pixlcore/xyops:latest
+    hostname: xyops01
+    restart: unless-stopped
+    volumes:
+      - xy-data:/opt/xyops/data
+    environment:
+      - TZ=Europe/Paris
     ports:
-      - 3012:3012
-    entrypoint: manager
+      - "5522:5522"
+      - "5523:5523"
+
+  movie_pipeline_xysat01:
+    image: fripiane/movie_pipeline_xysat:0.2.14
+    restart: unless-stopped
     volumes:
       - ${PATHS_INPUT_FOLDER:?error}:/app/inputs
       - ${PATHS_MOVIES_FOLDER?:error}:/app/movies
@@ -13,15 +22,16 @@ services:
       - ${ARCHIVE_BASE_BACKUP_FOLDER?:error}:/app/archive
       - ${SEGMENTDETECTION_TEMPLATES_PATH?:error}:/app/resources/logo
       - ${LOGGER_LOG_FOLDER?:error}:/app/logs
-      - ./movie_pipeline/jobs/data:/opt/cronicle/data
+      - ./movie_pipeline/jobs/data/satellite/config.json:/opt/xyops/satellite/config.json # 2) Uncomment this line after first launch
     environment:
       - ffmpeg_hwaccel=cuda
       - ffmpeg_vcodec=hevc
       - Archive__base_backup_path=/app/archive
       - Archive__movies_archive_folder=/app/archive/Films
       - SegmentDetection__templates_path=/app/resources/logo
-      - CRONICLE_secret_key=${CRONICLE_secret_key:?error}
-    restart: unless-stopped
+      - XYOPS_setup=${XYOPS_setup?:error} # 1) Comment this line after first launch
+    depends_on:
+      - xyops01
     deploy:
       resources:
         reservations:
@@ -29,3 +39,6 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu,video]
+
+volumes:
+  xy-data:

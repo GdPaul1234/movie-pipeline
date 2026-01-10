@@ -63,17 +63,52 @@ def copy_files(rules: list[SourceDestinationDict]):
             after_copy_fn(rule['destination'])
 
 
-def get_base_cronicle_json_input():
-    # see https://github.com/jhuckaby/Cronicle/blob/master/docs/Plugins.md#json-input
+def get_base_xyops_json_input():
+    # see https://github.com/pixlcore/xyops/blob/main/docs/plugins.md#input
     return {
-            "id": "jihuxvagi01",
-            "hostname": "joeretina.local",
-            "command": "/usr/local/bin/my-plugin.js",
-            "event": "3c182051",
-            "now": 1449431125,
-            "log_file": "/opt/cronicle/logs/jobs/jihuxvagi01.log",
-            "params": {
-                "myparam1": "90",
-                "myparam2": "Value"
-            }
-        }
+        "xy": 1,
+        "type": "event",
+        "targets": [
+            "main"
+        ],
+        "params": {
+            "animal": "frog",
+            "color": "green"
+        },
+        "input": {
+            "data": {"foo": "bar"},
+            "files": []
+        },
+        "fields": [],
+        "limits": [],
+        "actions": [],
+        "notes": "",
+        "category": "general",
+        "plugin": "pmi11dqsxcy",
+        "icon": "",
+        "tags": [],
+        "algo": "random",
+        "username": "admin",
+        "source": "user",
+        "event": "emi11ejdlde",
+        "id": "jmi11fqevei",
+        "command": "node",
+        "script": "console.log( JSON.stringify({ xy: 1, code: 0, description: \"Job successful!\" }) );\n",
+        "uid": "",
+        "gid": "",
+        "kill": "parent",
+        "env": {},
+        "state": "active",
+        "started": 1763256572.033,
+        "now": 1763256572.024,
+        "log_file_size": 0,
+        "server": "smf4j79snhe",
+        "groups": [
+            "main"
+        ],
+        "updated": 1763256572.033,
+        "progress": 0,
+        "cwd": "/opt/xyops/satellite/temp/jobs/jmi11fqevei",
+        "log_file": "/opt/xyops/satellite/logs/jobs/job-jmi11fqevei.log",
+        "pid": 1789701
+    }

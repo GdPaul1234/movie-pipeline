@@ -1,0 +1,104 @@
+{
+	"type": "xypdf",
+	"description": "xyOps Portable Data Object",
+	"version": "1.0",
+	"items": [
+		{
+			"type": "event",
+			"data": {
+				"id": "emk7it1zdd1t7lp2",
+				"title": "Archive Movies",
+				"enabled": true,
+				"targets": [
+					"main"
+				],
+				"params": {
+					"dry": true
+				},
+				"fields": [],
+				"triggers": [
+					{
+						"enabled": true,
+						"type": "manual"
+					},
+					{
+						"enabled": true,
+						"type": "schedule",
+						"days": [
+							15
+						],
+						"hours": [
+							1
+						],
+						"minutes": [
+							0
+						]
+					}
+				],
+				"limits": [
+					{
+						"type": "job",
+						"enabled": true,
+						"amount": 1
+					},
+					{
+						"type": "queue",
+						"enabled": true,
+						"amount": 0
+					},
+					{
+						"type": "retry",
+						"enabled": true,
+						"amount": 0,
+						"duration": 0
+					}
+				],
+				"actions": [],
+				"notes": "",
+				"category": "general",
+				"plugin": "pmk7hret7u9o7o3b",
+				"icon": "",
+				"tags": [],
+				"algo": "random"
+			}
+		},
+		{
+			"type": "plugin",
+			"data": {
+				"id": "pmk7hret7u9o7o3b",
+				"title": "Archive Movies",
+				"enabled": true,
+				"type": "event",
+				"command": "movie_pipeline_job_archive_movies",
+				"script": "",
+				"groups": [],
+				"format": "",
+				"params": [
+					{
+						"id": "dry",
+						"title": "Only report",
+						"type": "checkbox",
+						"caption": "",
+						"locked": false,
+						"value": false
+					}
+				],
+				"kill": "parent",
+				"runner": false,
+				"notes": "",
+				"icon": "folder-zip",
+				"uid": "",
+				"gid": ""
+			}
+		},
+		{
+			"type": "group",
+			"data": {
+				"id": "main",
+				"title": "Main Group",
+				"hostname_match": ".+",
+				"alert_actions": []
+			}
+		}
+	]
+}

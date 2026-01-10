@@ -30,6 +30,11 @@
 						"enabled": true,
 						"amount": 0,
 						"duration": 0
+					},
+					{
+						"type": "queue",
+						"enabled": true,
+						"amount": 10
 					}
 				],
 				"actions": [],

@@ -107,6 +107,7 @@ class ProcessStep(BaseStep[MovieFileProcessorContext]):
 
 class BackupStep(BaseStep[MovieFileProcessorContext]):
     def _perform(self) -> Iterator[float]:
+        yield 0
         logger.info('Backuping "%s"...', self.context.dest_filename)
         self.context.backup_policy_executor.execute(original_file_path=self.context.in_file_path)
         yield 1

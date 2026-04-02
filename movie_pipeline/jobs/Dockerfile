@@ -1,6 +1,6 @@
 
-FROM python:3.13.11 AS builder
-RUN pip install poetry==2.2.1
+FROM python:3.13.12 AS builder
+RUN pip install poetry==2.3.3
 
 ENV POETRY_VIRTUALENVS_IN_PROJECT=1
 ENV POETRY_VIRTUALENVS_CREATE=1
@@ -18,7 +18,7 @@ RUN cd /app && poetry build -f wheel
 
 FROM ghcr.io/pixlcore/xysat:latest AS runtime
 
-ARG VERSION=0.2.14
+ARG VERSION=0.2.16
 
 LABEL org.opencontainers.image.title=movie_pipeline_xysat
 LABEL org.opencontainers.image.version=$VERSION
@@ -34,7 +34,7 @@ WORKDIR /app
 COPY --from=builder /app/dist/ /app/dist/
 
 # Install ffmpeg
-ARG FFMPEG_VARIANT=ffmpeg-n8.0-latest-linux64-gpl-shared-8.0
+ARG FFMPEG_VARIANT=ffmpeg-n8.1-latest-linux64-gpl-shared-8.1
 ADD --unpack=true --exclude=doc/* --exclude=man/** \
     https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/$FFMPEG_VARIANT.tar.xz \
     /opt
@@ -45,7 +45,7 @@ RUN ln -s /opt/$FFMPEG_VARIANT/lib/* /usr/local/lib/ \
     && ffprobe -version
 
 # Install and verify movie_pipeline installation
-RUN ~/.local/bin/uv tool install dist/movie_pipeline-0.2.14-py3-none-any.whl \
+RUN uv tool install dist/movie_pipeline-0.2.16-py3-none-any.whl \
     && ln -s ~/.local/bin/* /usr/local/bin/ \
     && movie_pipeline --help
 

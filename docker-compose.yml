@@ -12,7 +12,7 @@ services:
       - "5523:5523"
 
   movie_pipeline_xysat01:
-    image: fripiane/movie_pipeline_xysat:0.2.14
+    image: fripiane/movie_pipeline_xysat:0.2.16
     restart: unless-stopped
     volumes:
       - ${PATHS_INPUT_FOLDER:?error}:/app/inputs

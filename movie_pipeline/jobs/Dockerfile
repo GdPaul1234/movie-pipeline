@@ -1,5 +1,5 @@
 
-FROM python:3.13.12 AS builder
+FROM python:3.13.13 AS builder
 RUN pip install poetry==2.3.3
 
 ENV POETRY_VIRTUALENVS_IN_PROJECT=1
@@ -34,9 +34,10 @@ WORKDIR /app
 COPY --from=builder /app/dist/ /app/dist/
 
 # Install ffmpeg
-ARG FFMPEG_VARIANT=ffmpeg-n8.1-latest-linux64-gpl-shared-8.1
+ARG FFMPEG_RELEASE=autobuild-2026-02-28-12-59
+ARG FFMPEG_VARIANT=ffmpeg-n8.0.1-66-g27b8d1a017-linux64-gpl-shared-8.0
 ADD --unpack=true --exclude=doc/* --exclude=man/** \
-    https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/$FFMPEG_VARIANT.tar.xz \
+    https://github.com/BtbN/FFmpeg-Builds/releases/download/$FFMPEG_RELEASE/$FFMPEG_VARIANT.tar.xz \
     /opt
 RUN ln -s /opt/$FFMPEG_VARIANT/lib/* /usr/local/lib/ \
     && ldconfig \
